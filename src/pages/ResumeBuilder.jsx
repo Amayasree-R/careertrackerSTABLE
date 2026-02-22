@@ -93,7 +93,8 @@ export default function ResumeBuilder() {
                     })),
                     experience: safeArray(response.data.experience),
                     masteredSkills: safeArray(response.data.masteredSkills).map(s => ({ name: safeString(s?.skill) })),
-                    knownSkills: safeArray(response.data.knownSkills)
+                    knownSkills: safeArray(response.data.knownSkills),
+                    certificates: safeArray(response.data.certificates)
                 }))
             }
         } catch (error) {

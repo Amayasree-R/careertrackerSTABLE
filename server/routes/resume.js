@@ -22,6 +22,7 @@ import {
 import { getAggregatedResumeData } from '../services/resumeGeneratorService.js'
 import Groq from 'groq-sdk'
 import User from '../models/User.js'
+import Certificate from '../models/Certificate.js'
 
 const router = express.Router()
 
@@ -105,14 +106,15 @@ router.post('/analyze', authMiddleware, analyzeResume)
  */
 router.get('/data', authMiddleware, async (req, res) => {
   try {
-    // CRITICAL: Fetch full user object from DB (req.user only has basic info from JWT)
+    // CRITICAL: Fetch full user object and their certificates
     const user = await User.findById(req.user._id).lean()
+    const certificates = await Certificate.find({ userId: req.user._id }).lean()
 
     if (!user) {
       return res.status(404).json({ error: 'User not found' })
     }
 
-    const data = getAggregatedResumeData(user)
+    const data = getAggregatedResumeData(user, certificates)
     res.json(data)
   } catch (error) {
     console.error('Resume Data API Error:', error)
@@ -126,14 +128,15 @@ router.get('/data', authMiddleware, async (req, res) => {
  */
 router.post('/generate', authMiddleware, async (req, res) => {
   try {
-    // CRITICAL: Fetch full user object from DB (req.user only has basic info from JWT)
+    // CRITICAL: Fetch full user object and their certificates
     const user = await User.findById(req.user._id).lean()
+    const certificates = await Certificate.find({ userId: req.user._id }).lean()
 
     if (!user) {
       return res.status(404).json({ error: 'User not found' })
     }
 
-    const userData = getAggregatedResumeData(user)
+    const userData = getAggregatedResumeData(user, certificates)
 
     // Debug: Log full userData BEFORE sending to Groq
     console.log('📤 Sending to Groq AI:', JSON.stringify(userData, null, 2))
@@ -333,13 +336,15 @@ router.post('/regenerate-section', authMiddleware, async (req, res) => {
       return res.status(400).json({ error: 'Section name is required' })
     }
 
-    // Fetch fresh user data
+    // Fetch fresh user data and certificates
     const user = await User.findById(req.user._id).lean()
+    const certificates = await Certificate.find({ userId: req.user._id }).lean()
+
     if (!user) {
       return res.status(404).json({ error: 'User not found' })
     }
 
-    const userData = getAggregatedResumeData(user)
+    const userData = getAggregatedResumeData(user, certificates)
     const { detectUserProfile } = await import('../services/resumeGeneratorService.js')
     const profile = detectUserProfile(userData)
 

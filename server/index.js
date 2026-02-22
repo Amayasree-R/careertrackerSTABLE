@@ -37,7 +37,7 @@ app.use('/api/roadmap', roadmapRoutes)
 app.use('/api/quiz', quizRoutes)
 app.use('/api', skillDetailRoutes)
 app.use('/api/resume', resumeRoutes)
-app.use('/api/cert', certificateRoutes)
+app.use('/api/certificates', certificateRoutes)
 
 // MongoDB connection
 mongoose.connect(process.env.MONGODB_URI)

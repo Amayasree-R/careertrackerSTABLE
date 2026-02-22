@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Award, CheckCircle } from 'lucide-react'
 import SkillTooltip from '../components/SkillTooltip'
 
 function Roadmap() {
@@ -102,6 +103,11 @@ function Roadmap() {
     if (related && related.closest('.skill-tooltip-anchor')) return
     setActiveSkill(null)
   }, [])
+
+  const getSkillMastery = (skillName) => {
+    if (!profile?.completedSkills) return null
+    return profile.completedSkills.find(s => s.skill.toLowerCase() === skillName.toLowerCase())
+  }
 
   if (isLoading) {
     return (
@@ -254,6 +260,23 @@ function Roadmap() {
                         </div>
                       )}
                     </div>
+
+                    {/* Mastery Badge */}
+                    {getSkillMastery(item.skill) && (
+                      <div className="flex items-center gap-1.5 ml-2 mt-1">
+                        {getSkillMastery(item.skill).verificationMethod === 'certificate' ? (
+                          <div className="flex items-center gap-1 bg-blue-100 text-blue-700 text-[10px] font-bold px-2 py-0.5 rounded-full ring-1 ring-blue-200">
+                            <Award size={10} />
+                            Verified by Certificate
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-1 bg-green-100 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded-full ring-1 ring-green-200">
+                            <CheckCircle size={10} />
+                            Mastered
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
 

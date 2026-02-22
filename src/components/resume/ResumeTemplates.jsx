@@ -89,6 +89,20 @@ export const ModernTemplate = ({ data }) => (
                         ))}
                     </div>
                 </section>
+
+                {data.certificates && data.certificates.length > 0 && (
+                    <section>
+                        <h2 className="text-sm font-black text-indigo-600 uppercase tracking-widest mb-3 border-b border-slate-100 pb-1">Certifications</h2>
+                        <div className="space-y-2">
+                            {data.certificates.map((cert, i) => (
+                                <div key={i} className="text-[11px]">
+                                    <div className="font-bold text-slate-900 leading-tight">{cert.name || cert.title}</div>
+                                    <div className="text-[10px] text-slate-500">{cert.issuer} • {cert.year || cert.issueYear}</div>
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+                )}
             </div>
         </div>
     </div>
@@ -284,6 +298,20 @@ export const TechnicalTemplate = ({ data }) => (
                 ))}
             </div>
         </section>
+
+        {data.certificates && data.certificates.length > 0 && (
+            <section>
+                <h2 className="text-xs font-bold bg-slate-900 text-white px-2 py-0.5 inline-block mb-3">/CERTIFICATIONS</h2>
+                <div className="grid grid-cols-2 gap-x-8 gap-y-2">
+                    {data.certificates.map((cert, i) => (
+                        <div key={i} className="text-[11px] flex justify-between border-b border-slate-100 pb-1">
+                            <span className="font-bold text-slate-900">{cert.name || cert.title}</span>
+                            <span className="text-slate-500 font-mono">[{cert.year || cert.issueYear}]</span>
+                        </div>
+                    ))}
+                </div>
+            </section>
+        )}
     </div>
 )
 
@@ -351,6 +379,20 @@ export const MinimalTemplate = ({ data }) => {
                             </div>
                         ))}
                     </section>
+
+                    {data.certificates && data.certificates.length > 0 && (
+                        <section className="space-y-4 border-t border-slate-50 pt-4">
+                            <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-300">Certifications</h4>
+                            <div className="space-y-3">
+                                {data.certificates.map((cert, i) => (
+                                    <div key={i} className="text-[10px] text-slate-400">
+                                        <p className="font-bold text-slate-500">{cert.name || cert.title}</p>
+                                        <p className="text-[9px]">{cert.issuer} • {cert.year || cert.issueYear}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </section>
+                    )}
                 </div>
             </div>
         </div>

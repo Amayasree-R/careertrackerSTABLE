@@ -5,7 +5,7 @@ import * as githubService from './githubProjectService.js'
  * Aggregates all user data specifically for the resume builder.
  * Maps User schema fields to resume-ready format.
  */
-export function getAggregatedResumeData(user) {
+export function getAggregatedResumeData(user, certificatesFromDB = []) {
     // 1. Personal Details
     const fullName = user.fullName || ''
     const email = user.email || ''
@@ -70,15 +70,28 @@ export function getAggregatedResumeData(user) {
     // 6. Target Job Role
     const targetJobRole = user.careerInfo?.targetJobRole || user.profile?.targetJob || 'Software Engineer'
 
-    // 7. Certificates (from user.certifications)
-    // Map: title -> name, filter useInResume !== false
-    const certificates = (user.certifications || [])
-        .filter(cert => cert.useInResume !== false)
-        .map(cert => ({
-            name: cert.title || '',
-            issuer: cert.issuer || '',
-            year: cert.issueYear ? cert.issueYear.toString() : ''
-        }))
+    // 7. Certificates (priority to NEW Certificate model, fallback to legacy)
+    let certificates = []
+
+    if (certificatesFromDB && certificatesFromDB.length > 0) {
+        // Use NEW model data
+        certificates = certificatesFromDB
+            .filter(cert => cert.includeInResume !== false)
+            .map(cert => ({
+                name: cert.skillName || '',
+                issuer: cert.issuerName || '',
+                year: cert.issueDate ? new Date(cert.issueDate).getFullYear().toString() : ''
+            }))
+    } else {
+        // Fallback to legacy User.certifications
+        certificates = (user.certifications || [])
+            .filter(cert => cert.useInResume !== false)
+            .map(cert => ({
+                name: cert.title || '',
+                issuer: cert.issuer || '',
+                year: cert.issueYear ? cert.issueYear.toString() : ''
+            }))
+    }
 
     // 8. Projects (from user.resumeData.projects if available)
     const projects = (user.resumeData?.projects || []).map(proj => ({
@@ -208,6 +221,9 @@ export async function assembleResumeData(user, options = {}) {
     const experience = user.resumeData?.experience || []
     const education = user.resumeData?.education || []
 
+    // 6. Certificates (from New Model)
+    const certificates = options.certificates || []
+
     return {
         ...basicInfo,
         summary,
@@ -216,6 +232,7 @@ export async function assembleResumeData(user, options = {}) {
         projects,
         experience,
         education,
+        certificates,
         template,
         targetRole: targetRole || user.careerInfo?.targetJobRole || user.profile.targetJob
     }

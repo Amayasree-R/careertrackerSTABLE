@@ -72,6 +72,7 @@ const userSchema = new mongoose.Schema({
         skill: String,
         score: Number,
         masteredAt: { type: Date, default: Date.now },
+        verificationMethod: String,
         _id: false
       }
     ],
