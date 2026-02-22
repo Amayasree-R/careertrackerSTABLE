@@ -4,27 +4,27 @@ import CertificateUpload from '../components/profile/CertificateUpload'
 import CertificateCard from '../components/profile/CertificateCard'
 
 export default function Certificates() {
-    const [certificates, setCertificates] = useState([])
+    const [profile, setProfile] = useState(null)
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
-        fetchCertificates()
+        fetchProfile()
     }, [])
 
-    const fetchCertificates = async () => {
+    const fetchProfile = async () => {
         const token = localStorage.getItem('token')
         if (!token) return
 
         try {
-            const res = await fetch('http://localhost:5000/api/certificates', {
+            const res = await fetch('http://localhost:5000/api/profile', {
                 headers: { 'Authorization': `Bearer ${token}` }
             })
             const data = await res.json()
-            if (res.ok) {
-                setCertificates(data)
+            if (res.ok && data.profile) {
+                setProfile(data.profile)
             }
         } catch (err) {
-            console.error('Fetch certificates error:', err)
+            console.error('Fetch profile error:', err)
         } finally {
             setLoading(false)
         }
@@ -33,22 +33,22 @@ export default function Certificates() {
     const handleToggleCert = async (certId) => {
         const token = localStorage.getItem('token')
         try {
-            const res = await fetch(`http://localhost:5000/api/certificates/${certId}/toggle-resume`, {
-                method: 'PATCH',
+            await fetch(`http://localhost:5000/api/cert/toggle/${certId}`, {
+                method: 'PUT',
                 headers: { 'Authorization': `Bearer ${token}` }
             })
-            if (res.ok) fetchCertificates() // Refresh
+            fetchProfile() // Refresh
         } catch (err) { console.error(err) }
     }
 
     const handleDeleteCert = async (certId) => {
         const token = localStorage.getItem('token')
         try {
-            const res = await fetch(`http://localhost:5000/api/certificates/${certId}`, {
+            await fetch(`http://localhost:5000/api/cert/${certId}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             })
-            if (res.ok) fetchCertificates() // Refresh
+            fetchProfile() // Refresh
         } catch (err) { console.error(err) }
     }
 
@@ -71,7 +71,7 @@ export default function Certificates() {
             <div className="bg-white p-8 sm:p-10 rounded-[2.5rem] border border-slate-100 shadow-xl shadow-slate-200/40">
                 <h4 className="font-black text-slate-900 text-2xl mb-2">Upload New Certificate 📤</h4>
                 <p className="text-slate-500 mb-6">Support for PDF files. AI will analyze and verify your skills.</p>
-                <CertificateUpload onUploadSuccess={fetchCertificates} />
+                <CertificateUpload onUploadSuccess={fetchProfile} />
             </div>
 
             {/* Certificates Grid */}
@@ -79,13 +79,13 @@ export default function Certificates() {
                 <div className="flex items-center justify-between px-4">
                     <h3 className="text-2xl font-black text-slate-900">Your Certificates</h3>
                     <span className="bg-blue-100 text-blue-700 font-bold px-4 py-1.5 rounded-full">
-                        {certificates?.length || 0} Verified
+                        {profile?.certifications?.length || 0} Verified
                     </span>
                 </div>
 
-                {certificates && certificates.length > 0 ? (
+                {profile?.certifications && profile.certifications.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                        {certificates.map((cert) => (
+                        {profile.certifications.map((cert) => (
                             <div key={cert._id} className="h-full">
                                 <CertificateCard
                                     cert={cert}

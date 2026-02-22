@@ -1,10 +1,8 @@
 
 import { useState } from 'react'
-import { Award, Calendar, ExternalLink, Trash2, CheckCircle, AlertCircle, Loader2 } from 'lucide-react'
 
-export default function CertificateCard({ cert, onToggle, onDelete }) {
+function CertificateCard({ cert, onToggle, onDelete }) {
     const [isToggling, setIsToggling] = useState(false)
-    const [isDeleting, setIsDeleting] = useState(false)
 
     const handleToggle = async () => {
         setIsToggling(true)
@@ -13,104 +11,89 @@ export default function CertificateCard({ cert, onToggle, onDelete }) {
     }
 
     const handleDelete = async () => {
-        if (window.confirm('Are you sure you want to delete this certificate? This will also revert your roadmap progress if this was the only proof for this skill.')) {
-            setIsDeleting(true)
+        if (window.confirm('Are you sure you want to delete this certificate?')) {
             await onDelete(cert._id)
-            setIsDeleting(false)
         }
     }
 
     return (
-        <div className="bg-white border border-slate-100 rounded-[2rem] p-6 shadow-xl shadow-slate-200/40 hover:shadow-2xl hover:shadow-slate-200/60 transition-all duration-300 flex flex-col h-full relative group overflow-hidden">
+        <div className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm hover:shadow-md transition flex flex-col h-full relative group">
 
-            {/* Status Badge */}
-            <div className="absolute top-6 right-6">
-                {cert.matchedRoadmapSkill ? (
-                    <div className="bg-green-100 text-green-700 text-[10px] font-bold px-3 py-1 rounded-full flex items-center gap-1 shadow-sm ring-1 ring-green-200">
-                        <CheckCircle size={10} />
-                        Roadmap Verified
-                    </div>
+            {/* Verification Badge */}
+            <div className="absolute top-4 right-4">
+                {cert.verificationStatus === 'Verified' ? (
+                    <span className="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-1 rounded-full flex items-center gap-1">
+                        ✓ Verified
+                    </span>
                 ) : (
-                    <div className="bg-amber-50 text-amber-700 text-[10px] font-bold px-3 py-1 rounded-full flex items-center gap-1 shadow-sm ring-1 ring-amber-100">
-                        <AlertCircle size={10} />
-                        Skill Not in Roadmap
-                    </div>
+                    <span className="bg-amber-100 text-amber-700 text-[10px] font-bold px-2 py-1 rounded-full">
+                        ⚠ Partial
+                    </span>
                 )}
             </div>
 
             <div className="flex-1">
-                <div className="w-14 h-14 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl flex items-center justify-center text-blue-600 mb-6 shadow-inner">
-                    <Award size={28} />
+                <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-2xl mb-4">
+                    📜
                 </div>
 
-                <h5 className="font-black text-slate-900 text-xl leading-tight mb-2 line-clamp-2" title={cert.skillName}>
-                    {cert.skillName}
+                <h5 className="font-bold text-slate-900 text-lg leading-tight mb-1 line-clamp-2" title={cert.title}>
+                    {cert.title}
                 </h5>
+                <p className="text-sm text-slate-500 mb-4">{cert.issuer} • {cert.issueYear}</p>
 
-                <div className="space-y-2 mb-6">
-                    <div className="flex items-center gap-2 text-slate-500 text-sm">
-                        <span className="font-bold text-slate-700">{cert.issuerName}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-slate-400 text-xs font-medium">
-                        <Calendar size={14} />
-                        {new Date(cert.issueDate).toLocaleDateString(undefined, { year: 'numeric', month: 'short' })}
-                    </div>
+                {/* Skills Tags */}
+                <div className="flex flex-wrap gap-1.5 mb-4">
+                    {cert.skills.slice(0, 3).map((s, i) => (
+                        <span key={i} className="px-2 py-0.5 bg-slate-50 border border-slate-200 text-slate-600 text-[10px] font-bold rounded">
+                            {s.skill}
+                        </span>
+                    ))}
+                    {cert.skills.length > 3 && (
+                        <span className="px-2 py-0.5 bg-slate-50 text-slate-400 text-[10px] font-bold rounded">
+                            +{cert.skills.length - 3}
+                        </span>
+                    )}
                 </div>
-
-                {cert.matchedRoadmapSkill && (
-                    <div className="mb-6 p-3 bg-blue-50 rounded-xl border border-blue-100">
-                        <p className="text-[10px] uppercase tracking-widest text-blue-400 font-black mb-1">Matched Skill</p>
-                        <p className="text-sm font-bold text-blue-700">{cert.matchedRoadmapSkill}</p>
-                    </div>
-                )}
             </div>
 
-            <div className="pt-6 border-t border-slate-50 flex items-center justify-between mt-auto">
+            <div className="pt-4 border-t border-slate-50 flex items-center justify-between mt-auto">
                 {/* Use In Resume Toggle */}
                 <button
                     onClick={handleToggle}
                     disabled={isToggling}
-                    className={`flex items-center gap-2 text-xs font-black px-4 py-2 rounded-xl transition-all duration-200 ${cert.includeInResume
-                        ? 'bg-slate-900 text-white shadow-lg shadow-slate-200'
-                        : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                    className={`flex items-center gap-2 text-xs font-bold px-3 py-1.5 rounded-lg transition ${cert.useInResume
+                            ? 'bg-blue-600 text-white hover:bg-blue-700'
+                            : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
                         }`}
+                    title="Include in generated resume"
                 >
-                    {isToggling ? (
-                        <Loader2 size={14} className="animate-spin" />
-                    ) : (
-                        cert.includeInResume ? (
-                            <>
-                                <CheckCircle size={14} />
-                                In Resume
-                            </>
-                        ) : (
-                            'Add to Resume'
-                        )
-                    )}
+                    {isToggling ? '...' : (cert.useInResume ? 'In Resume' : 'Add to Resume')}
                 </button>
 
                 <div className="flex items-center gap-2">
-                    {cert.certificateUrl && (
+                    {cert.fileUrl && (
                         <a
-                            href={cert.certificateUrl}
+                            href={cert.fileUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
+                            className="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition"
                             title="View Certificate"
                         >
-                            <ExternalLink size={18} />
+                            👁️
                         </a>
                     )}
                     <button
                         onClick={handleDelete}
-                        disabled={isDeleting}
-                        className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
+                        className="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
                         title="Delete Certificate"
                     >
-                        {isDeleting ? <Loader2 size={18} className="animate-spin" /> : <Trash2 size={18} />}
+                        🗑️
                     </button>
                 </div>
             </div>
         </div>
     )
 }
+
+export default CertificateCard

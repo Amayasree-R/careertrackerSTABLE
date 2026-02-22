@@ -10,6 +10,7 @@ import roadmapRoutes from './routes/roadmap.js'
 import skillDetailRoutes from './routes/skillDetail.js'
 import quizRoutes from './routes/quiz.js'
 import certificateRoutes from './routes/certificate.js'
+import projectRoutes from './routes/projects.js'
 
 import path from 'path'
 import { fileURLToPath } from 'url'
@@ -37,7 +38,8 @@ app.use('/api/roadmap', roadmapRoutes)
 app.use('/api/quiz', quizRoutes)
 app.use('/api', skillDetailRoutes)
 app.use('/api/resume', resumeRoutes)
-app.use('/api/certificates', certificateRoutes)
+app.use('/api/cert', certificateRoutes)
+app.use('/api/projects', projectRoutes)
 
 // MongoDB connection
 mongoose.connect(process.env.MONGODB_URI)

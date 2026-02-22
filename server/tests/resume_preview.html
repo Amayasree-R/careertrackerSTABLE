@@ -1,0 +1,187 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Resume - Arjun Sharma</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: white; color: #334155; line-height: 1.5; }
+        .page { width: 595px; min-height: 842px; display: flex; flex-direction: row; }
+        
+        /* Sidebar */
+        .sidebar { width: 30%; background: #1e293b; color: white; min-height: 842px; display: flex; flex-direction: column; }
+        .name-block { padding: 32px 24px 16px; border-bottom: 1px solid #334155; }
+        .name-block h1 { font-size: 20px; font-weight: 700; color: white; margin-bottom: 4px; }
+        .name-block .role { color: #94a3b8; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
+        
+        .sidebar-section { border-bottom: 1px solid #334155; padding-bottom: 20px; }
+        .sidebar-label { color: #64748b; font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px; padding: 20px 24px 8px; font-weight: 700; }
+        .sidebar-item { color: white; font-size: 10px; padding: 4px 24px; word-break: break-all; }
+        
+        /* Main Content */
+        .content { width: 70%; background: white; padding: 40px 36px; }
+        .section-heading { font-size: 11px; font-weight: 700; color: #1e293b; text-transform: uppercase; letter-spacing: 1px; margin-top: 24px; margin-bottom: 4px; }
+        .heading-underline { height: 2px; background: #1e293b; width: 100%; margin-bottom: 10px; }
+        .summary-text { font-size: 10.5px; color: #334155; line-height: 1.6; text-align: justify; }
+        
+        /* Lists */
+        .exp-item, .proj-item, .cert-item { margin-bottom: 16px; }
+        .item-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 2px; }
+        .item-title { font-size: 11px; font-weight: 700; color: #1e293b; }
+        .item-subtitle { font-size: 10px; font-style: italic; color: #475569; }
+        .item-meta { font-size: 9px; color: #64748b; }
+        .item-description { font-size: 10px; color: #334155; line-height: 1.5; white-space: pre-line; margin-top: 4px; }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="name-block">
+                <h1>Arjun Sharma</h1>
+                <div class="role">Senior Full Stack Engineer</div>
+            </div>
+
+            <!-- Contact -->
+            <div class="sidebar-section">
+                <div class="sidebar-label">CONTACT</div>
+                <div class="sidebar-item">arjun.sharma@example.com</div>
+                <div class="sidebar-item">+91 98765 43210</div>
+                <div class="sidebar-item">Bengaluru, Karnataka, India</div>
+                <div class="sidebar-item">github.com/arjunsharma</div>
+                <div class="sidebar-item">linkedin.com/in/arjunsharma</div>
+            </div>
+
+            <!-- Skills -->
+            <div class="sidebar-section">
+                <div class="sidebar-label">SKILLS</div>
+                
+                    <div style="margin-bottom: 12px; padding: 0 24px;">
+                        <div style="color: #94a3b8; font-size: 9px; text-transform: uppercase; margin-bottom: 4px;">Frontend</div>
+                        <div style="color: white; font-size: 10px;">React, Next.js, TypeScript, Tailwind CSS</div>
+                    </div>
+                
+                    <div style="margin-bottom: 12px; padding: 0 24px;">
+                        <div style="color: #94a3b8; font-size: 9px; text-transform: uppercase; margin-bottom: 4px;">Backend</div>
+                        <div style="color: white; font-size: 10px;">Node.js, Express.js, NestJS, PostgreSQL, MongoDB</div>
+                    </div>
+                
+                    <div style="margin-bottom: 12px; padding: 0 24px;">
+                        <div style="color: #94a3b8; font-size: 9px; text-transform: uppercase; margin-bottom: 4px;">DevOps</div>
+                        <div style="color: white; font-size: 10px;">AWS, Docker, Kubernetes, CI/CD</div>
+                    </div>
+                
+                <div style="margin-bottom: 12px; padding: 0 24px;">
+                    <div style="color: #94a3b8; font-size: 9px; text-transform: uppercase; margin-bottom: 4px;">MASTERED</div>
+                    <div style="color: white; font-size: 10px;">React, Node.js, System Design</div>
+                </div>
+            
+            </div>
+
+            <!-- Education -->
+            <div class="sidebar-section" style="border-bottom: none;">
+                <div class="sidebar-label">EDUCATION</div>
+                
+                    <div style="padding: 4px 24px; margin-bottom: 8px;">
+                        <div style="color: white; font-size: 11px; font-weight: 700;">Indian Institute of Technology, Madras</div>
+                        <div style="color: #94a3b8; font-size: 10px;">B.Tech, Computer Science</div>
+                        <div style="color: #64748b; font-size: 9px;">2016</div>
+                    </div>
+                
+            </div>
+        </div>
+
+        <!-- Right Content -->
+        <div class="content">
+            <!-- Summary -->
+            <div style="margin-top: 0;">
+                <div class="section-heading" style="margin-top: 0;">PROFESSIONAL SUMMARY</div>
+                <div class="heading-underline"></div>
+                <p class="summary-text">Senior Full Stack Engineer with 8+ years of experience building scalable web applications. Expert in React, Node.js, and cloud architecture. Proven track record of leading teams and delivering high-quality software solutions in fast-paced environments.</p>
+            </div>
+
+            <!-- Experience -->
+            
+                <div class="section-heading">WORK EXPERIENCE</div>
+                <div class="heading-underline"></div>
+                
+                    <div class="exp-item">
+                        <div class="item-header">
+                            <div>
+                                <span class="item-title">TechFlow Solutions</span>
+                                <span style="margin: 0 4px; color: #cbd5e1;">|</span>
+                                <span class="item-subtitle">Lead Full Stack Engineer</span>
+                            </div>
+                            <div class="item-meta">Jan 2021 - Present</div>
+                        </div>
+                        <div class="item-description">• Architected and developed a microservices-based e-commerce platform using NestJS and React.
+• Improved system performance by 40% through optimized database queries and caching strategies.
+• Led a team of 6 engineers and implemented agile methodologies.</div>
+                    </div>
+                
+                    <div class="exp-item">
+                        <div class="item-header">
+                            <div>
+                                <span class="item-title">DataScale Inc.</span>
+                                <span style="margin: 0 4px; color: #cbd5e1;">|</span>
+                                <span class="item-subtitle">Senior Software Engineer</span>
+                            </div>
+                            <div class="item-meta">Jun 2017 - Dec 2020</div>
+                        </div>
+                        <div class="item-description">• Developed high-traffic data visualization dashboards using D3.js and React.
+• Managed AWS infrastructure and implemented automated deployment pipelines.</div>
+                    </div>
+                
+            
+
+            <!-- Projects -->
+            
+                <div class="section-heading">PROJECTS</div>
+                <div class="heading-underline"></div>
+                
+                    <div class="proj-item">
+                        <div class="item-header">
+                            <span class="item-title">OpenQuest AI</span>
+                            <span class="item-subtitle" style="font-size: 9px;">OpenAI API, Next.js, Pinecone</span>
+                        </div>
+                        <div class="item-description">An AI-powered quest generator for tabletop RPGs, featuring vector-based story retrieval and dynamic world-building.</div>
+                    </div>
+                
+                    <div class="proj-item">
+                        <div class="item-header">
+                            <span class="item-title">CloudMonitor</span>
+                            <span class="item-subtitle" style="font-size: 9px;">Go, Prometheus, Grafana</span>
+                        </div>
+                        <div class="item-description">Real-time infrastructure monitoring tool with anomaly detection and automated alerting.</div>
+                    </div>
+                
+            
+
+            <!-- Certifications -->
+            
+                <div class="section-heading">CERTIFICATIONS</div>
+                <div class="heading-underline"></div>
+                
+                    <div class="cert-item">
+                        <div class="item-header">
+                            <span class="item-title">AWS Solutions Architect Professional</span>
+                            <span class="item-meta">2022</span>
+                        </div>
+                        <div class="item-subtitle">Amazon Web Services</div>
+                    </div>
+                
+                    <div class="cert-item">
+                        <div class="item-header">
+                            <span class="item-title">Google Cloud Professional Cloud Architect</span>
+                            <span class="item-meta">2021</span>
+                        </div>
+                        <div class="item-subtitle">Google Cloud</div>
+                    </div>
+                
+            
+        </div>
+    </div>
+</body>
+</html>
+    
