@@ -5,7 +5,7 @@ import {
     Wand2, Loader2, RotateCw, Trash2
 } from 'lucide-react'
 import axios from 'axios'
-import ResumePreview from '../components/resume/ResumePreview'
+import ResumePreview from '../components/ResumePreview'
 
 const API_BASE_URL = 'http://localhost:5000/api'
 
@@ -251,6 +251,18 @@ export default function ResumeBuilder() {
         }
     }
 
+    const handleSectionEdit = (sectionName, updatedData) => {
+        setResumeData(prev => {
+            const newData = {
+                ...prev,
+                [sectionName]: updatedData
+            }
+            saveToLocalStorage(newData)
+            return newData
+        })
+        console.log(`✅ Locally updated section: ${sectionName}`)
+    }
+
     const handleExport = async () => {
         setIsExporting(true)
         try {
@@ -370,6 +382,7 @@ export default function ResumeBuilder() {
                                         data={resumeData}
                                         onRegenerate={handleRegenerateSection}
                                         regeneratingSection={regeneratingSection}
+                                        onSectionEdit={handleSectionEdit}
                                     />
                                 </div>
                             </div>

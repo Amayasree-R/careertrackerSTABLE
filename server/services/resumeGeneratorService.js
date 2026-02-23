@@ -56,12 +56,12 @@ export function getAggregatedResumeData(user) {
     })
 
     // 4. Mastered Skills (from user.profile.completedSkills)
-    // Filter: score >= 90
+    // No score filter - include all mastered skills
     const masteredSkills = (user.profile?.completedSkills || [])
-        .filter(s => s.score >= 90)
         .map(s => ({
             skill: s.skill,
-            score: s.score
+            score: s.score,
+            masteredAt: s.masteredAt
         }))
 
     // 5. Known Skills (from user.profile.currentSkills)
@@ -80,12 +80,33 @@ export function getAggregatedResumeData(user) {
             year: cert.issueYear ? cert.issueYear.toString() : ''
         }))
 
-    // 8. Projects (from user.resumeData.projects if available)
-    const projects = (user.resumeData?.projects || []).map(proj => ({
+    // 8. Projects (Merged from Dashboard and Resume Data)
+    // Map Dashboard projects (projectName -> title, summary -> description)
+    const dashboardProjects = (user.projects || []).map(proj => ({
+        title: proj.projectName || '',
+        description: proj.summary || '',
+        techStack: proj.techStack || []
+    }))
+
+    // Map existing resume projects
+    const resumeProjects = (user.resumeData?.projects || []).map(proj => ({
         title: proj.title || '',
         description: proj.description || '',
         techStack: proj.techStack || []
     }))
+
+    // Deduplicate by title: Prefer user.projects[] version (Dashboard projects)
+    const projectMap = new Map()
+    // First add resume projects...
+    resumeProjects.forEach(p => {
+        if (p.title) projectMap.set(p.title.toLowerCase().trim(), p)
+    })
+    // ...then overwrite with Dashboard projects if titles match
+    dashboardProjects.forEach(p => {
+        if (p.title) projectMap.set(p.title.toLowerCase().trim(), p)
+    })
+
+    const projects = Array.from(projectMap.values())
 
     // VALIDATION LOGGING
     console.log('📊 Resume Data Validation:')
@@ -97,7 +118,7 @@ export function getAggregatedResumeData(user) {
     console.log(`   LinkedIn: ${linkedin || '❌ MISSING'}`)
     console.log(`   Education: ${education.length} entries`)
     console.log(`   Experience: ${experience.length} entries`)
-    console.log(`   Mastered Skills: ${masteredSkills.length} skills (score >= 90)`)
+    console.log(`   Mastered Skills: ${masteredSkills.length} skills (all included)`)
     console.log(`   Known Skills: ${knownSkills.length} skills`)
     console.log(`   Certificates: ${certificates.length} certificates`)
     console.log(`   Projects: ${projects.length} projects`)
@@ -128,7 +149,11 @@ export function getAggregatedResumeData(user) {
         knownSkills,
         certificates,
         projects,
-        targetJobRole
+        targetJobRole,
+        // AI Instruction for skills categorization
+        aiInstructions: {
+            skills: "masteredSkills must appear in the skills section of the resume, grouped under a category called 'Mastered Skills'"
+        }
     }
 }
 

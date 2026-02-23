@@ -183,15 +183,16 @@ CONTENT GUIDELINES:
    - If no data exists, return empty array - DO NOT fabricate
 
 4. Skills: Categorize their 'knownSkills' and 'masteredSkills' into logical groups:
-   - Emphasize what they are actively learning and have mastered
-   - Group by: Programming Languages, Frameworks/Tools, Core Concepts, etc.
+   - ALWAYS include a skill group with category 'Mastered Skills' containing all items from the 'masteredSkills' array provided.
+   - The 'Mastered Skills' group MUST appear first in the 'skills' array.
+   - Group other skills by: Programming Languages, Frameworks/Tools, Core Concepts, etc.
    - Return in 'skills' array with 'category' and 'items' (array of strings)
 
 5. Mastered Skills: Return a flat list in 'masteredSkills' where each item is: { "name": "SkillName" }
 
 6. Certificates: Include all certificates from the data to strengthen their profile
 
-7. Projects: Include all projects from the data - these are crucial for freshers
+7. Projects: Use the 'projects' array provided. For each project include the title, a concise description, and the tech stack. Do not fabricate projects. These are crucial for freshers.
 
 8. Format: Return ONLY a valid JSON object. No conversational text.
 
@@ -249,12 +250,14 @@ CONTENT GUIDELINES:
    - If the original description is already detailed, enhance it rather than replace it
 
 4. Skills: Categorize 'knownSkills' and 'masteredSkills' into logical groups:
-   - Group by: Programming Languages, Frameworks, Tools, Cloud/DevOps, Databases, etc.
+   - ALWAYS include a skill group with category 'Mastered Skills' containing all items from the 'masteredSkills' array provided.
+   - The 'Mastered Skills' group MUST appear first in the 'skills' array.
+   - Group other skills by: Programming Languages, Frameworks, Tools, Cloud/DevOps, Databases, etc.
    - Return them in the 'skills' array with 'category' and 'items' (array of strings)
 
 5. Mastered Skills: Also return a flat list in 'masteredSkills' where each item is an object: { "name": "SkillName" }
 
-6. Projects: Include all projects from the data, enhancing descriptions to highlight technical complexity and impact
+6. Projects: Use the 'projects' array provided. For each project include the title, a concise description, and the tech stack. Do not fabricate projects. Enhance descriptions to highlight technical complexity and impact.
 
 7. Certificates: Include all certificates to demonstrate continuous learning
 
@@ -393,9 +396,11 @@ Mastered Skills: ${JSON.stringify(userData.masteredSkills)}
 
 INSTRUCTIONS:
 - Categorize skills into logical groups (Languages, Frameworks, Tools, etc.)
+- ALWAYS include a skill group with category 'Mastered Skills' containing all items from the 'masteredSkills' array provided.
+- The 'Mastered Skills' group MUST appear first in the 'skills' array.
 - Return JSON:
 {
-  "skills": [{ "category": "name", "items": ["skill1", "skill2"] }],
+  "skills": [{ "category": "Mastered Skills", "items": ["skill1"] }, { "category": "name", "items": ["skill1", "skill2"] }],
   "masteredSkills": [{ "name": "skill" }]
 }
         `

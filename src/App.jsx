@@ -9,6 +9,7 @@ import Quiz from './pages/Quiz'
 import ResumeBuilder from './pages/ResumeBuilder'
 import Profile from './pages/Profile'
 import Certificates from './pages/Certificates'
+import Projects from './pages/Projects'
 function App() {
   return (
     <BrowserRouter>
@@ -23,6 +24,7 @@ function App() {
           <Route path="profile" element={<Profile />} />
           <Route path="certificates" element={<Certificates />} />
           <Route path="resume-builder" element={<ResumeBuilder />} />
+          <Route path="projects" element={<Projects />} />
         </Route>
 
         <Route path="/profile" element={<ProfileForm />} />

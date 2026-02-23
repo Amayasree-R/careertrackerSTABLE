@@ -1,560 +1,436 @@
-import { useState } from 'react'
+import React, { useState, Component } from 'react'
+import { Pencil, Check, X, AlertTriangle } from 'lucide-react'
 
-export default function ResumePreview({
-  userId,
-  resumeData,
-  apiBaseUrl,
-  onResumeUpdated,
-  onAnalyze,
-  onDelete
-}) {
-  const [editing, setEditing] = useState(false)
-  const [editedData, setEditedData] = useState(JSON.parse(JSON.stringify(resumeData)))
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
+// Error Boundary to prevent white screen crashes
+class ResumeErrorBoundary extends Component {
+  constructor(props) {
+    super(props)
+    this.state = { hasError: false, error: null }
+  }
 
-  const handleEditField = (section, index, field, value) => {
-    const newData = { ...editedData }
-    if (section === 'skills' || section === 'tools') {
-      newData[section][index] = value
-    } else {
-      newData[section][index][field] = value
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error }
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error('Resume Preview Crash:', error, errorInfo)
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="bg-red-50 border-2 border-red-200 rounded-2xl p-12 text-center min-h-[400px] flex flex-col items-center justify-center">
+          <AlertTriangle size={48} className="text-red-500 mb-4" />
+          <h3 className="text-xl font-bold text-red-900 mb-2">Resume Preview Error</h3>
+          <p className="text-sm text-red-700 mb-4 max-w-md">
+            The resume template crashed while rendering. This usually happens when data is in an unexpected format.
+          </p>
+          <p className="text-xs text-red-600 font-mono bg-red-100 p-3 rounded">
+            {this.state.error?.message || 'Unknown error'}
+          </p>
+          <button
+            onClick={() => this.setState({ hasError: false, error: null })}
+            className="mt-6 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+          >
+            Try Again
+          </button>
+        </div>
+      )
     }
-    setEditedData(newData)
+    return this.props.children
+  }
+}
+
+// Inline Editing Wrapper
+const EditableSection = ({ sectionName, data, onSave, renderDisplay, renderEdit }) => {
+  const [isEditing, setIsEditing] = useState(false)
+  const [tempData, setTempData] = useState(data)
+
+  const handleSave = () => {
+    onSave(sectionName, tempData)
+    setIsEditing(false)
   }
 
-  const handleAddItem = (section) => {
-    const newData = { ...editedData }
-    if (section === 'skills' || section === 'tools') {
-      newData[section].push('')
-    } else if (section === 'projects') {
-      newData[section].push({
-        title: '',
-        description: '',
-        techStack: []
-      })
-    } else if (section === 'experience') {
-      newData[section].push({
-        company: '',
-        role: '',
-        duration: '',
-        description: ''
-      })
-    } else if (section === 'education') {
-      newData[section].push({
-        institution: '',
-        degree: '',
-        field: '',
-        year: null
-      })
-    } else if (section === 'certifications') {
-      newData[section].push({
-        name: '',
-        issuer: '',
-        date: ''
-      })
-    }
-    setEditedData(newData)
+  const handleCancel = () => {
+    setTempData(data)
+    setIsEditing(false)
   }
-
-  const handleRemoveItem = (section, index) => {
-    const newData = { ...editedData }
-    newData[section].splice(index, 1)
-    setEditedData(newData)
-  }
-
-  const handleSaveEdits = async () => {
-    try {
-      setLoading(true)
-      setError(null)
-
-      const token = localStorage.getItem('token')
-      const response = await fetch(`${apiBaseUrl}/api/resume/${userId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ resumeData: editedData })
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to save changes')
-      }
-
-      const data = await response.json()
-      onResumeUpdated(data.resumeData)
-      setEditing(false)
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-
-  const displayData = editing ? editedData : resumeData
-
-  // Combine skills and tools for display when not editing
-  const combinedSkills = [
-    ...(displayData?.skills || []),
-    ...(displayData?.tools || [])
-  ].filter((v, i, a) => a.indexOf(v) === i) // Deduplicate
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      {/* Controls - Standardized with Dashboard Action Buttons */}
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-8 bg-slate-50/50 p-4 rounded-2xl border border-slate-100">
-        <div className="flex flex-wrap gap-4">
-          {!editing ? (
-            <>
-              <button
-                onClick={() => setEditing(true)}
-                className="px-8 py-3 bg-slate-900 text-white rounded-2xl font-bold hover:bg-slate-800 transition shadow-lg shadow-slate-200 flex items-center gap-2"
-              >
-                <span>✏️</span> Edit Profile
-              </button>
-              <button
-                onClick={onDelete}
-                className="px-8 py-3 bg-white text-red-600 border border-red-100 rounded-2xl font-bold hover:bg-red-50 transition shadow-sm flex items-center gap-2"
-              >
-                <span>🗑️</span> Delete Data
-              </button>
-            </>
-          ) : (
-            <>
-              <button
-                onClick={handleSaveEdits}
-                disabled={loading}
-                className="px-8 py-3 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-700 disabled:opacity-50 transition shadow-lg shadow-blue-200 flex items-center gap-2"
-              >
-                {loading ? (
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                ) : (
-                  <span>✓</span>
-                )}
-                {loading ? 'Saving...' : 'Save Changes'}
-              </button>
-              <button
-                onClick={() => setEditing(false)}
-                className="px-8 py-3 bg-white text-slate-700 border border-slate-200 rounded-2xl font-bold hover:bg-slate-50 transition shadow-sm"
-              >
-                ✕ Cancel
-              </button>
-            </>
-          )}
-        </div>
-      </div>
-
-      {error && (
-        <div className="p-6 bg-red-50 border border-red-100 rounded-3xl text-red-700 font-bold flex items-center gap-3">
-          <span className="text-xl">⚠️</span> {error}
-        </div>
+    <section className="group relative mb-6">
+      {!isEditing && (
+        <button
+          onClick={() => setIsEditing(true)}
+          className="absolute top-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity p-1.5 hover:bg-slate-100 rounded-md text-slate-400 z-10"
+          title="Edit Section"
+        >
+          <Pencil size={12} />
+        </button>
       )}
 
-      {/* Technical Skills Section - Merged and Full Width */}
-      <Section
-        title="Technical Skills"
-        icon="⚙️"
-        items={editing ? displayData?.skills : combinedSkills}
-        editing={editing}
-        onEdit={(index, value) => handleEditField('skills', index, null, value)}
-        onAdd={() => handleAddItem('skills')}
-        onRemove={(index) => handleRemoveItem('skills', index)}
-        fullWidth
-        renderItem={(item) => <Tag text={item} />}
-      />
-
-      {/* Tools Section - Only shown when editing for precise control */}
-      {editing && (
-        <Section
-          title="Tools & Technologies"
-          icon="🛠️"
-          items={displayData?.tools || []}
-          editing={editing}
-          onEdit={(index, value) => handleEditField('tools', index, null, value)}
-          onAdd={() => handleAddItem('tools')}
-          onRemove={(index) => handleRemoveItem('tools', index)}
-          fullWidth
-          renderItem={(item) => <Tag text={item} />}
-        />
+      {isEditing ? (
+        <div className="bg-slate-50 p-4 rounded-lg border border-slate-200 space-y-4">
+          {renderEdit(tempData, (updated) => setTempData(updated))}
+          <div className="flex justify-end gap-2 pt-2 border-t border-slate-200">
+            <button onClick={handleCancel} className="p-1 hover:bg-red-50 text-red-500 rounded"><X size={16} /></button>
+            <button onClick={handleSave} className="p-1 hover:bg-green-50 text-green-600 rounded"><Check size={16} /></button>
+          </div>
+        </div>
+      ) : (
+        renderDisplay()
       )}
-
-      {/* Experience Section */}
-      <Section
-        title="Professional Experience"
-        icon="💼"
-        items={displayData?.experience || []}
-        editing={editing}
-        onAdd={() => handleAddItem('experience')}
-        onRemove={(index) => handleRemoveItem('experience', index)}
-        fullWidth
-        renderItem={(item, index) => (
-          <ExperienceItem
-            item={item}
-            editing={editing}
-            onEdit={(field, value) => handleEditField('experience', index, field, value)}
-          />
-        )}
-      />
-
-      {/* Education & Certs Column */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <Section
-          title="Education"
-          icon="🎓"
-          items={displayData?.education || []}
-          editing={editing}
-          onAdd={() => handleAddItem('education')}
-          onRemove={(index) => handleRemoveItem('education', index)}
-          renderItem={(item, index) => (
-            <EducationItem
-              item={item}
-              editing={editing}
-              onEdit={(field, value) => handleEditField('education', index, field, value)}
-            />
-          )}
-        />
-
-        <Section
-          title="Certifications"
-          icon="🏆"
-          items={displayData?.certifications || []}
-          editing={editing}
-          onAdd={() => handleAddItem('certifications')}
-          onRemove={(index) => handleRemoveItem('certifications', index)}
-          renderItem={(item, index) => (
-            <CertificationItem
-              item={item}
-              editing={editing}
-              onEdit={(field, value) => handleEditField('certifications', index, field, value)}
-            />
-          )}
-        />
-      </div>
-
-      {/* Projects Section */}
-      <Section
-        title="Project Showcase"
-        icon="🚀"
-        items={displayData?.projects || []}
-        editing={editing}
-        onAdd={() => handleAddItem('projects')}
-        onRemove={(index) => handleRemoveItem('projects', index)}
-        fullWidth
-        renderItem={(item, index) => (
-          <ProjectItem
-            item={item}
-            editing={editing}
-            onEdit={(field, value) => handleEditField('projects', index, field, value)}
-          />
-        )}
-      />
-    </div>
+    </section>
   )
 }
 
-function Section({ title, icon, items, editing, onAdd, onRemove, renderItem, fullWidth }) {
-  return (
-    <div className={`bg-white p-8 sm:p-10 rounded-[2.5rem] border border-slate-100 shadow-xl shadow-slate-200/40 space-y-6 flex flex-col ${fullWidth ? 'h-auto' : 'min-h-[300px]'} transition-all hover:shadow-2xl hover:shadow-slate-200/60`}>
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-blue-50 text-blue-600">
-            <span className="text-xl">{icon}</span>
-          </div>
-          <h4 className="font-black text-slate-900 text-xl leading-tight">
-            {title}
-          </h4>
-        </div>
-        {editing && (
-          <button
-            onClick={onAdd}
-            className="px-4 py-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl font-black text-xs uppercase tracking-widest transition"
-          >
-            + Add New
-          </button>
-        )}
+export default function ResumePreview({ data, onSectionEdit }) {
+  if (!data || Object.keys(data).length <= 1) {
+    return (
+      <div className="w-full flex justify-center items-center min-h-[400px] border-2 border-dashed border-slate-200 rounded-lg">
+        <p className="text-[#94a3b8] font-bold">Generate a resume to see the preview</p>
       </div>
+    )
+  }
 
-      <div className={`flex flex-wrap gap-3 ${fullWidth && !['Technical Skills', 'Tools & Technologies'].includes(title) ? 'block space-y-4' : ''}`}>
-        {items && items.length > 0 ? (
-          items.map((item, index) => (
-            <div key={index} className={`relative group ${fullWidth && !['Technical Skills', 'Tools & Technologies'].includes(title) ? 'w-full' : ''}`}>
-              <div className={fullWidth && !['Technical Skills', 'Tools & Technologies'].includes(title) ? 'w-full' : 'inline-block mr-2 mb-2'}>
-                {editing && ['Technical Skills', 'Tools & Technologies'].includes(title) ? (
-                  <input
-                    value={item || ''}
-                    onChange={(e) => onRemove(index, e.target.value)} // Reusing onRemove for edit in skills list
-                    className="px-4 py-1.5 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none w-32"
-                    placeholder="Skill..."
-                  />
-                ) : renderItem(item, index)}
+  const renderHeading = (title) => (
+    <div className="mt-6 mb-4" style={{ fontFamily: "'Inter', sans-serif" }}>
+      <h2 className="text-[11px] font-bold text-[#1e293b] uppercase tracking-wider">{title}</h2>
+      <hr className="border-none border-top-2 border-[#1e293b] mt-1 mb-2" style={{ borderTop: '2px solid #1e293b' }} />
+    </div>
+  )
+
+  return (
+    <ResumeErrorBoundary>
+      <div className="flex flex-row w-full min-h-[842px] bg-white shadow-2xl overflow-hidden border border-slate-200" style={{ fontFamily: "'Inter', sans-serif" }}>
+        <style>{`
+          @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+        `}</style>
+        {/* LEFT SIDEBAR */}
+        <aside className="w-[30%] bg-[#1e293b] text-white flex flex-col min-h-full" style={{ fontFamily: "'Inter', sans-serif" }}>
+          {/* NAME BLOCK */}
+          <div className="p-[36px_24px_24px] border-b border-[#2d3f55]">
+            <h1 className="text-[18px] font-bold leading-[1.3] tracking-[0.3px] text-white">{data.fullName}</h1>
+            {(() => {
+              const jobTitle = data.targetJob || data.targetJobRole
+              if (jobTitle && jobTitle.trim() !== '' && jobTitle.toLowerCase() !== 'candidate') {
+                return (
+                  <p className="text-[#94a3b8] text-[10px] uppercase tracking-[1.2px] mt-[6px] font-medium">
+                    {jobTitle}
+                  </p>
+                )
+              }
+              return null
+            })()}
+          </div>
+
+          {/* CONTACT BLOCK */}
+          <div className="p-[20px_24px] border-b border-[#2d3f55]">
+            <h3 className="text-[#64748b] text-[8.5px] font-semibold uppercase tracking-[2px] mb-[12px]">CONTACT</h3>
+            <div className="space-y-[8px]">
+              <div className="flex items-center gap-[8px]">
+                <div className="w-[6px] h-[6px] bg-[#475569] rounded-full shrink-0" />
+                <span className="text-[#cbd5e1] text-[10px] leading-[1.4] truncate">{data.email}</span>
               </div>
-              {editing && (
-                <button
-                  onClick={() => onRemove(index)}
-                  className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs shadow-lg hover:bg-red-600 transition z-10"
-                >
-                  ✕
-                </button>
+              <div className="flex items-center gap-[8px]">
+                <div className="w-[6px] h-[6px] bg-[#475569] rounded-full shrink-0" />
+                <span className="text-[#cbd5e1] text-[10px] leading-[1.4]">
+                  {(() => {
+                    if (!data.phoneNumber) return ''
+                    let p = String(data.phoneNumber).trim()
+                    p = p.replace(/^\+91/, '').replace(/^0091/, '').replace(/^0(?=\d{10})/, '')
+                    return p.trim()
+                  })()}
+                </span>
+              </div>
+              <div className="flex items-center gap-[8px]">
+                <div className="w-[6px] h-[6px] bg-[#475569] rounded-full shrink-0" />
+                <span className="text-[#cbd5e1] text-[10px] leading-[1.4]">{data.location}</span>
+              </div>
+
+              {data.github && (
+                <div className="flex items-center gap-[8px] mt-[4px]">
+                  <div className="w-[12px] h-[12px] flex items-center justify-center shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="white">
+                      <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z" />
+                    </svg>
+                  </div>
+                  <span className="text-[#cbd5e1] text-[10px] leading-[1.4]">{data.github.replace(/https?:\/\/(www\.)?github\.com\//, '').replace(/\/$/, '')}</span>
+                </div>
+              )}
+              {data.linkedin && (
+                <div className="flex items-center gap-[8px] mt-[4px]">
+                  <div className="w-[12px] h-[12px] flex items-center justify-center shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="white">
+                      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771 C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+                    </svg>
+                  </div>
+                  <span className="text-[#cbd5e1] text-[10px] leading-[1.4]">
+                    {(() => {
+                      if (!data.linkedin) return ''
+                      let cleaned = String(data.linkedin).trim()
+                      cleaned = cleaned.replace(/https?:\/\//i, '')
+                      cleaned = cleaned.replace(/^www\./i, '')
+                      cleaned = cleaned.replace(/^linkedin\.com\/in\//i, '')
+                      cleaned = cleaned.replace(/^linkedin\.com\//i, '')
+                      cleaned = cleaned.replace(/\/$/, '')
+                      cleaned = cleaned.split('?')[0]
+                      cleaned = cleaned.replace(/-\d{5,}$/, '')
+                      return cleaned
+                    })()}
+                  </span>
+                </div>
               )}
             </div>
-          ))
-        ) : (
-          <div className="py-12 text-center w-full bg-slate-50/50 rounded-2xl border-2 border-dashed border-slate-100/50 flex flex-col items-center justify-center gap-2">
-            <div className="text-3xl opacity-20">📭</div>
-            <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">No {title.toLowerCase()} added yet</p>
-            {editing && (
-              <button
-                onClick={onAdd}
-                className="mt-2 text-blue-600 font-black text-xs hover:underline"
-              >
-                + Add manually
-              </button>
-            )}
           </div>
-        )}
-      </div>
-    </div>
-  )
-}
 
-function Tag({ text }) {
-  if (!text) return null
-  return (
-    <span className="inline-block px-4 py-1.5 bg-blue-50/50 border border-blue-100/50 text-blue-700 rounded-xl text-[11px] font-black uppercase tracking-wider shadow-sm transition hover:bg-blue-100 hover:border-blue-200 cursor-default">
-      {text}
-    </span>
-  )
-}
+          {/* SKILLS BLOCK */}
+          <div className="p-[20px_24px] border-b border-[#2d3f55]">
+            <h3 className="text-[#64748b] text-[8.5px] font-semibold uppercase tracking-[2px] mb-[12px]">SKILLS</h3>
+            <div className="flex flex-wrap gap-y-2 gap-x-1 px-0 pb-2">
+              {(() => {
+                const seen = new Set()
+                const flat = []
+                if (Array.isArray(data?.skills)) {
+                  data.skills.forEach(group => {
+                    const items = Array.isArray(group?.items) ? group.items : [group?.items].filter(Boolean)
+                    items.forEach(skill => {
+                      if (skill && !seen.has(String(skill).toLowerCase())) {
+                        seen.add(String(skill).toLowerCase())
+                        flat.push(skill)
+                      }
+                    })
+                  })
+                }
+                if (Array.isArray(data?.masteredSkills)) {
+                  data.masteredSkills.forEach(s => {
+                    const name = s?.name || s?.skill || s
+                    if (name && !seen.has(String(name).toLowerCase())) {
+                      seen.add(String(name).toLowerCase())
+                      flat.push(name)
+                    }
+                  })
+                }
+                return flat.map((skill, i) => (
+                  <span key={i} className="inline-block text-white border border-[#475569] rounded-[3px] px-[7px] py-[2px] text-[9.5px] leading-tight m-[2px_3px]">
+                    {skill}
+                  </span>
+                ))
+              })()}
+            </div>
+          </div>
 
-function ExperienceItem({ item, editing, onEdit }) {
-  return (
-    <div className="p-6 bg-slate-50/50 rounded-2xl border border-slate-100 hover:border-blue-200 transition-all hover:bg-white hover:shadow-lg hover:shadow-blue-500/5">
-      {editing ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-1">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Company</label>
-            <input
-              value={item.company || ''}
-              onChange={(e) => onEdit('company', e.target.value)}
-              placeholder="e.g. Google"
-              className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none transition"
-            />
-          </div>
-          <div className="space-y-1">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Role / Position</label>
-            <input
-              value={item.role || ''}
-              onChange={(e) => onEdit('role', e.target.value)}
-              placeholder="e.g. Senior Developer"
-              className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none transition"
-            />
-          </div>
-          <div className="space-y-1 md:col-span-2">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Duration</label>
-            <input
-              value={item.duration || ''}
-              onChange={(e) => onEdit('duration', e.target.value)}
-              placeholder="e.g. Jan 2022 - Present"
-              className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none transition"
-            />
-          </div>
-          <div className="space-y-1 md:col-span-2">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Description & Achievements</label>
-            <textarea
-              value={item.description || ''}
-              onChange={(e) => onEdit('description', e.target.value)}
-              placeholder="Describe your key responsibilities and impact..."
-              className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none transition"
-              rows="4"
-            />
-          </div>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <div>
-              <h5 className="text-lg font-black text-slate-900 leading-tight">{item.company || 'Unknown Company'}</h5>
-              <p className="text-blue-600 font-bold text-sm tracking-tight">{item.role || 'Role Not Specified'}</p>
-            </div>
-            {item.duration && (
-              <span className="px-3 py-1 bg-white border border-slate-100 rounded-full text-[10px] font-black text-slate-400 uppercase tracking-widest shadow-sm self-start sm:self-center">
-                {item.duration}
-              </span>
-            )}
-          </div>
-          {item.description && (
-            <div className="pt-2 border-t border-slate-100">
-              <p className="text-slate-500 text-sm leading-relaxed whitespace-pre-line">{item.description}</p>
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  )
-}
-
-function EducationItem({ item, editing, onEdit }) {
-  return (
-    <div className="p-6 bg-slate-50/50 rounded-2xl border border-slate-100 h-full hover:bg-white hover:border-blue-200 transition-all hover:shadow-lg hover:shadow-blue-500/5">
-      {editing ? (
-        <div className="space-y-4">
-          <div className="space-y-1">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Institution</label>
-            <input
-              value={item.institution || ''}
-              onChange={(e) => onEdit('institution', e.target.value)}
-              placeholder="e.g. Stanford University"
-              className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-            />
-          </div>
-          <div className="space-y-1">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Degree</label>
-            <input
-              value={item.degree || ''}
-              onChange={(e) => onEdit('degree', e.target.value)}
-              placeholder="e.g. Bachelor of Science"
-              className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Field</label>
-              <input
-                value={item.field || ''}
-                onChange={(e) => onEdit('field', e.target.value)}
-                placeholder="e.g. Computer Science"
-                className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Year</label>
-              <input
-                type="number"
-                value={item.year || ''}
-                onChange={(e) => onEdit('year', e.target.value)}
-                placeholder="e.g. 2023"
-                className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-              />
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div className="space-y-2">
-          <h5 className="font-black text-slate-900 text-lg leading-tight">{item.institution || 'Unknown Institution'}</h5>
-          <p className="text-blue-600 font-bold text-sm">{item.degree || 'Degree Not Specified'}</p>
-          {item.field && <p className="text-slate-500 text-xs font-bold uppercase tracking-wider">{item.field}</p>}
-          {item.year && (
-            <div className="pt-2">
-              <span className="px-2 py-1 bg-white border border-slate-100 rounded-md text-[9px] font-black text-slate-400 uppercase tracking-tighter">
-                Class of {item.year}
-              </span>
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  )
-}
-
-function ProjectItem({ item, editing, onEdit }) {
-  return (
-    <div className="p-6 bg-slate-50/50 rounded-2xl border border-slate-100 hover:bg-white hover:border-indigo-200 transition-all hover:shadow-lg hover:shadow-indigo-500/5">
-      {editing ? (
-        <div className="space-y-4">
-          <div className="space-y-1">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Project Title</label>
-            <input
-              value={item.title || ''}
-              onChange={(e) => onEdit('title', e.target.value)}
-              placeholder="e.g. AI Content Generator"
-              className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-            />
-          </div>
-          <div className="space-y-1">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Description</label>
-            <textarea
-              value={item.description || ''}
-              onChange={(e) => onEdit('description', e.target.value)}
-              placeholder="Describe the technical challenges and solutions..."
-              className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-              rows="3"
-            />
-          </div>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          <div className="space-y-1">
-            <h5 className="text-xl font-black text-slate-900 leading-tight">{item.title || 'Untitled Project'}</h5>
-            <div className="h-0.5 w-12 bg-indigo-500/20 rounded-full"></div>
-          </div>
-          {item.description && (
-            <p className="text-slate-500 text-sm leading-relaxed">{item.description}</p>
-          )}
-          {item.techStack && item.techStack.length > 0 && (
-            <div className="flex flex-wrap gap-2 pt-2">
-              {item.techStack.map((tech, i) => (
-                <span key={i} className="px-2 py-1 bg-indigo-50 text-indigo-600 rounded-lg text-[10px] font-black uppercase tracking-tight">
-                  {tech}
-                </span>
+          {/* EDUCATION BLOCK */}
+          <div className="p-[20px_24px]">
+            <h3 className="text-[#64748b] text-[8.5px] font-semibold uppercase tracking-[2px] mb-[12px]">EDUCATION</h3>
+            <div className="space-y-[12px]">
+              {(data.education || []).map((edu, i) => (
+                <div key={i}>
+                  <p className="text-[10.5px] font-semibold text-white leading-tight mb-[2px]">{edu.institution}</p>
+                  <p className="text-[#94a3b8] text-[9.5px]">{edu.degree} {edu.field ? `in ${edu.field}` : ''}</p>
+                  <p className="text-[#64748b] text-[9px] mt-[2px]">{edu.year}</p>
+                </div>
               ))}
             </div>
-          )}
-        </div>
-      )}
-    </div>
-  )
-}
+          </div>
+        </aside>
 
-function CertificationItem({ item, editing, onEdit }) {
-  return (
-    <div className="p-6 bg-slate-50/50 rounded-2xl border border-slate-100 h-full hover:bg-white hover:border-green-200 transition-all hover:shadow-lg hover:shadow-green-500/5">
-      {editing ? (
-        <div className="space-y-4">
-          <div className="space-y-1">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Certification Name</label>
-            <input
-              value={item.name || ''}
-              onChange={(e) => onEdit('name', e.target.value)}
-              placeholder="e.g. AWS Certified Solutions Architect"
-              className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+        {/* RIGHT CONTENT */}
+        <main className="w-[70%] bg-white p-[40px_36px] flex flex-col text-left">
+          {/* Summary */}
+          <EditableSection
+            sectionName="summary"
+            data={data.summary}
+            onSave={onSectionEdit}
+            renderDisplay={() => (
+              <div className="text-left">
+                {renderHeading("PROFESSIONAL SUMMARY")}
+                <p className="text-[#334155] text-[11px] font-normal leading-relaxed text-justify" style={{ fontFamily: "'EB Garamond', serif" }}>
+                  {data.summary}
+                </p>
+              </div>
+            )}
+            renderEdit={(val, setVal) => (
+              <div className="text-left">
+                {renderHeading("PROFESSIONAL SUMMARY")}
+                <textarea
+                  value={val}
+                  onChange={(e) => setVal(e.target.value)}
+                  className="w-full p-2 text-[11px] border rounded min-h-[100px] outline-none"
+                  style={{ fontFamily: "'EB Garamond', serif" }}
+                />
+              </div>
+            )}
+          />
+
+          {/* Work Experience */}
+          {data.experience && data.experience.length > 0 && (
+            <EditableSection
+              sectionName="experience"
+              data={data.experience}
+              onSave={onSectionEdit}
+              renderDisplay={() => (
+                <div className="text-left">
+                  {renderHeading("WORK EXPERIENCE")}
+                  <div className="space-y-5">
+                    {data.experience.map((exp, i) => (
+                      <div key={i}>
+                        <div className="flex justify-between items-baseline mb-1">
+                          <h3 className="text-[11px] font-bold text-[#1e293b]">
+                            {exp.company} <span className="font-normal text-[#475569]"> | </span>
+                            <span className="font-italic text-[#475569] italic font-normal">{exp.role}</span>
+                          </h3>
+                          <span className="text-[10px] text-[#64748b]">{exp.duration}</span>
+                        </div>
+                        <p className="text-[#334155] text-[11px] leading-relaxed whitespace-pre-line" style={{ fontFamily: "'EB Garamond', serif" }}>
+                          {exp.description}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              renderEdit={(val, setVal) => (
+                <div className="text-left">
+                  {renderHeading("WORK EXPERIENCE")}
+                  <div className="space-y-4">
+                    {val.map((exp, i) => (
+                      <div key={i} className="p-3 bg-white border border-slate-100 rounded space-y-2">
+                        <div className="grid grid-cols-2 gap-2">
+                          <input
+                            value={exp.company}
+                            onChange={(e) => { const n = [...val]; n[i].company = e.target.value; setVal(n) }}
+                            className="p-1 text-[10px] border rounded" placeholder="Company"
+                          />
+                          <input
+                            value={exp.duration}
+                            onChange={(e) => { const n = [...val]; n[i].duration = e.target.value; setVal(n) }}
+                            className="p-1 text-[10px] border rounded" placeholder="Duration"
+                          />
+                        </div>
+                        <input
+                          value={exp.role}
+                          onChange={(e) => { const n = [...val]; n[i].role = e.target.value; setVal(n) }}
+                          className="w-full p-1 text-[10px] border rounded" placeholder="Role"
+                        />
+                        <textarea
+                          value={exp.description}
+                          onChange={(e) => { const n = [...val]; n[i].description = e.target.value; setVal(n) }}
+                          className="w-full p-1 text-[10px] border rounded" rows="3" placeholder="Description"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Issuer</label>
-              <input
-                value={item.issuer || ''}
-                onChange={(e) => onEdit('issuer', e.target.value)}
-                placeholder="e.g. Amazon Web Services"
-                className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Date</label>
-              <input
-                value={item.date || ''}
-                onChange={(e) => onEdit('date', e.target.value)}
-                placeholder="e.g. Oct 2023"
-                className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-              />
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div className="space-y-2">
-          <h5 className="font-black text-slate-900 text-lg leading-tight">{item.name || 'Certification Name'}</h5>
-          <p className="text-green-600 font-bold text-sm mb-2">{item.issuer || 'Issuer Not Specified'}</p>
-          {item.date && (
-            <div className="pt-2">
-              <span className="px-3 py-1 bg-green-50 text-green-600 text-[10px] font-black uppercase rounded-full tracking-widest">
-                {item.date}
-              </span>
-            </div>
           )}
-        </div>
-      )}
-    </div>
+
+          {/* Projects */}
+          {data.projects && data.projects.length > 0 && (
+            <EditableSection
+              sectionName="projects"
+              data={data.projects}
+              onSave={onSectionEdit}
+              renderDisplay={() => (
+                <div className="text-left">
+                  {renderHeading("PROJECTS")}
+                  <div className="space-y-5">
+                    {data.projects.map((proj, i) => (
+                      <div key={i}>
+                        <div className="mb-1">
+                          <h3 className="text-[11px] font-bold text-[#1e293b]">
+                            {proj.title} <span className="font-normal text-[#475569]"> | </span>
+                            <span className="font-italic text-[#475569] italic font-normal">
+                              {Array.isArray(proj.techStack) ? proj.techStack.join(', ') : proj.techStack}
+                            </span>
+                          </h3>
+                        </div>
+                        <p className="text-[#334155] text-[11px] leading-relaxed" style={{ fontFamily: "'EB Garamond', serif" }}>
+                          {proj.description}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              renderEdit={(val, setVal) => (
+                <div className="text-left">
+                  {renderHeading("PROJECTS")}
+                  <div className="space-y-4">
+                    {val.map((proj, i) => (
+                      <div key={i} className="p-3 bg-white border border-slate-100 rounded space-y-2">
+                        <input
+                          value={proj.title}
+                          onChange={(e) => { const n = [...val]; n[i].title = e.target.value; setVal(n) }}
+                          className="w-full p-1 text-[10px] border rounded" placeholder="Project Title"
+                        />
+                        <input
+                          value={Array.isArray(proj.techStack) ? proj.techStack.join(', ') : proj.techStack}
+                          onChange={(e) => { const n = [...val]; n[i].techStack = e.target.value.split(',').map(s => s.trim()); setVal(n) }}
+                          className="w-full p-1 text-[10px] border rounded" placeholder="Tech Stack (comma separated)"
+                        />
+                        <textarea
+                          value={proj.description}
+                          onChange={(e) => { const n = [...val]; n[i].description = e.target.value; setVal(n) }}
+                          className="w-full p-1 text-[10px] border rounded" rows="2" placeholder="Description"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            />
+          )}
+
+          {/* Certifications */}
+          {data.certificates && data.certificates.length > 0 && (
+            <EditableSection
+              sectionName="certificates"
+              data={data.certificates}
+              onSave={onSectionEdit}
+              renderDisplay={() => (
+                <div className="text-left">
+                  {renderHeading("CERTIFICATIONS")}
+                  <div className="grid grid-cols-2 gap-4">
+                    {data.certificates.map((cert, i) => (
+                      <div key={i} className="text-[10px]">
+                        <p className="font-bold text-[#1e293b]">{cert.name}</p>
+                        <p className="text-[#64748b]">{cert.issuer} {cert.year ? `• ${cert.year}` : ''}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              renderEdit={(val, setVal) => (
+                <div className="text-left">
+                  {renderHeading("CERTIFICATIONS")}
+                  <div className="space-y-3">
+                    {val.map((cert, i) => (
+                      <div key={i} className="grid grid-cols-3 gap-2 p-2 border border-slate-100 rounded">
+                        <input
+                          value={cert.name}
+                          onChange={(e) => { const n = [...val]; n[i].name = e.target.value; setVal(n) }}
+                          className="col-span-2 p-1 text-[10px] border rounded" placeholder="Name"
+                        />
+                        <input
+                          value={cert.year}
+                          onChange={(e) => { const n = [...val]; n[i].year = e.target.value; setVal(n) }}
+                          className="p-1 text-[10px] border rounded" placeholder="Year"
+                        />
+                        <input
+                          value={cert.issuer}
+                          onChange={(e) => { const n = [...val]; n[i].issuer = e.target.value; setVal(n) }}
+                          className="col-span-3 p-1 text-[10px] border rounded" placeholder="Issuer"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            />
+          )}
+        </main>
+      </div>
+    </ResumeErrorBoundary>
   )
 }

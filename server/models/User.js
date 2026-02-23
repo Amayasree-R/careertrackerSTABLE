@@ -199,6 +199,16 @@ const userSchema = new mongoose.Schema({
       uploadedAt: { type: Date, default: Date.now }
     }
   ],
+  // AI-analyzed projects (from README uploads via Cerebras)
+  projects: [{
+    projectName: { type: String, default: '' },
+    summary: { type: String, default: '' },
+    techStack: { type: [String], default: [] },
+    keyFeatures: { type: [String], default: [] },
+    skillsExtracted: { type: [String], default: [] },
+    readmeRaw: { type: String, default: '' },
+    createdAt: { type: Date, default: Date.now }
+  }],
   resumeVersions: [{
     versionName: { type: String, required: true },
     template: { type: String, default: 'modern' },

@@ -1,4 +1,5 @@
 import { Link, useLocation } from 'react-router-dom'
+import { FolderGit2 } from 'lucide-react'
 
 export default function Sidebar() {
     const location = useLocation()
@@ -6,8 +7,9 @@ export default function Sidebar() {
     const navItems = [
         { name: 'Dashboard', path: '/dashboard', icon: '🏠' },
         { name: 'Profile', path: '/dashboard/profile', icon: '👤' },
-        { name: 'Certificates', path: '/dashboard/certificates', icon: '📜' },
         { name: 'Resume Builder', path: '/dashboard/resume-builder', icon: '🚀' },
+        { name: 'Projects', path: '/dashboard/projects', icon: <FolderGit2 size={20} /> },
+        { name: 'Certificates', path: '/dashboard/certificates', icon: '📜' },
     ]
 
     return (
@@ -31,7 +33,7 @@ export default function Sidebar() {
                                     : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
                                     }`}
                             >
-                                <span className="text-xl">{item.icon}</span>
+                                <span className="text-xl flex items-center">{item.icon}</span>
                                 {item.name}
                             </Link>
                         )
