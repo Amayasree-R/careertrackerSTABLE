@@ -226,6 +226,10 @@ const userSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now
+  },
+  migrationCompleted: {
+    type: Boolean,
+    default: false
   }
 })
 

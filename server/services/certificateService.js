@@ -58,6 +58,7 @@ Output JSON Schema:
     "title": "",
     "issuer": "",
     "issueYear": "",
+    "issueDate": "YYYY-MM-DD",
     "verificationStatus": "Verified | Unverified"
   },
   "skillsInferred": [
@@ -91,7 +92,7 @@ Output JSON Schema:
           content: systemPrompt,
         },
       ],
-      model: 'llama-3.3-70b-versatile',
+      model: 'llama-3.1-8b-instant',
       response_format: { type: 'json_object' },
     })
 

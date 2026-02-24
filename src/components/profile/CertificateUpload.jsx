@@ -1,11 +1,11 @@
-
 import { useState } from 'react'
+import { CloudUpload, ShieldCheck, AlertCircle, Loader2 } from 'lucide-react'
 
 function CertificateUpload({ onUploadSuccess }) {
     const [file, setFile] = useState(null)
     const [isUploading, setIsUploading] = useState(false)
     const [error, setError] = useState('')
-    const [analysisResult, setAnalysisResult] = useState(null)
+    const [success, setSuccess] = useState(false)
 
     const handleFileChange = (e) => {
         const selectedFile = e.target.files[0]
@@ -16,7 +16,7 @@ function CertificateUpload({ onUploadSuccess }) {
         }
         setFile(selectedFile)
         setError('')
-        setAnalysisResult(null)
+        setSuccess(false)
     }
 
     const handleUpload = async () => {
@@ -27,13 +27,14 @@ function CertificateUpload({ onUploadSuccess }) {
 
         setIsUploading(true)
         setError('')
+        setSuccess(false)
 
         const formData = new FormData()
         formData.append('certificate', file)
 
         try {
             const token = localStorage.getItem('token')
-            const response = await fetch('http://127.0.0.1:5000/api/cert/upload', {
+            const response = await fetch('http://localhost:5000/api/cert/upload', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -47,7 +48,7 @@ function CertificateUpload({ onUploadSuccess }) {
                 throw new Error(data.error || 'Upload failed')
             }
 
-            setAnalysisResult(data.analysis)
+            setSuccess(true)
             setFile(null)
             if (onUploadSuccess) onUploadSuccess()
         } catch (err) {
@@ -59,39 +60,63 @@ function CertificateUpload({ onUploadSuccess }) {
     }
 
     return (
-        <div className="bg-white rounded-lg shadow-md p-6 mt-6">
-            <h3 className="text-xl font-bold text-gray-900 mb-4">Upload Certification</h3>
+        <div className="bg-slate-50 border-2 border-dashed border-slate-200 rounded-[2rem] p-8 transition-all hover:border-blue-300 hover:bg-blue-50/30 group">
+            <div className="flex flex-col items-center text-center max-w-sm mx-auto">
+                <div className="w-16 h-16 bg-white rounded-2xl shadow-sm flex items-center justify-center text-slate-400 mb-4 group-hover:scale-110 transition-transform">
+                    <CloudUpload className="w-8 h-8 group-hover:text-blue-600 transition-colors" />
+                </div>
 
-            <div className="flex flex-col gap-4">
-                <div className="flex items-center gap-4">
+                <h3 className="text-xl font-bold text-slate-900 mb-2">Upload Certification</h3>
+                <p className="text-sm text-slate-500 mb-6">
+                    Drop your certificate here or click to browse. <br />
+                    <span className="font-bold text-slate-400 text-[10px] uppercase tracking-widest mt-2 block">Only PDF Supported</span>
+                </p>
+
+                <div className="w-full space-y-4">
                     <input
+                        id="cert-upload"
                         type="file"
                         accept="application/pdf"
                         onChange={handleFileChange}
-                        className="block w-full text-sm text-gray-500
-              file:mr-4 file:py-2 file:px-4
-              file:rounded-full file:border-0
-              file:text-sm file:font-semibold
-              file:bg-blue-50 file:text-blue-700
-              hover:file:bg-blue-100"
+                        className="hidden"
                     />
+                    <label
+                        htmlFor="cert-upload"
+                        className="block w-full cursor-pointer px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 hover:border-blue-400 hover:text-blue-600 transition-all text-center truncate"
+                    >
+                        {file ? file.name : 'Select PDF File'}
+                    </label>
+
                     <button
                         onClick={handleUpload}
                         disabled={!file || isUploading}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition"
+                        className="w-full py-4 bg-slate-900 text-white rounded-xl font-bold hover:bg-black disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 shadow-lg shadow-slate-200"
                     >
-                        {isUploading ? 'Analyzing...' : 'Upload & Verify'}
+                        {isUploading ? (
+                            <>
+                                <Loader2 className="w-5 h-5 animate-spin" />
+                                <span>AI is analyzing your certificate...</span>
+                            </>
+                        ) : (
+                            <>
+                                <ShieldCheck className="w-5 h-5" />
+                                <span>Upload & Verify</span>
+                            </>
+                        )}
                     </button>
                 </div>
 
-                {error && <p className="text-red-500 text-sm">{error}</p>}
+                {error && (
+                    <div className="mt-4 flex items-center gap-2 text-rose-600 bg-rose-50 px-4 py-2 rounded-lg border border-rose-100">
+                        <AlertCircle className="w-4 h-4 shrink-0" />
+                        <span className="text-xs font-bold leading-tight uppercase">{error}</span>
+                    </div>
+                )}
 
-                {analysisResult && (
-                    <div className="bg-green-50 border border-green-200 rounded-lg p-4 mt-4">
-                        <h4 className="font-semibold text-green-800 mb-1">Upload Successful!</h4>
-                        <p className="text-sm text-green-700">
-                            <strong>{analysisResult.certificate.title}</strong> has been verified and added to your profile.
-                        </p>
+                {success && (
+                    <div className="mt-4 flex items-center gap-2 text-emerald-600 bg-emerald-50 px-4 py-2 rounded-lg border border-emerald-100">
+                        <ShieldCheck className="w-4 h-4 shrink-0" />
+                        <span className="text-xs font-bold leading-tight uppercase">Certificate verified and added!</span>
                     </div>
                 )}
             </div>

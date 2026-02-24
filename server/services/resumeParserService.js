@@ -19,17 +19,47 @@ import { extractSkillsFromText, normalizeSkills } from '../utils/skillNormalizer
 
 class ResumeParserService {
   /**
-   * Extract text from PDF file
+   * Extract text from PDF file with fallback
    */
   async extractTextFromPdf(filePath) {
     try {
       const fs = await import('fs/promises')
       const pdfBuffer = await fs.readFile(filePath)
-      const data = await pdfParse(pdfBuffer)
-      const extractedText = data.text
 
+      let extractedText = ""
+
+      // Try pdf-parse first
+      try {
+        const data = await pdfParse(pdfBuffer)
+        extractedText = data.text
+      } catch (parseError) {
+        console.warn('pdf-parse failed, trying pdfjs-dist fallback:', parseError.message)
+      }
+
+      // Fallback to pdfjs-dist if pdf-parse fails or returns very little text
       if (!extractedText || extractedText.trim().length < 50) {
-        throw new Error('Insufficient text extracted from PDF')
+        try {
+          const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs')
+          const uint8Array = new Uint8Array(pdfBuffer)
+          const loadingTask = pdfjsLib.getDocument({ data: uint8Array, useSystemFonts: true, disableFontFace: true })
+          const pdf = await loadingTask.promise
+
+          let fullText = ""
+          for (let i = 1; i <= pdf.numPages; i++) {
+            const page = await pdf.getPage(i)
+            const textContent = await page.getTextContent()
+            const pageText = textContent.items.map(item => item.str).join(' ')
+            fullText += pageText + "\n"
+          }
+          extractedText = fullText
+        } catch (fallbackError) {
+          console.error('pdfjs-dist fallback also failed:', fallbackError.message)
+          if (!extractedText) throw fallbackError
+        }
+      }
+
+      if (!extractedText || extractedText.trim().length < 10) {
+        throw new Error('No readable text content found in certificate PDF')
       }
 
       return extractedText
