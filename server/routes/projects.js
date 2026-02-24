@@ -2,6 +2,7 @@ import express from 'express'
 import multer from 'multer'
 import authMiddleware from '../middleware/authMiddleware.js'
 import { analyzeReadme } from '../services/cerebrasService.js'
+import { processProjectSkills } from '../services/projectSkillIntegrationService.js'
 import User from '../models/User.js'
 
 const router = express.Router()
@@ -104,55 +105,17 @@ router.post('/save', authMiddleware, async (req, res) => {
             createdAt: new Date()
         })
 
-        // 2. Skill promotion — for each skill in skillsExtracted:
-        const skills = Array.isArray(skillsExtracted) ? skillsExtracted : []
-        const now = new Date()
+        // 2. Smart Skill Integration
+        // Instead of promoting all skills, we only promote those relevant to the user's roadmap
+        const integrationResult = await processProjectSkills(user, analysis.skillsExtracted || [])
 
-        // Ensure nested arrays are initialized
-        if (!user.profile) user.profile = {}
-        if (!Array.isArray(user.profile.completedSkills)) user.profile.completedSkills = []
-        if (!Array.isArray(user.profile.learningSkills)) user.profile.learningSkills = []
-        if (!user.resumeData) user.resumeData = {}
-        if (!Array.isArray(user.resumeData.skills)) user.resumeData.skills = []
-
-        const completedSkillNames = user.profile.completedSkills.map(s =>
-            (s.skill || '').toLowerCase()
-        )
-
-        for (const skill of skills) {
-            if (!skill || typeof skill !== 'string') continue
-
-            const skillLower = skill.toLowerCase()
-
-            // Add to completedSkills if not already mastered
-            if (!completedSkillNames.includes(skillLower)) {
-                user.profile.completedSkills.push({
-                    skill,
-                    score: 100,
-                    masteredAt: now
-                })
-                completedSkillNames.push(skillLower) // Keep local list in sync
-            }
-
-            // Remove from learningSkills if present
-            user.profile.learningSkills = user.profile.learningSkills.filter(
-                s => s.toLowerCase() !== skillLower
-            )
-
-            // Add to resumeData.skills if not already present
-            const alreadyInResume = user.resumeData.skills.some(
-                s => s.toLowerCase() === skillLower
-            )
-            if (!alreadyInResume) {
-                user.resumeData.skills.push(skill)
-            }
-        }
-
-        await user.save()
+        // Re-fetch user or check updated status to ensure we return correct stats if needed
+        // but the service handles user.save()
 
         return res.status(200).json({
             success: true,
-            updatedSkills: skillsExtracted
+            updatedSkills: integrationResult.promoted,
+            integrationSummary: integrationResult
         })
     } catch (error) {
         console.error('POST /api/projects/save error:', error.message)
