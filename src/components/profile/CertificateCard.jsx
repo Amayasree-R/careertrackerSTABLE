@@ -63,8 +63,8 @@ function CertificateCard({ cert, onToggle, onDelete }) {
                     onClick={handleToggle}
                     disabled={isToggling}
                     className={`flex items-center gap-2 text-xs font-bold px-3 py-1.5 rounded-lg transition ${cert.useInResume
-                            ? 'bg-blue-600 text-white hover:bg-blue-700'
-                            : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                        ? 'bg-blue-600 text-white hover:bg-blue-700'
+                        : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
                         }`}
                     title="Include in generated resume"
                 >
