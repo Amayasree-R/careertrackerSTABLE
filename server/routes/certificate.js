@@ -1,7 +1,7 @@
 
 import express from 'express'
 import multer from 'multer'
-import { uploadCertificate, toggleCertificateResume, deleteCertificate } from '../controllers/certificateController.js'
+import { getCertificates, uploadCertificate, toggleCertificateResume, deleteCertificate } from '../controllers/certificateController.js'
 
 
 const router = express.Router()
@@ -18,8 +18,9 @@ const upload = multer({ storage: multer.memoryStorage() })
 
 import { protect } from '../middleware/authMiddleware.js'
 
+router.get('/', protect, getCertificates)
 router.post('/upload', protect, upload.single('certificate'), uploadCertificate)
-router.put('/toggle/:id', protect, toggleCertificateResume)
+router.patch('/toggle-resume/:id', protect, toggleCertificateResume)
 router.delete('/:id', protect, deleteCertificate)
 
 export default router

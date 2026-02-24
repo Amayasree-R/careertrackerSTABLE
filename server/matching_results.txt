@@ -1,0 +1,7 @@
+--- TESTING STRICT SKILL MATCHING ---
+Testing Alias Match (React.js -> React)... ✅ PASS (Confidence: 80%)
+Testing Exact Match (Java)... ✅ PASS (Confidence: 100%)
+Testing Exact Match (JS)... ✅ PASS (Confidence: 100%)
+Testing No Match (Vue.js)... ✅ PASS (Confidence: 0%)
+Testing Strict Rule (Java != JS)... ✅ PASS (Confidence: 0%)
+Testing Strict Rule (Node != Express)... ✅ PASS (Confidence: 0%)

@@ -1,6 +1,7 @@
 import express from 'express'
 import User from '../models/User.js'
 import jwt from 'jsonwebtoken'
+import mongoose from 'mongoose'
 
 const router = express.Router()
 
@@ -68,23 +69,33 @@ router.post('/', authMiddleware, async (req, res) => {
     }
 
     await user.save()
-    res.json({ profile: { ...user.profile, _id: user._id } })
+    res.json({
+      profile: {
+        ...user.profile.toObject(),
+        _id: user._id,
+        certifications: user.certifications
+      }
+    })
   } catch (error) {
     console.error('Profile Update POST Error:', error)
     res.status(500).json({ message: 'Server error: ' + error.message })
   }
 })
 
-// Get complete profile data
+// Get complete profile data with legacy certificate migration
 router.get('/', authMiddleware, async (req, res) => {
   try {
     const user = await User.findById(req.userId).select('-password')
     if (!user) return res.status(404).json({ message: 'User not found' })
 
     // Return both full user and profile subdocument for layout/page compatibility
+    // Explictly include certifications in the profile object for frontend display
     res.json({
       user: user,
-      profile: user.profile
+      profile: {
+        ...user.profile.toObject(),
+        certifications: user.certifications || []
+      }
     })
   } catch (error) {
     console.error('Get profile error:', error)

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { CheckCircle, Award, Target, ChevronRight } from 'lucide-react'
 import SkillTooltip from '../components/SkillTooltip'
 
 function Roadmap() {
@@ -9,6 +10,14 @@ function Roadmap() {
   const [isLoading, setIsLoading] = useState(true)
   const [activeSkill, setActiveSkill] = useState(null) // { skill, index }
   const skillRefs = useRef({}) // refs keyed by index for positioning
+
+  // Shared check for mastery (consistent with Dashboard)
+  const isSkillMastered = (skillName) => {
+    if (!profile?.completedSkills) return false
+    return profile.completedSkills.some(s =>
+      typeof s === 'object' ? s.skill === skillName : s === skillName
+    )
+  }
 
   // Close tooltip on Escape key
   useEffect(() => {
@@ -210,33 +219,30 @@ function Roadmap() {
 
           <div className="space-y-4">
             {roadmapData?.learningPath.map((item, index) => (
-              <div key={item.id || index} className="border border-gray-200 rounded-lg p-4">
+              <div key={item.id || index} className={`border rounded-3xl p-6 transition-all duration-300 ${isSkillMastered(item.skill) ? 'bg-emerald-50/30 border-emerald-100 shadow-sm' : 'bg-white border-slate-100'}`}>
                 <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-start gap-3">
-                    <div className="bg-blue-100 text-blue-600 rounded-full w-8 h-8 flex items-center justify-center font-bold text-sm flex-shrink-0">
-                      {index + 1}
+                  <div className="flex items-start gap-4">
+                    <div className={`rounded-2xl w-12 h-12 flex items-center justify-center font-bold text-lg flex-shrink-0 transition-colors ${isSkillMastered(item.skill) ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-200' : 'bg-blue-50 text-blue-600'}`}>
+                      {isSkillMastered(item.skill) ? <CheckCircle className="w-6 h-6" /> : index + 1}
                     </div>
                     <div className="relative">
-                      {/* Hoverable Skill Heading */}
-                      <span
-                        ref={el => skillRefs.current[index] = el}
-                        className="skill-tooltip-anchor inline-block font-semibold text-blue-600 text-lg cursor-pointer
-                                   hover:text-blue-800 hover:underline decoration-dotted underline-offset-4
-                                   transition-colors duration-150 select-none"
-                        style={{ textDecorationStyle: 'dotted' }}
-                        onMouseEnter={() => handleSkillHover(item.skill, index)}
-                        onMouseLeave={handleSkillLeave}
-                        onTouchStart={(e) => {
-                          e.preventDefault()
-                          if (activeSkill?.index === index) {
-                            setActiveSkill(null)
-                          } else {
-                            handleSkillHover(item.skill, index)
-                          }
-                        }}
-                      >
-                        {item.skill}
-                      </span>
+                      <div className="flex flex-col">
+                        <span
+                          ref={el => skillRefs.current[index] = el}
+                          className={`skill-tooltip-anchor inline-block font-black text-xl cursor-pointer transition-colors duration-150 select-none ${isSkillMastered(item.skill) ? 'text-slate-400 line-through' : 'text-slate-900 hover:text-blue-600'}`}
+                          onMouseEnter={() => handleSkillHover(item.skill, index)}
+                          onMouseLeave={handleSkillLeave}
+                          onClick={() => handleSkillHover(item.skill, index)}
+                        >
+                          {item.skill}
+                        </span>
+                        {isSkillMastered(item.skill) && (
+                          <span className="inline-flex items-center gap-1.5 text-[10px] font-black text-emerald-600 uppercase tracking-widest mt-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                            COMPLETED
+                          </span>
+                        )}
+                      </div>
 
                       {/* Tooltip Popup — rendered via portal-like positioning */}
                       {activeSkill && activeSkill.index === index && (
