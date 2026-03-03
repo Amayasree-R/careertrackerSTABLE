@@ -1,5 +1,8 @@
 import React, { useState, Component } from 'react'
-import { Pencil, Check, X, AlertTriangle } from 'lucide-react'
+import {
+  Pencil, Check, X, AlertTriangle,
+  Linkedin, Github, Mail, Phone, MapPin
+} from 'lucide-react'
 
 // Error Boundary to prevent white screen crashes
 class ResumeErrorBoundary extends Component {
@@ -84,6 +87,7 @@ const EditableSection = ({ sectionName, data, onSave, renderDisplay, renderEdit 
 }
 
 export default function ResumePreview({ data, onSectionEdit }) {
+  console.log('Resume data received:', data)
   if (!data || Object.keys(data).length <= 1) {
     return (
       <div className="w-full flex justify-center items-center min-h-[400px] border-2 border-dashed border-slate-200 rounded-lg">
@@ -107,81 +111,100 @@ export default function ResumePreview({ data, onSectionEdit }) {
         `}</style>
         {/* LEFT SIDEBAR */}
         <aside className="w-[30%] bg-[#1e293b] text-white flex flex-col min-h-full" style={{ fontFamily: "'Inter', sans-serif" }}>
-          {/* NAME BLOCK */}
+          {/* NAME & CONTACT BLOCK */}
           <div className="p-[36px_24px_24px] border-b border-[#2d3f55]">
-            <h1 className="text-[18px] font-bold leading-[1.3] tracking-[0.3px] text-white">{data.fullName}</h1>
+            <h1 className="text-[18px] font-bold leading-[1.3] tracking-[0.3px] text-white">
+              {data.fullName || "Your Full Name"}
+            </h1>
             {(() => {
               const jobTitle = data.targetJob || data.targetJobRole
               if (jobTitle && jobTitle.trim() !== '' && jobTitle.toLowerCase() !== 'candidate') {
                 return (
-                  <p className="text-[#94a3b8] text-[10px] uppercase tracking-[1.2px] mt-[6px] font-medium">
+                  <p className="text-[#94a3b8] text-[10px] uppercase tracking-[1.2px] mt-[6px] mb-[16px] font-medium">
                     {jobTitle}
                   </p>
                 )
               }
-              return null
+              return <div className="mt-[16px]" />;
             })()}
-          </div>
 
-          {/* CONTACT BLOCK */}
-          <div className="p-[20px_24px] border-b border-[#2d3f55]">
-            <h3 className="text-[#64748b] text-[8.5px] font-semibold uppercase tracking-[2px] mb-[12px]">CONTACT</h3>
+            {/* HEADER CONTACT INFO */}
             <div className="space-y-[8px]">
-              <div className="flex items-center gap-[8px]">
-                <div className="w-[6px] h-[6px] bg-[#475569] rounded-full shrink-0" />
-                <span className="text-[#cbd5e1] text-[10px] leading-[1.4] truncate">{data.email}</span>
-              </div>
-              <div className="flex items-center gap-[8px]">
-                <div className="w-[6px] h-[6px] bg-[#475569] rounded-full shrink-0" />
-                <span className="text-[#cbd5e1] text-[10px] leading-[1.4]">
-                  {(() => {
-                    if (!data.phoneNumber) return ''
-                    let p = String(data.phoneNumber).trim()
-                    p = p.replace(/^\+91/, '').replace(/^0091/, '').replace(/^0(?=\d{10})/, '')
-                    return p.trim()
-                  })()}
-                </span>
-              </div>
-              <div className="flex items-center gap-[8px]">
-                <div className="w-[6px] h-[6px] bg-[#475569] rounded-full shrink-0" />
-                <span className="text-[#cbd5e1] text-[10px] leading-[1.4]">{data.location}</span>
-              </div>
-
-              {data.github && (
-                <div className="flex items-center gap-[8px] mt-[4px]">
-                  <div className="w-[12px] h-[12px] flex items-center justify-center shrink-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="white">
-                      <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z" />
-                    </svg>
-                  </div>
-                  <span className="text-[#cbd5e1] text-[10px] leading-[1.4]">{data.github.replace(/https?:\/\/(www\.)?github\.com\//, '').replace(/\/$/, '')}</span>
+              {/* Email */}
+              {(data.contact?.email || data.email) && (
+                <div className="flex items-center gap-[10px]">
+                  <Mail size={12} className="text-[#64748b] shrink-0" />
+                  <span className="text-[#cbd5e1] text-[10px] leading-[1.4] truncate">{data.contact?.email || data.email}</span>
                 </div>
               )}
-              {data.linkedin && (
-                <div className="flex items-center gap-[8px] mt-[4px]">
-                  <div className="w-[12px] h-[12px] flex items-center justify-center shrink-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="white">
-                      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771 C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
-                    </svg>
-                  </div>
+
+              {/* Phone */}
+              {(data.contact?.phone || data.phoneNumber) && (
+                <div className="flex items-center gap-[10px]">
+                  <Phone size={12} className="text-[#64748b] shrink-0" />
                   <span className="text-[#cbd5e1] text-[10px] leading-[1.4]">
                     {(() => {
-                      if (!data.linkedin) return ''
-                      let cleaned = String(data.linkedin).trim()
-                      cleaned = cleaned.replace(/https?:\/\//i, '')
-                      cleaned = cleaned.replace(/^www\./i, '')
-                      cleaned = cleaned.replace(/^linkedin\.com\/in\//i, '')
-                      cleaned = cleaned.replace(/^linkedin\.com\//i, '')
-                      cleaned = cleaned.replace(/\/$/, '')
-                      cleaned = cleaned.split('?')[0]
-                      cleaned = cleaned.replace(/-\d{5,}$/, '')
-                      return cleaned
+                      const phone = data.contact?.phone || data.phoneNumber
+                      let p = String(phone).trim()
+                      p = p.replace(/^\+91/, '').replace(/^0091/, '').replace(/^0(?=\d{10})/, '')
+                      return p.trim()
                     })()}
                   </span>
                 </div>
               )}
+
+              {/* Location */}
+              {data.location && (
+                <div className="flex items-center gap-[10px]">
+                  <MapPin size={12} className="text-[#64748b] shrink-0" />
+                  <span className="text-[#cbd5e1] text-[10px] leading-[1.4]">{data.location}</span>
+                </div>
+              )}
+
+              {/* LinkedIn */}
+              {(data.contact?.linkedin || data.linkedin) && (
+                <div className="flex items-center gap-[10px]">
+                  <Linkedin size={12} className="text-[#64748b] shrink-0" />
+                  <a
+                    href={(() => {
+                      const url = data.contact?.linkedin || data.linkedin
+                      return url.startsWith('http') ? url : `https://${url}`
+                    })()}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[#cbd5e1] text-[10px] leading-[1.4] hover:text-white transition-colors underline decoration-[#2d3f55] underline-offset-2 truncate"
+                  >
+                    {(() => {
+                      const url = data.contact?.linkedin || data.linkedin
+                      return url.replace(/^(https?:\/\/)?(www\.)?/, '').replace(/\/$/, '')
+                    })()}
+                  </a>
+                </div>
+              )}
+
+              {/* GitHub */}
+              {(data.contact?.github || data.github) && (
+                <div className="flex items-center gap-[10px]">
+                  <Github size={12} className="text-[#64748b] shrink-0" />
+                  <a
+                    href={(() => {
+                      const url = data.contact?.github || data.github
+                      return url.startsWith('http') ? url : `https://${url}`
+                    })()}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[#cbd5e1] text-[10px] leading-[1.4] hover:text-white transition-colors underline decoration-[#2d3f55] underline-offset-2 truncate"
+                  >
+                    {(() => {
+                      const url = data.contact?.github || data.github
+                      return url.replace(/^(https?:\/\/)?(www\.)?/, '').replace(/\/$/, '')
+                    })()}
+                  </a>
+                </div>
+              )}
             </div>
           </div>
+
 
           {/* SKILLS BLOCK */}
           <div className="p-[20px_24px] border-b border-[#2d3f55]">
@@ -383,52 +406,59 @@ export default function ResumePreview({ data, onSectionEdit }) {
           )}
 
           {/* Certifications */}
-          {data.certificates && data.certificates.length > 0 && (
-            <EditableSection
-              sectionName="certificates"
-              data={data.certificates}
-              onSave={onSectionEdit}
-              renderDisplay={() => (
-                <div className="text-left">
-                  {renderHeading("CERTIFICATIONS")}
-                  <div className="grid grid-cols-2 gap-4">
-                    {data.certificates.map((cert, i) => (
-                      <div key={i} className="text-[10px]">
-                        <p className="font-bold text-[#1e293b]">{cert.name}</p>
-                        <p className="text-[#64748b]">{cert.issuer} {cert.year ? `• ${cert.year}` : ''}</p>
-                      </div>
-                    ))}
+          {(() => {
+            const certs = data.certifications || data.certificates || data.certs || []
+            if (!certs || certs.length === 0) return null
+
+            return (
+              <EditableSection
+                sectionName="certifications"
+                data={certs}
+                onSave={onSectionEdit}
+                renderDisplay={() => (
+                  <div className="text-left">
+                    {renderHeading("CERTIFICATIONS")}
+                    <div className="grid grid-cols-1 gap-2">
+                      {certs.map((cert, i) => {
+                        const name = cert.polishedTitle || cert.title || cert.name || 'Certificate'
+                        return (
+                          <div key={i} className="text-[10px] text-[#334155]">
+                            <span className="font-bold">{name}</span> — {cert.issuer} {cert.year ? `· ${cert.year}` : ''}
+                          </div>
+                        )
+                      })}
+                    </div>
                   </div>
-                </div>
-              )}
-              renderEdit={(val, setVal) => (
-                <div className="text-left">
-                  {renderHeading("CERTIFICATIONS")}
-                  <div className="space-y-3">
-                    {val.map((cert, i) => (
-                      <div key={i} className="grid grid-cols-3 gap-2 p-2 border border-slate-100 rounded">
-                        <input
-                          value={cert.name}
-                          onChange={(e) => { const n = [...val]; n[i].name = e.target.value; setVal(n) }}
-                          className="col-span-2 p-1 text-[10px] border rounded" placeholder="Name"
-                        />
-                        <input
-                          value={cert.year}
-                          onChange={(e) => { const n = [...val]; n[i].year = e.target.value; setVal(n) }}
-                          className="p-1 text-[10px] border rounded" placeholder="Year"
-                        />
-                        <input
-                          value={cert.issuer}
-                          onChange={(e) => { const n = [...val]; n[i].issuer = e.target.value; setVal(n) }}
-                          className="col-span-3 p-1 text-[10px] border rounded" placeholder="Issuer"
-                        />
-                      </div>
-                    ))}
+                )}
+                renderEdit={(val, setVal) => (
+                  <div className="text-left">
+                    {renderHeading("CERTIFICATIONS")}
+                    <div className="space-y-3">
+                      {val.map((cert, i) => (
+                        <div key={i} className="grid grid-cols-3 gap-2 p-2 border border-slate-100 rounded">
+                          <input
+                            value={cert.polishedTitle || cert.name || ''}
+                            onChange={(e) => { const n = [...val]; n[i].polishedTitle = e.target.value; setVal(n) }}
+                            className="col-span-2 p-1 text-[10px] border rounded" placeholder="Name"
+                          />
+                          <input
+                            value={cert.year || ''}
+                            onChange={(e) => { const n = [...val]; n[i].year = e.target.value; setVal(n) }}
+                            className="p-1 text-[10px] border rounded" placeholder="Year"
+                          />
+                          <input
+                            value={cert.issuer || ''}
+                            onChange={(e) => { const n = [...val]; n[i].issuer = e.target.value; setVal(n) }}
+                            className="col-span-3 p-1 text-[10px] border rounded" placeholder="Issuer"
+                          />
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
-            />
-          )}
+                )}
+              />
+            )
+          })()}
         </main>
       </div>
     </ResumeErrorBoundary>

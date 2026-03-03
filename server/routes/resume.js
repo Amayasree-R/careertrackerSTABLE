@@ -190,11 +190,13 @@ CONTENT GUIDELINES:
 
 5. Mastered Skills: Return a flat list in 'masteredSkills' where each item is: { "name": "SkillName" }
 
-6. Certificates: Include all certificates from the data to strengthen their profile
+6. Certificates: Include a CERTIFICATIONS section. For each entry use exactly this data from 'userData.certificates': polishedTitle as the name, issuer, and year. Do not omit or rename these.
 
-7. Projects: Use the 'projects' array provided. For each project include the title, a concise description, and the tech stack. Do not fabricate projects. These are crucial for freshers.
+7. Projects: Use the 'projects' array provided. For each project include the title, a concise description, and the tech stack.
 
-8. Format: Return ONLY a valid JSON object. No conversational text.
+8. Contact Info: The 'contact' section is pre-filled and must be returned EXACTLY as provided in the input (userData.contact) — do not modify, omit, or hallucinate any contact field.
+
+9. Format: Return ONLY a valid JSON object. No conversational text.
 
 EXPECTED JSON STRUCTURE:
 {
@@ -215,8 +217,14 @@ EXPECTED JSON STRUCTURE:
     { "title": "string", "description": "string", "techStack": ["string"] }
   ],
   "certificates": [
-    { "name": "string", "issuer": "string", "year": "string" }
-  ]
+    { "name": "string (use polishedTitle exactly)", "issuer": "string", "year": "string" }
+  ],
+  "contact": {
+    "email": "string",
+    "phone": "string",
+    "linkedin": "string",
+    "github": "string"
+  }
 }
 
 TONE: Ambitious, growth-oriented, academic, emphasizing potential and learning capability.
@@ -259,9 +267,11 @@ CONTENT GUIDELINES:
 
 6. Projects: Use the 'projects' array provided. For each project include the title, a concise description, and the tech stack. Do not fabricate projects. Enhance descriptions to highlight technical complexity and impact.
 
-7. Certificates: Include all certificates to demonstrate continuous learning
+7. Certificates: Include a CERTIFICATIONS section. For each entry use exactly this data from 'userData.certificates': polishedTitle as the name, issuer, and year.
 
-8. Format: Return ONLY a valid JSON object. No conversational text.
+8. Contact Info: The 'contact' section is pre-filled and must be returned EXACTLY as provided in the input (userData.contact) — do not modify, omit, or hallucinate any contact field.
+
+9. Format: Return ONLY a valid JSON object. No conversational text.
 
 EXPECTED JSON STRUCTURE:
 {
@@ -282,8 +292,14 @@ EXPECTED JSON STRUCTURE:
     { "title": "string", "description": "string", "techStack": ["string"] }
   ],
   "certificates": [
-    { "name": "string", "issuer": "string", "year": "string" }
-  ]
+    { "name": "string (use polishedTitle exactly)", "issuer": "string", "year": "string" }
+  ],
+  "contact": {
+    "email": "string",
+    "phone": "string",
+    "linkedin": "string",
+    "github": "string"
+  }
 }
 
 TONE: Results-driven, professional, achievement-focused, emphasizing measurable impact.
@@ -301,6 +317,11 @@ TONE: Results-driven, professional, achievement-focused, emphasizing measurable 
     })
 
     const aiResponse = JSON.parse(completion.choices[0].message.content)
+
+    // Ensure certificates key exists even if empty
+    if (!aiResponse.certificates) {
+      aiResponse.certificates = aiResponse.certifications || [];
+    }
 
     // Debug: Log full Groq response AFTER parsing
     console.log('📥 Received from Groq AI:', JSON.stringify(aiResponse, null, 2))
@@ -443,7 +464,7 @@ USER DATA:
 ${JSON.stringify(userData.certificates, null, 2)}
 
 INSTRUCTIONS:
-- Return certificates in clean format
+- Include a CERTIFICATIONS section. For each entry use exactly this data from 'userData.certificates': polishedTitle as the name, issuer, and year. Do not omit or rename these.
 - Return JSON: { "certificates": [{ "name": "...", "issuer": "...", "year": "..." }] }
         `
         break

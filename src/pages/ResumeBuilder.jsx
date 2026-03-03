@@ -34,7 +34,13 @@ export default function ResumeBuilder() {
         skills: [],
         masteredSkills: [],
         projects: [],
-        certificates: []
+        certificates: [],
+        contact: {
+            email: '',
+            phone: '',
+            linkedin: '',
+            github: ''
+        }
     })
 
     useEffect(() => {
@@ -68,7 +74,13 @@ export default function ResumeBuilder() {
                         location: `${safe(response.data.location?.city, '')}, ${safe(response.data.location?.state, '')}, ${safe(response.data.location?.country, '')}`.replace(/, ,/g, ',').replace(/^, |, $/g, ''),
                         github: safeString(response.data.github),
                         linkedin: safeString(response.data.linkedin),
-                        portfolio: safeString(response.data.portfolio)
+                        portfolio: safeString(response.data.portfolio),
+                        contact: {
+                            email: safeString(response.data.contact?.email || response.data.email),
+                            phone: safeString(response.data.contact?.phone || response.data.phoneNumber),
+                            linkedin: safeString(response.data.contact?.linkedin || response.data.linkedin),
+                            github: safeString(response.data.contact?.github || response.data.github)
+                        }
                     }))
                     console.log('✅ Loaded saved resume from localStorage')
                 } catch (err) {
@@ -85,6 +97,12 @@ export default function ResumeBuilder() {
                     github: safeString(response.data.github),
                     linkedin: safeString(response.data.linkedin),
                     portfolio: safeString(response.data.portfolio),
+                    contact: {
+                        email: safeString(response.data.contact?.email || response.data.email),
+                        phone: safeString(response.data.contact?.phone || response.data.phoneNumber),
+                        linkedin: safeString(response.data.contact?.linkedin || response.data.linkedin),
+                        github: safeString(response.data.contact?.github || response.data.github)
+                    },
                     education: safeArray(response.data.education).map(e => ({
                         institution: safeString(e?.institution),
                         degree: safeString(e?.degree),
@@ -174,7 +192,7 @@ export default function ResumeBuilder() {
                     description: safeString(p?.description),
                     techStack: safeArray(p?.techStack)
                 })),
-                certificates: safeArray(raw.certificates).map(c => ({
+                certificates: safeArray(raw.certificates || raw.certifications).map(c => ({
                     name: safeString(c?.name || c?.title),
                     issuer: safeString(c?.issuer),
                     year: safeString(c?.year || c?.issueYear)
@@ -185,34 +203,45 @@ export default function ResumeBuilder() {
                 }))
             }
 
-            // CRITICAL FIX: Merge order matters - only use Groq data if it's not empty
+            // CRITICAL FIX: Merge order matters - always prioritize profile data for contact info
+            const locationStr = typeof userRawData?.location === 'string'
+                ? userRawData.location
+                : [userRawData?.location?.city, userRawData?.location?.state, userRawData?.location?.country]
+                    .filter(Boolean)
+                    .join(', ')
+
             const updatedData = {
                 ...resumeData,
-                // Only update if Groq returned non-empty values
+                // AI generated content
                 summary: safeString(sanitized.summary) || resumeData.summary,
-                experience: sanitized.experience.length > 0
-                    ? sanitized.experience
-                    : resumeData.experience,
-                education: sanitized.education.length > 0
-                    ? sanitized.education
-                    : resumeData.education,
+                experience: sanitized.experience.length > 0 ? sanitized.experience : resumeData.experience,
+                education: sanitized.education.length > 0 ? sanitized.education : resumeData.education,
                 skills: sanitized.skills,
-                masteredSkills: sanitized.masteredSkills.length > 0
-                    ? sanitized.masteredSkills
-                    : resumeData.masteredSkills,
+                masteredSkills: sanitized.masteredSkills.length > 0 ? sanitized.masteredSkills : resumeData.masteredSkills,
                 certificates: sanitized.certificates,
                 projects: sanitized.projects,
                 academicHighlights: sanitized.academicHighlights,
-                // Always preserve profile basics from userRawData (read directly, not from .profile)
-                fullName: safeString(userRawData?.fullName),
-                email: safeString(userRawData?.email),
-                phoneNumber: safeString(userRawData?.phoneNumber),
-                location: `${safe(userRawData?.location?.city, '')}, ${safe(userRawData?.location?.state, '')}, ${safe(userRawData?.location?.country, '')}`.replace(/, ,/g, ',').replace(/^, |, $/g, ''),
-                github: safeString(userRawData?.github),
-                linkedin: safeString(userRawData?.linkedin),
-                portfolio: safeString(userRawData?.portfolio)
+
+                // STEP 3: "Contact-First" Protection
+                // Always overwrite AI contact with fresh data from userRawData (User Profile API)
+                contact: {
+                    email: safeString(userRawData?.email) || resumeData.contact?.email,
+                    phone: safeString(userRawData?.phoneNumber) || resumeData.contact?.phone,
+                    linkedin: safeString(userRawData?.linkedin) || resumeData.contact?.linkedin,
+                    github: safeString(userRawData?.github) || resumeData.contact?.github
+                },
+
+                // Legacy fields (for backward compatibility with components)
+                fullName: safeString(userRawData?.fullName) || resumeData.fullName,
+                email: safeString(userRawData?.email) || resumeData.email,
+                phoneNumber: safeString(userRawData?.phoneNumber) || resumeData.phoneNumber,
+                location: locationStr || resumeData.location,
+                github: safeString(userRawData?.github) || resumeData.github,
+                linkedin: safeString(userRawData?.linkedin) || resumeData.linkedin,
+                portfolio: safeString(userRawData?.portfolio) || resumeData.portfolio
             }
 
+            console.log('🚀 Final Resume Data with Contact-First protection:', updatedData)
             setResumeData(updatedData)
             saveToLocalStorage(updatedData)
         } catch (error) {

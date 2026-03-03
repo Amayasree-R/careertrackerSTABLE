@@ -73,12 +73,92 @@ export const uploadCertificate = async (req, res) => {
         // Map fields exactly as requested
         const skillsExtracted = (analysis.skillAchievement?.certified || []).map(s => typeof s === 'string' ? s : s.skill);
 
+        // --- Roadmap Skill Integration (REFINED PIPELINE) ---
+        const newlyMasteredSkills = [];
+        const roadmapSkillsPool = new Set();
+
+        // 1. Gather all potential roadmap skills
+        if (userProfile.profile?.currentSkills) {
+            userProfile.profile.currentSkills.forEach(s => roadmapSkillsPool.add(typeof s === 'string' ? s : s.name || s.skill));
+        }
+        if (userProfile.profile?.targetSkills) {
+            userProfile.profile.targetSkills.forEach(s => roadmapSkillsPool.add(typeof s === 'string' ? s : s.name || s.skill));
+        }
+        if (userProfile.profile?.learningSkills) {
+            userProfile.profile.learningSkills.forEach(s => roadmapSkillsPool.add(s));
+        }
+        if (userProfile.profile?.roadmapCache) {
+            try {
+                const cache = typeof userProfile.profile.roadmapCache === 'string'
+                    ? JSON.parse(userProfile.profile.roadmapCache)
+                    : userProfile.profile.roadmapCache;
+
+                if (cache.roadmap) {
+                    Object.values(cache.roadmap).forEach(phase => {
+                        if (Array.isArray(phase)) {
+                            phase.forEach(item => {
+                                if (item.skill) roadmapSkillsPool.add(item.skill);
+                            });
+                        }
+                    });
+                }
+            } catch (e) {
+                console.warn("Failed to parse roadmapCache:", e.message);
+            }
+        }
+
+        const allRoadmapSkills = Array.from(roadmapSkillsPool).filter(Boolean);
+        console.log('Roadmap skills pool:', allRoadmapSkills);
+
+        // 2. Process each extracted skill
+        for (const certSkill of skillsExtracted) {
+            for (const roadmapSkillName of allRoadmapSkills) {
+                const matchResult = await matchSkillStrictly(certSkill, [roadmapSkillName]);
+                console.log(`Matching cert skill "${certSkill}" against "${roadmapSkillName}" → ${matchResult.matchFound}`);
+
+                if (matchResult.matchFound) {
+                    const alreadyCompleted = userProfile.profile.completedSkills.some(s =>
+                        s.skill.toLowerCase() === roadmapSkillName.toLowerCase()
+                    );
+
+                    if (!alreadyCompleted) {
+                        userProfile.profile.completedSkills.push({
+                            skill: roadmapSkillName,
+                            score: 100,
+                            masteredAt: new Date(),
+                            source: 'certificate'
+                        });
+
+                        if (userProfile.profile.learningSkills) {
+                            userProfile.profile.learningSkills = userProfile.profile.learningSkills.filter(s =>
+                                s.toLowerCase() !== roadmapSkillName.toLowerCase()
+                            );
+                        }
+
+                        if (userProfile.profile.currentSkills) {
+                            userProfile.profile.currentSkills = userProfile.profile.currentSkills.filter(s => {
+                                const name = typeof s === 'string' ? s : (s.name || s.skill);
+                                return name.toLowerCase() !== roadmapSkillName.toLowerCase();
+                            });
+                        }
+
+                        newlyMasteredSkills.push(roadmapSkillName);
+                    }
+                }
+            }
+        }
+
+        console.log('Skills promoted to mastered:', newlyMasteredSkills);
+        const roadmapUpdated = newlyMasteredSkills.length > 0;
+
         const newCert = {
             title: analysis.certificate?.title || 'Unknown Certificate',
+            polishedTitle: analysis.certificate?.polishedTitle || analysis.certificate?.title || 'Unknown Certificate',
             issuer: analysis.certificate?.issuer || 'Unknown Issuer',
             issueDate: analysis.certificate?.issueDate ? new Date(analysis.certificate.issueDate) : new Date(),
             issueYear: analysis.certificate?.issueYear ? Number(analysis.certificate.issueYear) : new Date().getFullYear(),
             skills: skillsExtracted,
+            masteredSkills: newlyMasteredSkills,
             verificationStatus: 'Verified',
             fileUrl: `http://localhost:5000/certificates/${filename}`,
             verificationMethod: 'certificate',
@@ -88,61 +168,17 @@ export const uploadCertificate = async (req, res) => {
 
         userProfile.certifications.push(newCert);
 
-        // --- Roadmap Skill Integration ---
-        let roadmapUpdated = false;
-        let matchedSkillName = null;
-
-        // User's target skills to match against (dashboard reads from currentSkills)
-        const targetSkills = userProfile.profile.currentSkills || [];
-
-        // Check each extracted skill against the target skills
-        for (const skill of skillsExtracted) {
-            // Requested Logs
-            console.log("Extracted skill:", skill);
-            console.log("User currentSkills:", targetSkills);
-
-            const matchResult = await matchSkillStrictly(skill, targetSkills);
-
-            if (matchResult.matchFound && matchResult.matchedSkill) {
-                matchedSkillName = matchResult.matchedSkill;
-
-                // 1. Add to completedSkills if not already there
-                const alreadyCompleted = userProfile.profile.completedSkills.some(s => s.skill === matchedSkillName);
-                if (!alreadyCompleted) {
-                    userProfile.profile.completedSkills.push({
-                        skill: matchedSkillName,
-                        score: 100,
-                        masteredAt: new Date()
-                    });
-
-                    // Cleanup learning list if present
-                    if (userProfile.profile.learningSkills && userProfile.profile.learningSkills.includes(matchedSkillName)) {
-                        userProfile.profile.learningSkills = userProfile.profile.learningSkills.filter(s => s !== matchedSkillName);
-                    }
-
-                    roadmapUpdated = true;
-                }
-
-                if (roadmapUpdated) {
-                    // Log success as requested
-                    console.log("Roadmap updated:", matchedSkillName);
-                    break;
-                }
-            }
-        }
-
-        // Clear roadmapCache to force dashboard to reload fresh data
         if (roadmapUpdated) {
             userProfile.profile.roadmapCache = null;
         }
 
         await userProfile.save();
 
-        // Return the specific response structure requested by user
         res.json({
+            success: true,
             certificate: newCert,
-            roadmapUpdated,
-            matchedSkill: matchedSkillName
+            promotedSkills: newlyMasteredSkills,
+            message: `Certificate verified! ${newlyMasteredSkills.length} skill(s) marked as mastered.`
         });
 
     } catch (error) {

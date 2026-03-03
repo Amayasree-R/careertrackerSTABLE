@@ -9,53 +9,76 @@ const getGroqClient = () => {
 };
 
 /**
- * matches an extracted skill against a list of target skills using strict rules.
+ * Normalizes a skill string for comparison
+ * @param {string} skill 
+ * @returns {string}
  */
-export const matchSkillStrictly = async (extractedSkill, targetSkills) => {
-    try {
-        const groq = getGroqClient();
+const normalizeSkill = (skill) => {
+    if (!skill) return "";
+    return skill.toLowerCase()
+        .replace(/\.js$/i, "")
+        .replace(/js$/i, "")
+        .replace(/\.ts$/i, "")
+        .replace(/ts$/i, "")
+        .replace(/[^a-z0-9]/g, "")
+        .trim();
+};
 
-        const systemPrompt = `
-You are a strict technical skill validator. Your job is to determine if an "Extracted Skill" from a certificate matches any skill in the user's "Target Skills" list.
+const COMMON_ALIASES = {
+    "react": ["reactjs", "react.js"],
+    "node": ["nodejs", "node.js"],
+    "js": ["javascript", "js", "ecmascript"],
+    "ts": ["typescript", "ts"],
+    "mongodb": ["mongo", "mongodb"],
+    "github": ["git", "github"],
+    "aws": ["amazon web services", "aws"]
+};
 
-STRICT RULES:
-1. Java is NOT JavaScript. They are different ecosystems. No match.
-2. Node.js is NOT Express.js. They are different. No match.
-3. React.js matches React. Alias matching is allowed for same technology.
-4. Only match if it is the EXACT same technology or a well-known alias.
-5. Confidence must be 75% or higher to return a match.
+/**
+ * matches an extracted skill against a list of target skills using fuzzy rules.
+ * Sync function - no longer needs Groq for basic matching.
+ */
+export const matchSkillFuzzy = (extractedSkill, targetSkills) => {
+    if (!extractedSkill || !targetSkills || !Array.isArray(targetSkills)) {
+        return { matchFound: false, matchedSkill: null };
+    }
 
-INPUT:
-Extracted Skill: "${extractedSkill}"
-Target Skills: ${JSON.stringify(targetSkills)}
+    const normExtracted = normalizeSkill(extractedSkill);
 
-OUTPUT FORMAT (JSON ONLY):
-{
-  "matchFound": boolean,
-  "matchedSkill": "The string from the Target Skills list that matched",
-  "confidence": number (0-100),
-  "reasoning": "brief explanation"
-}
+    for (const targetSkill of targetSkills) {
+        const skillName = typeof targetSkill === 'string' ? targetSkill : (targetSkill.name || targetSkill.skill || "");
+        if (!skillName) continue;
 
-If no match meets the 75% confidence threshold, return matchFound: false and matchedSkill: null.
-`;
+        const normTarget = normalizeSkill(skillName);
 
-        const completion = await groq.chat.completions.create({
-            messages: [{ role: 'user', content: systemPrompt }],
-            model: 'llama-3.1-8b-instant',
-            response_format: { type: 'json_object' }
-        });
-
-        const result = JSON.parse(completion.choices[0].message.content);
-
-        if (result.matchFound && result.confidence >= 75) {
-            return result;
+        // 1. Direct normalized match
+        if (normExtracted === normTarget) {
+            return { matchFound: true, matchedSkill: skillName };
         }
 
-        return { matchFound: false, matchedSkill: null, confidence: result.confidence || 0 };
+        // 2. Contains check (either way)
+        if (normExtracted.length > 2 && normTarget.length > 2) {
+            if (normExtracted.includes(normTarget) || normTarget.includes(normExtracted)) {
+                return { matchFound: true, matchedSkill: skillName };
+            }
+        }
 
-    } catch (error) {
-        console.error('Skill Matching Failed:', error);
-        return { matchFound: false, matchedSkill: null, error: error.message };
+        // 3. Alias check
+        for (const [canonical, aliases] of Object.entries(COMMON_ALIASES)) {
+            const isExtractedAlias = (canonical === normExtracted || aliases.includes(normExtracted));
+            const isTargetAlias = (canonical === normTarget || aliases.includes(normTarget));
+            if (isExtractedAlias && isTargetAlias) {
+                return { matchFound: true, matchedSkill: skillName };
+            }
+        }
     }
+
+    return { matchFound: false, matchedSkill: null };
+};
+
+// Keep the old export name but point to new logic for backward compatibility if needed, 
+// though we will update the controller.
+export const matchSkillStrictly = async (extractedSkill, targetSkills) => {
+    const result = matchSkillFuzzy(extractedSkill, targetSkills);
+    return result;
 };

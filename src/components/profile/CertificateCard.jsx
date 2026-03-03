@@ -54,14 +54,27 @@ function CertificateCard({ cert, onToggle, onDelete }) {
 
                 {/* Skills Tags */}
                 <div className="flex flex-wrap gap-2 mb-6">
-                    {cert.skills.slice(0, 4).map((skill, i) => (
-                        <span key={i} className="px-3 py-1 bg-slate-50 border border-slate-100 text-slate-500 text-[11px] font-bold rounded-lg uppercase tracking-wider">
-                            {typeof skill === 'string' ? skill : (skill.skill || skill.name)}
-                        </span>
-                    ))}
-                    {cert.skills.length > 4 && (
+                    {cert.skills.slice(0, 6).map((skill, i) => {
+                        const skillName = typeof skill === 'string' ? skill : (skill.skill || skill.name);
+                        const isMastered = cert.masteredSkills?.includes(skillName);
+
+                        return (
+                            <span
+                                key={i}
+                                className={`px-3 py-1 border text-[11px] font-bold rounded-lg uppercase tracking-wider flex items-center gap-1.5 transition-all
+                                    ${isMastered
+                                        ? 'bg-emerald-50 border-emerald-200 text-emerald-700 shadow-sm shadow-emerald-100'
+                                        : 'bg-slate-50 border-slate-100 text-slate-500'}`}
+                            >
+                                {isMastered && <CheckCircle className="w-3 h-3" />}
+                                {skillName}
+                                {isMastered && <span className="ml-1 text-[8px] opacity-70">MASTERED</span>}
+                            </span>
+                        );
+                    })}
+                    {cert.skills.length > 6 && (
                         <span className="px-3 py-1 bg-slate-100 text-slate-400 text-[11px] font-bold rounded-lg">
-                            +{cert.skills.length - 4}
+                            +{cert.skills.length - 6}
                         </span>
                     )}
                 </div>

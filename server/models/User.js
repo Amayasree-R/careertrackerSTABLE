@@ -188,11 +188,13 @@ const userSchema = new mongoose.Schema({
   certifications: [
     {
       title: String,
+      polishedTitle: String,
       issuer: String,
       issueYear: Number,
       issueDate: Date,
       verificationStatus: String,
       skills: [String],
+      masteredSkills: [String],
       fileUrl: String,
       verificationMethod: String,
       useInResume: { type: Boolean, default: true },

@@ -14,24 +14,25 @@ export const analyzeCertificate = async (certificateText, targetRole, roadmapSki
 
     const systemPrompt = `
 You are an expert Certificate Analyzer.
-Your task is to convert user-uploaded certificates into proof-backed skill achievements.
+You are a career-focused certificate analyst. Your goal is to parse raw text from a certificate PDF and extract professional metadata.
+You must return ONLY a raw JSON object. No markdown formatting, no backticks, no explanations.
 
-Context:
-- The user uploads a certificate (PDF/image).
-- The backend has already extracted readable text from the file.
-- Certificates may belong to any domain or job role.
-- The user has selected a target career role.
-- The system maintains a skill roadmap and current skill status.
-
-Your Responsibilities:
+INSTRUCTIONS:
 1. Analyze the certificate text to understand what was learned or achieved.
 2. Extract ONLY skills that are explicitly supported by the certificate content.
-3. Identify certificate metadata such as title, issuer, and issue year if present.
-4. Determine whether the certificate issuer appears credible; if unclear, mark as unverified.
-5. Match extracted skills against the system’s roadmap skills.
-6. Mark matched skills as "Certified", meaning the user has achieved them with proof.
-7. Decide whether any certified skill can be upgraded to "Mastered" based on strength of evidence.
-8. Evaluate how the certification contributes to readiness for the user’s chosen career role.
+3. Identify certificate metadata:
+   - title: The original title from the certificate.
+   - issuer: Extract ONLY the organization name if it is EXPLICITLY written. If no organization name is found, return "Independent". NEVER guess or infer an issuer.
+   - issueYear: The year of issuance.
+4. Generate a "polishedTitle":
+   - If issuer is known: Format as '[Issuer] [Topic] Certificate'.
+   - If issuer is "Independent": Format as '[Topic] Certificate of Completion'.
+   - Ensure it reads naturally on a professional resume.
+5. Determine whether the certificate issuer appears credible; if unclear, mark as unverified.
+6. Match extracted skills against the system’s roadmap skills.
+7. Mark matched skills as "Certified", meaning the user has achieved them with proof.
+8. Decide whether any certified skill can be upgraded to "Mastered" based on strength of evidence.
+9. Evaluate how the certification contributes to readiness for the user’s chosen career role.
 9. Generate structured outputs that can be directly used to:
    - Show certificate proof in the UI
    - Update skill badges and dashboard statistics
@@ -56,6 +57,7 @@ Output JSON Schema:
 {
   "certificate": {
     "title": "",
+    "polishedTitle": "",
     "issuer": "",
     "issueYear": "",
     "issueDate": "YYYY-MM-DD",
@@ -108,6 +110,7 @@ Output JSON Schema:
       return {
         certificate: {
           title: "Certified React Developer (Verified by Fallback)",
+          polishedTitle: "Udacity React Developer Certificate",
           issuer: "Udacity / Coursera ( Inferred )",
           issueYear: "2024",
           verificationStatus: "Verified"

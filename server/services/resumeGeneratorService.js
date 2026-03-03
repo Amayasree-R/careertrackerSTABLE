@@ -10,6 +10,19 @@ export function getAggregatedResumeData(user) {
     const fullName = user.fullName || ''
     const email = user.email || ''
     const phoneNumber = user.phoneNumber || ''
+    const github = user.socialLinks?.github || ''
+    const linkedin = user.socialLinks?.linkedin || ''
+    const portfolio = user.socialLinks?.portfolio || ''
+
+    // 2. Contact Block (Explicit for AI protection)
+    const contact = {
+        email: email,
+        phone: phoneNumber,
+        linkedin: linkedin,
+        github: github
+    }
+
+    console.log('Contact block:', contact)
 
     // Location formatting
     const location = user.personalDetails?.location
@@ -19,11 +32,6 @@ export function getAggregatedResumeData(user) {
             country: user.personalDetails.location.country || ''
         }
         : null
-
-    // Social links
-    const github = user.socialLinks?.github || ''
-    const linkedin = user.socialLinks?.linkedin || ''
-    const portfolio = user.socialLinks?.portfolio || ''
 
     // 2. Education (from user.education array)
     // Map: college -> institution, specialization -> field, endYear -> year
@@ -71,14 +79,16 @@ export function getAggregatedResumeData(user) {
     const targetJobRole = user.careerInfo?.targetJobRole || user.profile?.targetJob || 'Software Engineer'
 
     // 7. Certificates (from user.certifications)
-    // Map: title -> name, filter useInResume !== false
-    const certificates = (user.certifications || [])
-        .filter(cert => cert.useInResume !== false)
+    // Map each cert to: { polishedTitle, issuer, year } — fallback to title if polishedTitle is missing
+    const certsForResume = (user.certifications || [])
+        .filter(cert => cert.useInResume === true)
         .map(cert => ({
-            name: cert.title || '',
+            polishedTitle: cert.polishedTitle || cert.title || '',
             issuer: cert.issuer || '',
             year: cert.issueYear ? cert.issueYear.toString() : ''
         }))
+
+    console.log('Certs for resume:', certsForResume)
 
     // 8. Projects (Merged from Dashboard and Resume Data)
     // Map Dashboard projects (projectName -> title, summary -> description)
@@ -120,7 +130,7 @@ export function getAggregatedResumeData(user) {
     console.log(`   Experience: ${experience.length} entries`)
     console.log(`   Mastered Skills: ${masteredSkills.length} skills (all included)`)
     console.log(`   Known Skills: ${knownSkills.length} skills`)
-    console.log(`   Certificates: ${certificates.length} certificates`)
+    console.log(`   Certificates: ${certsForResume.length} certificates`)
     console.log(`   Projects: ${projects.length} projects`)
     console.log(`   Target Role: ${targetJobRole}`)
 
@@ -133,13 +143,16 @@ export function getAggregatedResumeData(user) {
     }
 
     return {
-        // Personal details
+        // Contact block (Primary)
+        contact,
+
+        // Personal details (Legacy/Fallback)
         fullName,
-        email,
-        phoneNumber,
+        email: contact.email,
+        phoneNumber: contact.phone,
         location,
-        github,
-        linkedin,
+        github: contact.github,
+        linkedin: contact.linkedin,
         portfolio,
 
         // Career data
@@ -147,7 +160,7 @@ export function getAggregatedResumeData(user) {
         experience,
         masteredSkills,
         knownSkills,
-        certificates,
+        certificates: certsForResume || [],
         projects,
         targetJobRole,
         // AI Instruction for skills categorization
@@ -241,6 +254,11 @@ export async function assembleResumeData(user, options = {}) {
         projects,
         experience,
         education,
+        certificates: user.certifications.filter(c => c.useInResume === true).map(c => ({
+            name: c.polishedTitle || c.title || '',
+            issuer: c.issuer || '',
+            year: c.issueYear ? c.issueYear.toString() : ''
+        })),
         template,
         targetRole: targetRole || user.careerInfo?.targetJobRole || user.profile.targetJob
     }
