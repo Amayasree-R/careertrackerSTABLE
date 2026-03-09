@@ -10,6 +10,7 @@ export default function Sidebar() {
         { name: 'Resume Builder', path: '/dashboard/resume-builder', icon: '🚀' },
         { name: 'Projects', path: '/dashboard/projects', icon: <FolderGit2 size={20} /> },
         { name: 'Certificates', path: '/dashboard/certificates', icon: '📜' },
+        { name: 'Job Matches', path: '/dashboard/jobs', icon: '💼' },
     ]
 
     return (

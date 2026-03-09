@@ -10,6 +10,7 @@ import ResumeBuilder from './pages/ResumeBuilder'
 import Profile from './pages/Profile'
 import Certificates from './pages/Certificates'
 import Projects from './pages/Projects'
+import JobMatches from './pages/JobMatches'
 function App() {
   return (
     <BrowserRouter>
@@ -25,6 +26,8 @@ function App() {
           <Route path="certificates" element={<Certificates />} />
           <Route path="resume-builder" element={<ResumeBuilder />} />
           <Route path="projects" element={<Projects />} />
+          <Route path="job-matches" element={<JobMatches />} />
+          <Route path="jobs" element={<JobMatches />} />
         </Route>
 
         <Route path="/profile" element={<ProfileForm />} />
