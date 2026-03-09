@@ -1,11 +1,12 @@
 import { useState } from 'react'
-import { CloudUpload, ShieldCheck, AlertCircle, Loader2 } from 'lucide-react'
+import { CloudUpload, ShieldCheck, AlertCircle, Loader2, Award } from 'lucide-react'
 
 function CertificateUpload({ onUploadSuccess }) {
     const [file, setFile] = useState(null)
     const [isUploading, setIsUploading] = useState(false)
     const [error, setError] = useState('')
     const [success, setSuccess] = useState(false)
+    const [successData, setSuccessData] = useState(null)
 
     const handleFileChange = (e) => {
         const selectedFile = e.target.files[0]
@@ -49,6 +50,7 @@ function CertificateUpload({ onUploadSuccess }) {
             }
 
             setSuccess(true)
+            setSuccessData(data)
             setFile(null)
             if (onUploadSuccess) onUploadSuccess()
         } catch (err) {
@@ -107,16 +109,52 @@ function CertificateUpload({ onUploadSuccess }) {
                 </div>
 
                 {error && (
-                    <div className="mt-4 flex items-center gap-2 text-rose-600 bg-rose-50 px-4 py-2 rounded-lg border border-rose-100">
-                        <AlertCircle className="w-4 h-4 shrink-0" />
-                        <span className="text-xs font-bold leading-tight uppercase">{error}</span>
+                    <div className="mt-4 flex items-start gap-3 text-rose-600 bg-rose-50 px-4 py-3 rounded-lg border border-rose-100 w-full">
+                        <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                        <div className="text-xs font-bold leading-tight uppercase">{error}</div>
                     </div>
                 )}
 
-                {success && (
-                    <div className="mt-4 flex items-center gap-2 text-emerald-600 bg-emerald-50 px-4 py-2 rounded-lg border border-emerald-100">
-                        <ShieldCheck className="w-4 h-4 shrink-0" />
-                        <span className="text-xs font-bold leading-tight uppercase">Certificate verified and added!</span>
+                {success && successData && (
+                    <div className="mt-4 w-full space-y-3">
+                        <div className="flex items-start gap-3 text-emerald-600 bg-emerald-50 px-4 py-3 rounded-lg border border-emerald-100">
+                            <ShieldCheck className="w-4 h-4 shrink-0 mt-0.5" />
+                            <div>
+                                <div className="text-xs font-bold leading-tight uppercase">{successData.message}</div>
+                                <div className="text-xs text-emerald-700 mt-1">
+                                    Total mastered skills: <strong>{successData.masteredSkillsCount || 0}</strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        {successData.promotedSkills && successData.promotedSkills.length > 0 && (
+                            <div className="bg-blue-50 border border-blue-100 rounded-lg p-4">
+                                <div className="flex items-center gap-2 mb-3">
+                                    <Award className="w-4 h-4 text-blue-600" />
+                                    <h4 className="text-sm font-bold text-blue-900">Skills Marked as Mastered:</h4>
+                                </div>
+                                <div className="space-y-2">
+                                    {successData.promotedSkills.map((skill, idx) => (
+                                        <div key={idx} className="flex items-center gap-2 text-sm text-blue-700">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-blue-600" />
+                                            <span className="font-semibold">{skill}</span>
+                                            <span className="text-xs text-blue-600 bg-blue-100 px-2 py-0.5 rounded">✓ Added to Resume</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {successData.certificate && (
+                            <div className="bg-slate-100 border border-slate-200 rounded-lg p-3 text-left">
+                                <div className="text-xs font-semibold text-slate-700 mb-2">Certificate Details:</div>
+                                <div className="text-xs text-slate-600 space-y-1">
+                                    <div><strong>Title:</strong> {successData.certificate.polishedTitle}</div>
+                                    <div><strong>Issuer:</strong> {successData.certificate.issuer}</div>
+                                    <div><strong>Status:</strong> {successData.certificate.verificationStatus}</div>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )}
             </div>

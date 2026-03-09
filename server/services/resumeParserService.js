@@ -19,52 +19,119 @@ import { extractSkillsFromText, normalizeSkills } from '../utils/skillNormalizer
 
 class ResumeParserService {
   /**
-   * Extract text from PDF file with fallback
+   * Extract text from PDF file with comprehensive fallback and diagnostics
    */
   async extractTextFromPdf(filePath) {
+    const fs = await import('fs/promises')
+    
     try {
-      const fs = await import('fs/promises')
-      const pdfBuffer = await fs.readFile(filePath)
-
-      let extractedText = ""
-
-      // Try pdf-parse first
+      // Step 1: Validate file existence and size
+      console.log(`[PDF Extract] Starting extraction for: ${filePath}`)
+      let fileStats
       try {
-        const data = await pdfParse(pdfBuffer)
-        extractedText = data.text
-      } catch (parseError) {
-        console.warn('pdf-parse failed, trying pdfjs-dist fallback:', parseError.message)
+        fileStats = await fs.stat(filePath)
+        console.log(`[PDF Extract] File size: ${fileStats.size} bytes`)
+        
+        if (fileStats.size === 0) {
+          throw new Error('File is empty (0 bytes)')
+        }
+        if (fileStats.size > 50 * 1024 * 1024) {
+          throw new Error('File exceeds 50MB limit')
+        }
+      } catch (statError) {
+        console.error(`[PDF Extract] File validation error: ${statError.message}`)
+        throw new Error(`Cannot access file: ${statError.message}`)
       }
 
-      // Fallback to pdfjs-dist if pdf-parse fails or returns very little text
+      // Step 2: Read PDF buffer
+      let pdfBuffer
+      try {
+        pdfBuffer = await fs.readFile(filePath)
+        console.log(`[PDF Extract] Successfully read ${pdfBuffer.length} bytes from file`)
+      } catch (readError) {
+        console.error(`[PDF Extract] Failed to read file: ${readError.message}`)
+        throw new Error(`Cannot read file: ${readError.message}`)
+      }
+
+      let extractedText = ""
+      let extractionStrategy = null
+
+      // Step 3: Try pdf-parse first (best for text-based PDFs)
+      console.log('[PDF Extract] Strategy 1: Attempting pdf-parse...')
+      try {
+        const data = await pdfParse(pdfBuffer)
+        const textLength = data.text ? data.text.trim().length : 0
+        console.log(`[PDF Extract] pdf-parse success: extracted ${textLength} characters`)
+        
+        if (data.text && textLength > 50) {
+          extractedText = data.text
+          extractionStrategy = 'pdf-parse'
+        } else if (data.text && textLength > 0) {
+          console.warn(`[PDF Extract] pdf-parse returned limited text (${textLength} chars), trying fallback`)
+        }
+      } catch (parseError) {
+        console.warn(`[PDF Extract] pdf-parse failed: ${parseError.message}`)
+      }
+
+      // Step 4: Fallback to pdfjs-dist if pdf-parse insufficient
       if (!extractedText || extractedText.trim().length < 50) {
+        console.log('[PDF Extract] Strategy 2: Attempting pdfjs-dist fallback...')
         try {
           const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs')
           const uint8Array = new Uint8Array(pdfBuffer)
-          const loadingTask = pdfjsLib.getDocument({ data: uint8Array, useSystemFonts: true, disableFontFace: true })
+          
+          const loadingTask = pdfjsLib.getDocument({
+            data: uint8Array,
+            useSystemFonts: true,
+            disableFontFace: true
+          })
           const pdf = await loadingTask.promise
 
+          console.log(`[PDF Extract] PDF has ${pdf.numPages} page(s)`)
+          
           let fullText = ""
           for (let i = 1; i <= pdf.numPages; i++) {
-            const page = await pdf.getPage(i)
-            const textContent = await page.getTextContent()
-            const pageText = textContent.items.map(item => item.str).join(' ')
-            fullText += pageText + "\n"
+            try {
+              const page = await pdf.getPage(i)
+              const textContent = await page.getTextContent()
+              const pageText = textContent.items.map(item => item.str).join(' ')
+              fullText += pageText + "\n"
+            } catch (pageError) {
+              console.warn(`[PDF Extract] Failed to extract page ${i}: ${pageError.message}`)
+            }
           }
-          extractedText = fullText
+          
+          const textLength = fullText ? fullText.trim().length : 0
+          console.log(`[PDF Extract] pdfjs-dist extracted ${textLength} characters`)
+          
+          if (textLength > 0) {
+            extractedText = fullText
+            extractionStrategy = 'pdfjs-dist'
+          }
         } catch (fallbackError) {
-          console.error('pdfjs-dist fallback also failed:', fallbackError.message)
-          if (!extractedText) throw fallbackError
+          console.error(`[PDF Extract] pdfjs-dist failed: ${fallbackError.message}`)
         }
       }
 
-      if (!extractedText || extractedText.trim().length < 10) {
-        throw new Error('No readable text content found in certificate PDF')
+      // Step 5: Validate extraction result
+      const finalTextLength = extractedText ? extractedText.trim().length : 0
+      console.log(`[PDF Extract] Final extracted text: ${finalTextLength} characters using ${extractionStrategy || 'none'}`)
+      
+      if (finalTextLength < 10) {
+        // Likely a scanned PDF or image-based document
+        console.error('[PDF Extract] Could not extract text - PDF may be scanned/image-based')
+        throw new Error(
+          'Could not extract text from PDF. The PDF might be: ' +
+          '(1) Scanned/image-based without OCR, (2) Encrypted, (3) Corrupted, or (4) in an unsupported format. ' +
+          'Please ensure the PDF contains selectable text.'
+        )
       }
 
+      console.log(`[PDF Extract] Successfully extracted ${finalTextLength} characters`)
       return extractedText
     } catch (error) {
-      throw new Error(`Failed to extract text from PDF: ${error.message}`)
+      console.error(`[PDF Extract] Critical error: ${error.message}`)
+      throw error
     }
   }
 

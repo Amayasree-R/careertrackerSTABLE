@@ -65,12 +65,17 @@ export function getAggregatedResumeData(user) {
 
     // 4. Mastered Skills (from user.profile.completedSkills)
     // No score filter - include all mastered skills
+    // Separate certificate-sourced skills to highlight them
     const masteredSkills = (user.profile?.completedSkills || [])
         .map(s => ({
             skill: s.skill,
             score: s.score,
-            masteredAt: s.masteredAt
+            masteredAt: s.masteredAt,
+            source: s.source || 'practice'  // 'certificate' or 'practice'
         }))
+    
+    const certifiedSkills = masteredSkills.filter(s => s.source === 'certificate')
+    const practiceSkills = masteredSkills.filter(s => s.source !== 'certificate')
 
     // 5. Known Skills (from user.profile.currentSkills)
     const knownSkills = user.profile?.currentSkills || []
@@ -129,6 +134,8 @@ export function getAggregatedResumeData(user) {
     console.log(`   Education: ${education.length} entries`)
     console.log(`   Experience: ${experience.length} entries`)
     console.log(`   Mastered Skills: ${masteredSkills.length} skills (all included)`)
+    console.log(`      - Certified (from certificates): ${certifiedSkills.length}`)
+    console.log(`      - From practice: ${practiceSkills.length}`)
     console.log(`   Known Skills: ${knownSkills.length} skills`)
     console.log(`   Certificates: ${certsForResume.length} certificates`)
     console.log(`   Projects: ${projects.length} projects`)
@@ -159,6 +166,7 @@ export function getAggregatedResumeData(user) {
         education,
         experience,
         masteredSkills,
+        certifiedSkills,  // Skills verified by certificates
         knownSkills,
         certificates: certsForResume || [],
         projects,
