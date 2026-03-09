@@ -116,17 +116,23 @@ REQUIREMENTS:
       throw new Error('Incomplete AI response')
     }
 
-    // 3. Save to Cache
-    const newCache = new SkillDetail({
-      skill: normalizedSkill,
-      targetJob: normalizedJob,
-      ...detail
-    })
-    await newCache.save()
+    // 3. Save to Cache (use upsert to handle race conditions)
+    try {
+      await SkillDetail.findOneAndUpdate(
+        { skill: normalizedSkill, targetJob: normalizedJob },
+        { skill: normalizedSkill, targetJob: normalizedJob, ...detail },
+        { upsert: true, new: true }
+      )
+    } catch (saveError) {
+      // If duplicate key error during upsert, it means another request created it - that's fine
+      if (saveError.code !== 11000) {
+        console.warn('Cache save warning:', saveError.message)
+      }
+    }
 
     res.json(detail)
   } catch (error) {
-    console.error('Skill detail error:', error.message)
+    console.error('Skill detail error:', error.message || error)
 
     // Graceful fallback — return a basic structure so the UI doesn't break
     res.json({

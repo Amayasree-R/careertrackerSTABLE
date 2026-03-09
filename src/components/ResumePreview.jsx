@@ -206,41 +206,47 @@ export default function ResumePreview({ data, onSectionEdit }) {
           </div>
 
 
-          {/* SKILLS BLOCK */}
-          <div className="p-[20px_24px] border-b border-[#2d3f55]">
-            <h3 className="text-[#64748b] text-[8.5px] font-semibold uppercase tracking-[2px] mb-[12px]">SKILLS</h3>
-            <div className="flex flex-wrap gap-y-2 gap-x-1 px-0 pb-2">
-              {(() => {
-                const seen = new Set()
-                const flat = []
-                if (Array.isArray(data?.skills)) {
-                  data.skills.forEach(group => {
-                    const items = Array.isArray(group?.items) ? group.items : [group?.items].filter(Boolean)
-                    items.forEach(skill => {
-                      if (skill && !seen.has(String(skill).toLowerCase())) {
-                        seen.add(String(skill).toLowerCase())
-                        flat.push(skill)
-                      }
-                    })
-                  })
+          {/* SKILLS BLOCK - Only render if skills exist */}
+          {(() => {
+            const seen = new Set()
+            const flat = []
+            if (Array.isArray(data?.skills)) {
+              data.skills.forEach(group => {
+                const items = Array.isArray(group?.items) ? group.items : [group?.items].filter(Boolean)
+                items.forEach(skill => {
+                  if (skill && !seen.has(String(skill).toLowerCase())) {
+                    seen.add(String(skill).toLowerCase())
+                    flat.push(skill)
+                  }
+                })
+              })
+            }
+            if (Array.isArray(data?.masteredSkills)) {
+              data.masteredSkills.forEach(s => {
+                const name = s?.name || s?.skill || s
+                if (name && !seen.has(String(name).toLowerCase())) {
+                  seen.add(String(name).toLowerCase())
+                  flat.push(name)
                 }
-                if (Array.isArray(data?.masteredSkills)) {
-                  data.masteredSkills.forEach(s => {
-                    const name = s?.name || s?.skill || s
-                    if (name && !seen.has(String(name).toLowerCase())) {
-                      seen.add(String(name).toLowerCase())
-                      flat.push(name)
-                    }
-                  })
-                }
-                return flat.map((skill, i) => (
-                  <span key={i} className="inline-block text-white border border-[#475569] rounded-[3px] px-[7px] py-[2px] text-[9.5px] leading-tight m-[2px_3px]">
-                    {skill}
-                  </span>
-                ))
-              })()}
-            </div>
-          </div>
+              })
+            }
+            
+            // Only render if there are skills to show
+            if (flat.length === 0) return null
+            
+            return (
+              <div className="p-[20px_24px] border-b border-[#2d3f55]">
+                <h3 className="text-[#64748b] text-[8.5px] font-semibold uppercase tracking-[2px] mb-[12px]">SKILLS</h3>
+                <div className="flex flex-wrap gap-y-2 gap-x-1 px-0 pb-2">
+                  {flat.map((skill, i) => (
+                    <span key={i} className="inline-block text-white border border-[#475569] rounded-[3px] px-[7px] py-[2px] text-[9.5px] leading-tight m-[2px_3px]">
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )
+          })()}
 
           {/* EDUCATION BLOCK */}
           <div className="p-[20px_24px]">
@@ -305,7 +311,7 @@ export default function ResumePreview({ data, onSectionEdit }) {
                           <span className="text-[10px] text-[#64748b]">{exp.duration}</span>
                         </div>
                         <p className="text-[#334155] text-[11px] leading-relaxed whitespace-pre-line" style={{ fontFamily: "'EB Garamond', serif" }}>
-                          {exp.description}
+                          {exp.polishedDescription || exp.description}
                         </p>
                       </div>
                     ))}
@@ -342,6 +348,62 @@ export default function ResumePreview({ data, onSectionEdit }) {
                         />
                       </div>
                     ))}
+                  </div>
+                </div>
+              )}
+            />
+          )}
+
+          {/* Achievements */}
+          {data.achievements && data.achievements.length > 0 && (
+            <EditableSection
+              sectionName="achievements"
+              data={data.achievements}
+              onSave={onSectionEdit}
+              renderDisplay={() => (
+                <div className="text-left">
+                  {renderHeading("KEY ACHIEVEMENTS")}
+                  <ul className="space-y-2 ml-4">
+                    {data.achievements.map((achievement, i) => {
+                      // Handle both string and object format
+                      const displayText = typeof achievement === 'string' 
+                        ? achievement 
+                        : (achievement.polishedText || achievement.text)
+                      return (
+                        <li key={i} className="text-[#334155] text-[11px] leading-relaxed list-disc" style={{ fontFamily: "'EB Garamond', serif" }}>
+                          {displayText}
+                        </li>
+                      )
+                    })}
+                  </ul>
+                </div>
+              )}
+              renderEdit={(val, setVal) => (
+                <div className="text-left">
+                  {renderHeading("KEY ACHIEVEMENTS")}
+                  <div className="space-y-2">
+                    {val.map((achievement, i) => {
+                      const textValue = typeof achievement === 'string' ? achievement : achievement.text
+                      return (
+                        <div key={i} className="flex gap-2">
+                          <span className="text-slate-400 text-[10px] mt-1">•</span>
+                          <input
+                            value={textValue}
+                            onChange={(e) => { 
+                              const n = [...val]
+                              if (typeof n[i] === 'string') {
+                                n[i] = e.target.value
+                              } else {
+                                n[i].text = e.target.value
+                              }
+                              setVal(n)
+                            }}
+                            className="flex-1 p-1 text-[10px] border rounded" 
+                            placeholder="Achievement" 
+                          />
+                        </div>
+                      )
+                    })}
                   </div>
                 </div>
               )}

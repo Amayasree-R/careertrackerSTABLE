@@ -70,6 +70,7 @@ export function generateProfessionalHtml(data) {
     const masteredSkills = safeArray(data.masteredSkills) // [{ skill, score }] or [string]
     const certificates = safeArray(data.certificates)
     const projects = safeArray(data.projects)
+    const achievements = safeArray(data.achievements) // NEW: Achievements array
 
     // Clean URLs (remove https://)
 
@@ -253,9 +254,29 @@ export function generateProfessionalHtml(data) {
                             </div>
                             <div class="item-meta">${safe(exp.duration)}</div>
                         </div>
-                        <div class="item-description">${safe(exp.description)}</div>
+                        <div class="item-description">${safe(exp.polishedDescription || exp.description)}</div>
                     </div>
                 `).join('')}
+            ` : ''}
+
+            <!-- Achievements -->
+            ${achievements.length > 0 ? `
+                <div class="section-heading">KEY ACHIEVEMENTS</div>
+                <div class="heading-underline"></div>
+                <div class="achievements-list" style="margin-left: 16px; margin-top: 12px; margin-bottom: 16px;">
+                    ${achievements.map(achievement => {
+                        // Handle both string and object format
+                        const text = typeof achievement === 'string' 
+                            ? achievement 
+                            : (achievement.polishedText || achievement.text)
+                        return `
+                        <div style="display: flex; margin-bottom: 6px; font-size: 11px; color: #334155; line-height: 1.6;">
+                            <span style="margin-right: 8px;">•</span>
+                            <span>${safe(text)}</span>
+                        </div>
+                        `
+                    }).join('')}
+                </div>
             ` : ''}
 
             <!-- Projects -->
@@ -299,7 +320,7 @@ export function generateProfessionalHtml(data) {
  * Generates a DOCX file from resume data.
  */
 export async function generateDocx(resumeData) {
-    const { fullName, email, phoneNumber, location, summary, experience, education, skills, projects } = resumeData
+    const { fullName, email, phoneNumber, location, summary, experience, education, skills, projects, achievements } = resumeData
 
     const doc = new Document({
         sections: [{
@@ -341,6 +362,15 @@ export async function generateDocx(resumeData) {
                     }),
                     new Paragraph({ text: exp.description })
                 ]),
+
+                // Achievements
+                ...(achievements && achievements.length > 0 ? [
+                    new Paragraph({ text: 'KEY ACHIEVEMENTS', heading: HeadingLevel.HEADING_2 }),
+                    ...achievements.map(achievement => new Paragraph({
+                        text: `• ${achievement}`,
+                        bullet: { level: 0 }
+                    }))
+                ] : []),
 
                 // Education
                 new Paragraph({ text: 'EDUCATION', heading: HeadingLevel.HEADING_2 }),

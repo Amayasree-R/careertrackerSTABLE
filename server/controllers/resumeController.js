@@ -13,6 +13,7 @@ import resumeAnalyzerService from '../services/resumeAnalyzerService.js'
 import * as resumeGeneratorService from '../services/resumeGeneratorService.js'
 import * as aiEnhancementService from '../services/aiEnhancementService.js'
 import * as exportService from '../services/exportService.js'
+import Groq from 'groq-sdk'
 
 // Get directory path for ES modules
 const __filename = fileURLToPath(import.meta.url)
@@ -433,5 +434,101 @@ export async function saveResumeVersion(req, res) {
   } catch (error) {
     console.error('Save Version Error:', error)
     res.status(500).json({ error: 'Failed to save resume version' })
+  }
+}
+
+/**
+ * Enhance description with AI
+ * POST /api/resume/enhance-description
+ */
+export async function enhanceDescription(req, res) {
+  try {
+    const { section, rawText, context } = req.body
+
+    // Validation
+    if (!rawText || typeof rawText !== 'string') {
+      return res.status(400).json({ error: 'rawText is required' })
+    }
+
+    // Skip enhancement for very short text
+    if (rawText.trim().length < 10) {
+      return res.json({ success: true, polishedText: rawText })
+    }
+
+    // Sanitize input
+    const sanitizedText = rawText.trim().slice(0, 1000) // Limit to 1000 chars
+
+    // Get Groq client
+    if (!process.env.GROQ_API_KEY) {
+      console.error('GROQ_API_KEY not configured')
+      return res.json({ success: true, polishedText: sanitizedText })
+    }
+
+    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
+
+    // Build system prompt
+    const systemPrompt = `You are a professional resume writing assistant.
+Convert raw user input into a polished, ATS-optimized resume bullet point.
+
+Rules:
+- Use strong action verbs (Led, Developed, Optimized, Implemented, Architected, Delivered, Designed, Spearheaded).
+- Follow STAR method (Situation, Task, Action, Result) where applicable.
+- Keep it concise (1-2 lines maximum).
+- Add quantifiable metrics only if strongly implied in the raw text.
+- Do not fabricate information not present in the raw text.
+- Do not add contact information.
+- Make it professional and impactful.
+- Return ONLY valid JSON with this exact format:
+{
+  "polishedText": "Your improved professional sentence here"
+}`
+
+    // Build user message with context
+    let userMessage = `Raw text: "${sanitizedText}"\n`
+    if (context) {
+      if (context.role) userMessage += `Role: ${context.role}\n`
+      if (context.company) userMessage += `Company: ${context.company}\n`
+      if (context.targetJobRole) userMessage += `Target Job Role: ${context.targetJobRole}\n`
+    }
+    userMessage += '\nConvert this into a polished resume bullet point.'
+
+    // Call Groq API
+    const completion = await groq.chat.completions.create({
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userMessage }
+      ],
+      model: 'llama-3.3-70b-versatile',
+      temperature: 0.6,
+      max_tokens: 300,
+      response_format: { type: 'json_object' }
+    })
+
+    // Parse response
+    const responseText = completion.choices[0].message.content
+    const parsed = JSON.parse(responseText)
+    const polishedText = parsed.polishedText || sanitizedText
+
+    console.log('✅ Description enhanced:', {
+      section,
+      original: sanitizedText.slice(0, 50) + '...',
+      polished: polishedText.slice(0, 50) + '...'
+    })
+
+    return res.json({
+      success: true,
+      polishedText: polishedText
+    })
+
+  } catch (error) {
+    console.error('Enhance Description Error:', error)
+    
+    // Graceful fallback - return original text
+    const fallbackText = req.body.rawText?.trim() || ''
+    return res.json({
+      success: true,
+      polishedText: fallbackText,
+      error: 'AI enhancement unavailable, using original text'
+    })
   }
 }

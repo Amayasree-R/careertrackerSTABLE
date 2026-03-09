@@ -17,7 +17,8 @@ import {
   enhanceResumeText,
   exportResume,
   getResumeVersions,
-  saveResumeVersion
+  saveResumeVersion,
+  enhanceDescription
 } from '../controllers/resumeController.js'
 import { getAggregatedResumeData } from '../services/resumeGeneratorService.js'
 import Groq from 'groq-sdk'
@@ -344,6 +345,12 @@ TONE: Results-driven, professional, achievement-focused, emphasizing measurable 
  * POST /api/resume/enhance-text
  */
 router.post('/enhance-text', authMiddleware, enhanceResumeText)
+
+/**
+ * Enhance description text with AI (real-time polishing)
+ * POST /api/resume/enhance-description
+ */
+router.post('/enhance-description', authMiddleware, enhanceDescription)
 
 /**
  * Regenerate a specific section of the resume

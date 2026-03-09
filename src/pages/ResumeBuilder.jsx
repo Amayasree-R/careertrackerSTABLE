@@ -2,10 +2,15 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
     FileText, Download, ChevronLeft,
-    Wand2, Loader2, RotateCw, Trash2
+    Wand2, Loader2, RotateCw, Trash2,
+    User, Briefcase, Award, GraduationCap,
+    Code, FolderGit2, FileCheck,
+    Edit3
 } from 'lucide-react'
 import axios from 'axios'
 import ResumePreview from '../components/ResumePreview'
+import ExperienceForm from '../components/resume/ExperienceForm'
+import AchievementForm from '../components/resume/AchievementForm'
 
 const API_BASE_URL = 'http://localhost:5000/api'
 
@@ -21,6 +26,11 @@ export default function ResumeBuilder() {
     const [isLoadingData, setIsLoadingData] = useState(true)
     const [regeneratingSection, setRegeneratingSection] = useState(null)
 
+    // Sidebar Navigation
+    const [activeSection, setActiveSection] = useState(null)
+    const [showExperienceForm, setShowExperienceForm] = useState(false)
+    const [showAchievementForm, setShowAchievementForm] = useState(false)
+
     // Aggregated Raw Data (from /data)
     const [userRawData, setUserRawData] = useState(null)
 
@@ -35,6 +45,7 @@ export default function ResumeBuilder() {
         masteredSkills: [],
         projects: [],
         certificates: [],
+        achievements: [], // NEW: Achievements array
         contact: {
             email: '',
             phone: '',
@@ -57,8 +68,11 @@ export default function ResumeBuilder() {
             // Store full raw response directly (not response.data.profile)
             setUserRawData(response.data)
 
-            // Check for saved resume in localStorage
-            const savedResume = localStorage.getItem('lastGeneratedResume')
+            // Get userId from token for user-specific localStorage
+            const userId = JSON.parse(atob(token.split('.')[1])).userId
+
+            // Check for saved resume in localStorage (USER-SPECIFIC)
+            const savedResume = localStorage.getItem(`resumeData_${userId}`)
 
             if (savedResume) {
                 try {
@@ -123,8 +137,12 @@ export default function ResumeBuilder() {
 
     const saveToLocalStorage = (data) => {
         try {
-            localStorage.setItem('lastGeneratedResume', JSON.stringify(data))
-            console.log('💾 Saved resume to localStorage')
+            const token = localStorage.getItem('token')
+            if (token) {
+                const userId = JSON.parse(atob(token.split('.')[1])).userId
+                localStorage.setItem(`resumeData_${userId}`, JSON.stringify(data))
+                console.log('💾 Saved resume to localStorage for user:', userId)
+            }
         } catch (err) {
             console.error('Failed to save to localStorage:', err)
         }
@@ -132,7 +150,11 @@ export default function ResumeBuilder() {
 
     const handleClearResume = () => {
         if (confirm('Clear saved resume and start fresh? This cannot be undone.')) {
-            localStorage.removeItem('lastGeneratedResume')
+            const token = localStorage.getItem('token')
+            if (token) {
+                const userId = JSON.parse(atob(token.split('.')[1])).userId
+                localStorage.removeItem(`resumeData_${userId}`)
+            }
             setResumeData({
                 versionName: 'My Professional Resume',
                 template: 'professional',
@@ -319,6 +341,34 @@ export default function ResumeBuilder() {
         }
     }
 
+    // Handle Experience Form Save
+    const handleSaveExperience = (updatedExperiences) => {
+        const newData = {
+            ...resumeData,
+            experience: updatedExperiences
+        }
+        setResumeData(newData)
+        saveToLocalStorage(newData)
+        console.log('✅ Updated professional experience')
+    }
+
+    // Handle Achievement Form Save
+    const handleSaveAchievements = (updatedAchievements) => {
+        const newData = {
+            ...resumeData,
+            achievements: updatedAchievements
+        }
+        setResumeData(newData)
+        saveToLocalStorage(newData)
+        console.log('✅ Updated achievements')
+    }
+
+    // Sidebar Section Items - Filtered to show only Experience and Achievements
+    const sidebarSections = [
+        { id: 'experience', label: 'Experience', icon: Briefcase, action: () => setShowExperienceForm(true) },
+        { id: 'achievements', label: 'Achievements', icon: Award, action: () => setShowAchievementForm(true) }
+    ]
+
     return (
         <div className="min-h-screen bg-gray-50 text-slate-900 pb-20">
             {/* Top Bar */}
@@ -353,12 +403,46 @@ export default function ResumeBuilder() {
             <main className="max-w-7xl mx-auto px-6 py-8">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-                    {/* Left Column: AI Generator */}
+                    {/* Left Column: Sidebar Navigation & AI Generator */}
                     <div className="space-y-6">
+                        {/* Resume Sections Sidebar */}
+                        <div className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
+                            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-4">
+                                <h3 className="font-bold text-lg text-white">Resume Sections</h3>
+                                <p className="text-sm text-white/80 mt-1">Edit and manage your resume content</p>
+                            </div>
+
+                            <div className="p-2">
+                                {sidebarSections.map((section) => {
+                                    const Icon = section.icon
+                                    return (
+                                        <button
+                                            key={section.id}
+                                            onClick={section.action}
+                                            disabled={section.disabled}
+                                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition text-left ${
+                                                section.disabled
+                                                    ? 'text-slate-300 cursor-not-allowed'
+                                                    : activeSection === section.id
+                                                    ? 'bg-indigo-50 text-indigo-600 font-semibold'
+                                                    : 'text-slate-700 hover:bg-slate-50'
+                                            }`}
+                                        >
+                                            <Icon size={20} />
+                                            <span className="flex-1 text-sm">{section.label}</span>
+                                            {!section.disabled && <Edit3 size={14} className="opacity-50" />}
+                                        </button>
+                                    )
+                                })}
+                            </div>
+                        </div>
+
                         {/* AI Resume Generator */}
                         <div className="bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl shadow-lg p-8">
                             <div className="text-center mb-6">
-                                <h3 className="font-bold text-2xl text-white">AI Resume Generator</h3>
+                                <Wand2 size={32} className="mx-auto mb-3 text-white" />
+                                <h3 className="font-bold text-xl text-white">AI Generator</h3>
+                                <p className="text-sm text-white/80 mt-2">Auto-fill your resume from profile data</p>
                             </div>
 
                             <button
@@ -369,7 +453,7 @@ export default function ResumeBuilder() {
                                 {isGenerating ? (
                                     <>
                                         <Loader2 size={20} className="animate-spin" />
-                                        Generating Resume...
+                                        Generating...
                                     </>
                                 ) : (
                                     <>
@@ -419,6 +503,26 @@ export default function ResumeBuilder() {
                     </div>
                 </div>
             </main>
+
+            {/* Experience Form Modal */}
+            {showExperienceForm && (
+                <ExperienceForm
+                    experiences={resumeData.experience}
+                    onSave={handleSaveExperience}
+                    onClose={() => setShowExperienceForm(false)}
+                    userProfile={userRawData}
+                />
+            )}
+
+            {/* Achievement Form Modal */}
+            {showAchievementForm && (
+                <AchievementForm
+                    achievements={resumeData.achievements}
+                    onSave={handleSaveAchievements}
+                    onClose={() => setShowAchievementForm(false)}
+                    userProfile={userRawData}
+                />
+            )}
         </div>
     )
 }

@@ -224,34 +224,37 @@ export const ModernTemplate = ({ data, onSectionEdit }) => (
             </div>
 
             <div className="w-40 space-y-6">
-                <EditableSection
-                    sectionName="masteredSkills"
-                    data={data.masteredSkills || []}
-                    onSave={onSectionEdit}
-                    renderDisplay={() => (
-                        <>
-                            <h2 className="text-sm font-black text-indigo-600 uppercase tracking-widest mb-3 border-b border-slate-100 pb-1">Skills</h2>
-                            <div className="flex flex-wrap gap-1.5">
-                                {(data.masteredSkills || []).map((s, i) => (
-                                    <span key={i} className="px-2 py-0.5 bg-indigo-50 text-indigo-600 rounded text-[10px] font-bold border border-indigo-100">
-                                        {s.name}
-                                    </span>
-                                ))}
-                            </div>
-                        </>
-                    )}
-                    renderEdit={(val, setVal) => (
-                        <textarea
-                            value={val.map(s => s.name).join(', ')}
-                            onChange={(e) => {
-                                setVal(e.target.value.split(',').map(s => ({ name: s.trim(), level: 'Mastered' })))
-                            }}
-                            className="w-full p-2 text-[10px] border rounded"
-                            rows="4"
-                            placeholder="Skills (comma separated)"
-                        />
-                    )}
-                />
+                {/* Only render Skills if data exists */}
+                {(data.masteredSkills && data.masteredSkills.length > 0) && (
+                    <EditableSection
+                        sectionName="masteredSkills"
+                        data={data.masteredSkills}
+                        onSave={onSectionEdit}
+                        renderDisplay={() => (
+                            <>
+                                <h2 className="text-sm font-black text-indigo-600 uppercase tracking-widest mb-3 border-b border-slate-100 pb-1">Skills</h2>
+                                <div className="flex flex-wrap gap-1.5">
+                                    {data.masteredSkills.map((s, i) => (
+                                        <span key={i} className="px-2 py-0.5 bg-indigo-50 text-indigo-600 rounded text-[10px] font-bold border border-indigo-100">
+                                            {s.name}
+                                        </span>
+                                    ))}
+                                </div>
+                            </>
+                        )}
+                        renderEdit={(val, setVal) => (
+                            <textarea
+                                value={val.map(s => s.name).join(', ')}
+                                onChange={(e) => {
+                                    setVal(e.target.value.split(',').map(s => ({ name: s.trim(), level: 'Mastered' })))
+                                }}
+                                className="w-full p-2 text-[10px] border rounded"
+                                rows="4"
+                                placeholder="Skills (comma separated)"
+                            />
+                        )}
+                    />
+                )}
 
                 <EditableSection
                     sectionName="education"
@@ -437,42 +440,45 @@ export const ProfessionalTemplate = ({ data, onRegenerate, regeneratingSection, 
             )}
         />
 
-        <EditableSection
-            sectionName="skills"
-            data={data.skills || []}
-            onSave={onSectionEdit}
-            renderDisplay={() => (
-                <>
-                    <h2 className="text-xs font-black uppercase tracking-[0.2em] border-b border-slate-200 mb-3 pb-1 text-slate-900">Technical Skills</h2>
-                    <div className="grid grid-cols-2 gap-x-8 gap-y-2">
-                        {(data.skills || []).map((group, i) => (
-                            <div key={i} className="text-[11px]">
-                                <span className="font-bold text-slate-900 uppercase tracking-tighter mr-2">{group.category}:</span>
-                                <span className="text-slate-600">{Array.isArray(group.items) ? group.items.join(', ') : group.items}</span>
+        {/* Only render Skills if data exists */}
+        {(data.skills && data.skills.length > 0) && (
+            <EditableSection
+                sectionName="skills"
+                data={data.skills}
+                onSave={onSectionEdit}
+                renderDisplay={() => (
+                    <>
+                        <h2 className="text-xs font-black uppercase tracking-[0.2em] border-b border-slate-200 mb-3 pb-1 text-slate-900">Technical Skills</h2>
+                        <div className="grid grid-cols-2 gap-x-8 gap-y-2">
+                            {data.skills.map((group, i) => (
+                                <div key={i} className="text-[11px]">
+                                    <span className="font-bold text-slate-900 uppercase tracking-tighter mr-2">{group.category}:</span>
+                                    <span className="text-slate-600">{Array.isArray(group.items) ? group.items.join(', ') : group.items}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </>
+                )}
+                renderEdit={(val, setVal) => (
+                    <div className="space-y-3">
+                        {val.map((group, i) => (
+                            <div key={i} className="flex flex-col gap-1">
+                                <span className="text-[10px] font-bold text-slate-400 uppercase">{group.category}</span>
+                                <input
+                                    value={Array.isArray(group.items) ? group.items.join(', ') : group.items}
+                                    onChange={(e) => {
+                                        const next = [...val]
+                                        next[i].items = e.target.value.split(',').map(s => s.trim())
+                                        setVal(next)
+                                    }}
+                                    className="p-2 text-xs border rounded-md"
+                                />
                             </div>
                         ))}
                     </div>
-                </>
-            )}
-            renderEdit={(val, setVal) => (
-                <div className="space-y-3">
-                    {val.map((group, i) => (
-                        <div key={i} className="flex flex-col gap-1">
-                            <span className="text-[10px] font-bold text-slate-400 uppercase">{group.category}</span>
-                            <input
-                                value={Array.isArray(group.items) ? group.items.join(', ') : group.items}
-                                onChange={(e) => {
-                                    const next = [...val]
-                                    next[i].items = e.target.value.split(',').map(s => s.trim())
-                                    setVal(next)
-                                }}
-                                className="p-2 text-xs border rounded-md"
-                            />
-                        </div>
-                    ))}
-                </div>
-            )}
-        />
+                )}
+            />
+        )}
 
         <div className="grid grid-cols-2 gap-12 mt-2">
             <EditableSection
@@ -620,37 +626,40 @@ export const TechnicalTemplate = ({ data, onSectionEdit }) => (
             </div>
         </div>
 
-        <EditableSection
-            sectionName="skills"
-            data={data.skills || []}
-            onSave={onSectionEdit}
-            renderDisplay={() => (
-                <>
-                    <h2 className="text-xs font-bold bg-slate-900 text-white px-2 py-0.5 inline-block mb-2">/TECHNICAL_SKILLS</h2>
-                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs">
-                        {(data.skills || []).map((group, i) => (
-                            <div key={i}><span className="font-bold">{group.category}:</span> {Array.isArray(group.items) ? group.items.join(', ') : group.items}</div>
+        {/* Only render Skills if data exists */}
+        {(data.skills && data.skills.length > 0) && (
+            <EditableSection
+                sectionName="skills"
+                data={data.skills}
+                onSave={onSectionEdit}
+                renderDisplay={() => (
+                    <>
+                        <h2 className="text-xs font-bold bg-slate-900 text-white px-2 py-0.5 inline-block mb-2">/TECHNICAL_SKILLS</h2>
+                        <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs">
+                            {data.skills.map((group, i) => (
+                                <div key={i}><span className="font-bold">{group.category}:</span> {Array.isArray(group.items) ? group.items.join(', ') : group.items}</div>
+                            ))}
+                        </div>
+                    </>
+                )}
+                renderEdit={(val, setVal) => (
+                    <div className="space-y-2">
+                        {val.map((group, i) => (
+                            <div key={i} className="flex gap-2 items-center">
+                                <span className="text-[10px] w-20 shrink-0">{group.category}</span>
+                                <input
+                                    value={Array.isArray(group.items) ? group.items.join(', ') : group.items}
+                                    onChange={(e) => {
+                                        const n = [...val]; n[i].items = e.target.value.split(',').map(s => s.trim()); setVal(n)
+                                    }}
+                                    className="flex-1 p-1 text-[10px] border rounded font-mono"
+                                />
+                            </div>
                         ))}
                     </div>
-                </>
-            )}
-            renderEdit={(val, setVal) => (
-                <div className="space-y-2">
-                    {val.map((group, i) => (
-                        <div key={i} className="flex gap-2 items-center">
-                            <span className="text-[10px] w-20 shrink-0">{group.category}</span>
-                            <input
-                                value={Array.isArray(group.items) ? group.items.join(', ') : group.items}
-                                onChange={(e) => {
-                                    const n = [...val]; n[i].items = e.target.value.split(',').map(s => s.trim()); setVal(n)
-                                }}
-                                className="flex-1 p-1 text-[10px] border rounded font-mono"
-                            />
-                        </div>
-                    ))}
-                </div>
-            )}
-        />
+                )}
+            />
+        )}
 
         <EditableSection
             sectionName="experience"
@@ -859,29 +868,32 @@ export const MinimalTemplate = ({ data, onSectionEdit }) => {
                         </div>
                     </section>
 
-                    <EditableSection
-                        sectionName="masteredSkills"
-                        data={data.masteredSkills || []}
-                        onSave={onSectionEdit}
-                        renderDisplay={() => (
-                            <div className="space-y-4">
-                                <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-300">Expertise</h4>
-                                <div className="flex flex-wrap gap-2">
-                                    {(data.masteredSkills || []).map((s, i) => (
-                                        <span key={i} className="text-[10px] font-bold text-slate-500 border-b border-slate-200 pb-0.5">{s.name}</span>
-                                    ))}
+                    {/* Only render Expertise/Skills if data exists */}
+                    {(data.masteredSkills && data.masteredSkills.length > 0) && (
+                        <EditableSection
+                            sectionName="masteredSkills"
+                            data={data.masteredSkills}
+                            onSave={onSectionEdit}
+                            renderDisplay={() => (
+                                <div className="space-y-4">
+                                    <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-300">Expertise</h4>
+                                    <div className="flex flex-wrap gap-2">
+                                        {data.masteredSkills.map((s, i) => (
+                                            <span key={i} className="text-[10px] font-bold text-slate-500 border-b border-slate-200 pb-0.5">{s.name}</span>
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
-                        )}
-                        renderEdit={(val, setVal) => (
-                            <textarea
-                                value={val.map(s => s.name).join(', ')}
-                                onChange={(e) => setVal(e.target.value.split(',').map(s => ({ name: s.trim(), level: 'Mastered' })))}
-                                className="w-full p-2 text-[10px] text-slate-500 border rounded font-sans"
-                                rows="4"
-                            />
-                        )}
-                    />
+                            )}
+                            renderEdit={(val, setVal) => (
+                                <textarea
+                                    value={val.map(s => s.name).join(', ')}
+                                    onChange={(e) => setVal(e.target.value.split(',').map(s => ({ name: s.trim(), level: 'Mastered' })))}
+                                    className="w-full p-2 text-[10px] text-slate-500 border rounded font-sans"
+                                    rows="4"
+                                />
+                            )}
+                        />
+                    )}
 
                     <EditableSection
                         sectionName="education"
