@@ -5,12 +5,17 @@ import {
     Wand2, Loader2, RotateCw, Trash2,
     User, Briefcase, Award, GraduationCap,
     Code, FolderGit2, FileCheck,
-    Edit3
+    Edit3, Sparkles, Globe
 } from 'lucide-react'
 import axios from 'axios'
 import ResumePreview from '../components/ResumePreview'
 import ExperienceForm from '../components/resume/ExperienceForm'
 import AchievementForm from '../components/resume/AchievementForm'
+import EducationForm from '../components/resume/EducationForm'
+import InterestsForm from '../components/resume/InterestsForm'
+import LanguagesForm from '../components/resume/LanguagesForm'
+import TemplateSelector from '../components/resume/TemplateSelector'
+import ThemeColorPicker from '../components/resume/ThemeColorPicker'
 
 const API_BASE_URL = 'http://localhost:5000/api'
 
@@ -30,6 +35,13 @@ export default function ResumeBuilder() {
     const [activeSection, setActiveSection] = useState(null)
     const [showExperienceForm, setShowExperienceForm] = useState(false)
     const [showAchievementForm, setShowAchievementForm] = useState(false)
+    const [showEducationForm, setShowEducationForm] = useState(false)
+    const [showInterestsForm, setShowInterestsForm] = useState(false)
+    const [showLanguagesForm, setShowLanguagesForm] = useState(false)
+
+    // Template and Theme Customization
+    const [selectedTemplate, setSelectedTemplate] = useState('professional')
+    const [themeColor, setThemeColor] = useState('#1e293b')
 
     // Aggregated Raw Data (from /data)
     const [userRawData, setUserRawData] = useState(null)
@@ -46,6 +58,8 @@ export default function ResumeBuilder() {
         projects: [],
         certificates: [],
         achievements: [], // NEW: Achievements array
+        interests: [], // NEW: Interests array
+        languages: [], // NEW: Languages array
         contact: {
             email: '',
             phone: '',
@@ -165,6 +179,9 @@ export default function ResumeBuilder() {
                 masteredSkills: [],
                 projects: [],
                 certificates: [],
+                achievements: [],
+                interests: [],
+                languages: [],
                 fullName: userRawData?.fullName || '',
                 email: userRawData?.email || '',
                 phoneNumber: userRawData?.phoneNumber || '',
@@ -363,10 +380,68 @@ export default function ResumeBuilder() {
         console.log('✅ Updated achievements')
     }
 
+    // Handle Education Form Save
+    const handleSaveEducation = (updatedEducation) => {
+        const newData = {
+            ...resumeData,
+            education: updatedEducation
+        }
+        setResumeData(newData)
+        saveToLocalStorage(newData)
+        console.log('✅ Updated education')
+    }
+
+    // Handle Interests Form Save
+    const handleSaveInterests = (updatedInterests) => {
+        const newData = {
+            ...resumeData,
+            interests: updatedInterests
+        }
+        setResumeData(newData)
+        saveToLocalStorage(newData)
+        console.log('✅ Updated interests')
+    }
+
+    // Handle Languages Form Save
+    const handleSaveLanguages = (updatedLanguages) => {
+        const newData = {
+            ...resumeData,
+            languages: updatedLanguages
+        }
+        setResumeData(newData)
+        saveToLocalStorage(newData)
+        console.log('✅ Updated languages')
+    }
+
+    // Handle Template Change
+    const handleTemplateChange = (template) => {
+        setSelectedTemplate(template)
+        const updatedData = {
+            ...resumeData,
+            template
+        }
+        saveToLocalStorage(updatedData)
+        console.log(`✅ Updated template to: ${template}`)
+    }
+
+    // Handle Theme Color Change
+    const handleColorChange = (color) => {
+        setThemeColor(color)
+        const updatedData = {
+            ...resumeData,
+            themeColor: color
+        }
+        saveToLocalStorage(updatedData)
+        console.log(`✅ Updated theme color to: ${color}`)
+    }
+
     // Sidebar Section Items - Filtered to show only Experience and Achievements
     const sidebarSections = [
         { id: 'experience', label: 'Experience', icon: Briefcase, action: () => setShowExperienceForm(true) },
-        { id: 'achievements', label: 'Achievements', icon: Award, action: () => setShowAchievementForm(true) }
+        { id: 'education', label: 'Education', icon: GraduationCap, action: () => setShowEducationForm(true) },
+        { id: 'achievements', label: 'Achievements', icon: Award, action: () => setShowAchievementForm(true) },
+        { id: 'interests', label: 'Interests', icon: Sparkles, action: () => setShowInterestsForm(true) },
+        { id: 'languages', label: 'Languages', icon: Globe, action: () => setShowLanguagesForm(true) }
     ]
 
     return (
@@ -471,6 +546,18 @@ export default function ResumeBuilder() {
                                 Clear & Start Fresh
                             </button>
                         </div>
+
+                        {/* Template Selector */}
+                        <TemplateSelector
+                            selectedTemplate={selectedTemplate}
+                            onTemplateChange={handleTemplateChange}
+                        />
+
+                        {/* Theme Color Picker */}
+                        <ThemeColorPicker
+                            selectedColor={themeColor}
+                            onColorChange={handleColorChange}
+                        />
                     </div>
 
                     {/* Right Column: Live Preview */}
@@ -493,6 +580,8 @@ export default function ResumeBuilder() {
                                 <div className="shadow-2xl shadow-slate-200/50">
                                     <ResumePreview
                                         data={resumeData}
+                                        selectedTemplate={selectedTemplate}
+                                        themeColor={themeColor}
                                         onRegenerate={handleRegenerateSection}
                                         regeneratingSection={regeneratingSection}
                                         onSectionEdit={handleSectionEdit}
@@ -520,6 +609,36 @@ export default function ResumeBuilder() {
                     achievements={resumeData.achievements}
                     onSave={handleSaveAchievements}
                     onClose={() => setShowAchievementForm(false)}
+                    userProfile={userRawData}
+                />
+            )}
+
+            {/* Education Form Modal */}
+            {showEducationForm && (
+                <EducationForm
+                    education={resumeData.education}
+                    onSave={handleSaveEducation}
+                    onClose={() => setShowEducationForm(false)}
+                    userProfile={userRawData}
+                />
+            )}
+
+            {/* Interests Form Modal */}
+            {showInterestsForm && (
+                <InterestsForm
+                    interests={resumeData.interests}
+                    onSave={handleSaveInterests}
+                    onClose={() => setShowInterestsForm(false)}
+                    userProfile={userRawData}
+                />
+            )}
+
+            {/* Languages Form Modal */}
+            {showLanguagesForm && (
+                <LanguagesForm
+                    languages={resumeData.languages}
+                    onSave={handleSaveLanguages}
+                    onClose={() => setShowLanguagesForm(false)}
                     userProfile={userRawData}
                 />
             )}
