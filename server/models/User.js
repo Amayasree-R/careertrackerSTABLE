@@ -87,6 +87,10 @@ const userSchema = new mongoose.Schema({
       type: Object,
       default: null
     },
+    jobMatchCache: {
+      data: { type: Array, default: [] },
+      generatedAt: { type: Date }
+    },
     lastProfileUpdate: {
       type: Date,
       default: Date.now
