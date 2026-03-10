@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom'
-import { FolderGit2 } from 'lucide-react'
+import { FolderGit2, Map } from 'lucide-react'
 
 export default function Sidebar() {
     const location = useLocation()
@@ -11,6 +11,7 @@ export default function Sidebar() {
         { name: 'Projects', path: '/dashboard/projects', icon: <FolderGit2 size={20} /> },
         { name: 'Certificates', path: '/dashboard/certificates', icon: '📜' },
         { name: 'Job Matches', path: '/dashboard/jobs', icon: '💼' },
+        { name: 'Visual Roadmap', path: '/dashboard/visual-roadmap', icon: <Map size={20} /> },
     ]
 
     return (

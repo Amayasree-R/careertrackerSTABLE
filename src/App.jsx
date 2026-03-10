@@ -11,6 +11,7 @@ import Profile from './pages/Profile'
 import Certificates from './pages/Certificates'
 import Projects from './pages/Projects'
 import JobMatches from './pages/JobMatches'
+import VisualRoadmap from './pages/VisualRoadmap'
 function App() {
   return (
     <BrowserRouter>
@@ -28,6 +29,7 @@ function App() {
           <Route path="projects" element={<Projects />} />
           <Route path="job-matches" element={<JobMatches />} />
           <Route path="jobs" element={<JobMatches />} />
+          <Route path="visual-roadmap" element={<VisualRoadmap />} />
         </Route>
 
         <Route path="/profile" element={<ProfileForm />} />
