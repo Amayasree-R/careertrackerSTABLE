@@ -183,21 +183,18 @@ CONTENT GUIDELINES:
    - Academic achievements or competitions
    - If no data exists, return empty array - DO NOT fabricate
 
-4. Skills: Categorize their 'knownSkills' and 'masteredSkills' into logical groups:
-   - ALWAYS include a skill group with category 'Mastered Skills' containing all items from the 'masteredSkills' array provided.
-   - The 'Mastered Skills' group MUST appear first in the 'skills' array.
-   - Group other skills by: Programming Languages, Frameworks/Tools, Core Concepts, etc.
+4. Skills: Categorize ALL skills from both 'knownSkills' and 'masteredSkills' into appropriate categories. Do NOT create a 'Mastered Skills' category.
+   - Merge skills from both arrays and group them by technology type
+   - Group by: Programming Languages, Frameworks, Tools, Core Concepts, Databases, etc.
    - Return in 'skills' array with 'category' and 'items' (array of strings)
 
-5. Mastered Skills: Return a flat list in 'masteredSkills' where each item is: { "name": "SkillName" }
+5. Certificates: Include a CERTIFICATIONS section. For each entry use exactly this data from 'userData.certificates': polishedTitle as the name, issuer, and year. Do not omit or rename these.
 
-6. Certificates: Include a CERTIFICATIONS section. For each entry use exactly this data from 'userData.certificates': polishedTitle as the name, issuer, and year. Do not omit or rename these.
+6. Projects: Use the 'projects' array provided. For each project include the title, a concise description, and the tech stack.
 
-7. Projects: Use the 'projects' array provided. For each project include the title, a concise description, and the tech stack.
+7. Contact Info: The 'contact' section is pre-filled and must be returned EXACTLY as provided in the input (userData.contact) — do not modify, omit, or hallucinate any contact field.
 
-8. Contact Info: The 'contact' section is pre-filled and must be returned EXACTLY as provided in the input (userData.contact) — do not modify, omit, or hallucinate any contact field.
-
-9. Format: Return ONLY a valid JSON object. No conversational text.
+8. Format: Return ONLY a valid JSON object. No conversational text.
 
 EXPECTED JSON STRUCTURE:
 {
@@ -258,21 +255,18 @@ CONTENT GUIDELINES:
    - Use action verbs, quantify achievements where possible
    - If the original description is already detailed, enhance it rather than replace it
 
-4. Skills: Categorize 'knownSkills' and 'masteredSkills' into logical groups:
-   - ALWAYS include a skill group with category 'Mastered Skills' containing all items from the 'masteredSkills' array provided.
-   - The 'Mastered Skills' group MUST appear first in the 'skills' array.
-   - Group other skills by: Programming Languages, Frameworks, Tools, Cloud/DevOps, Databases, etc.
+4. Skills: Categorize ALL skills from both 'knownSkills' and 'masteredSkills' into appropriate categories. Do NOT create a 'Mastered Skills' category.
+   - Merge skills from both arrays and group them by technology type
+   - Group by: Programming Languages, Frameworks, Tools, Cloud/DevOps, Databases, etc.
    - Return them in the 'skills' array with 'category' and 'items' (array of strings)
 
-5. Mastered Skills: Also return a flat list in 'masteredSkills' where each item is an object: { "name": "SkillName" }
+5. Projects: Use the 'projects' array provided. For each project include the title, a concise description, and the tech stack. Do not fabricate projects. Enhance descriptions to highlight technical complexity and impact.
 
-6. Projects: Use the 'projects' array provided. For each project include the title, a concise description, and the tech stack. Do not fabricate projects. Enhance descriptions to highlight technical complexity and impact.
+6. Certificates: Include a CERTIFICATIONS section. For each entry use exactly this data from 'userData.certificates': polishedTitle as the name, issuer, and year.
 
-7. Certificates: Include a CERTIFICATIONS section. For each entry use exactly this data from 'userData.certificates': polishedTitle as the name, issuer, and year.
+7. Contact Info: The 'contact' section is pre-filled and must be returned EXACTLY as provided in the input (userData.contact) — do not modify, omit, or hallucinate any contact field.
 
-8. Contact Info: The 'contact' section is pre-filled and must be returned EXACTLY as provided in the input (userData.contact) — do not modify, omit, or hallucinate any contact field.
-
-9. Format: Return ONLY a valid JSON object. No conversational text.
+8. Format: Return ONLY a valid JSON object. No conversational text.
 
 EXPECTED JSON STRUCTURE:
 {
@@ -423,13 +417,11 @@ Known Skills: ${JSON.stringify(userData.knownSkills)}
 Mastered Skills: ${JSON.stringify(userData.masteredSkills)}
 
 INSTRUCTIONS:
-- Categorize skills into logical groups (Languages, Frameworks, Tools, etc.)
-- ALWAYS include a skill group with category 'Mastered Skills' containing all items from the 'masteredSkills' array provided.
-- The 'Mastered Skills' group MUST appear first in the 'skills' array.
+- Categorize ALL skills from both knownSkills and masteredSkills into appropriate categories. Do NOT create a 'Mastered Skills' category.
+- Merge both skill arrays and group by technology type: Programming Languages, Frameworks, Tools, Databases, etc.
 - Return JSON:
 {
-  "skills": [{ "category": "Mastered Skills", "items": ["skill1"] }, { "category": "name", "items": ["skill1", "skill2"] }],
-  "masteredSkills": [{ "name": "skill" }]
+  "skills": [{ "category": "Programming Languages", "items": ["skill1"] }, { "category": "Frameworks", "items": ["skill1", "skill2"] }]
 }
         `
         break

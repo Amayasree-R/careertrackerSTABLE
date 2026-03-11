@@ -74,48 +74,20 @@ export function generateProfessionalHtml(data) {
 
     // Clean URLs (remove https://)
 
-    // Skills Rendering Logic
+    // Skills Rendering Logic — categorized groups (filtered, no flat chips)
     const renderSkills = () => {
-        let html = ''
-
-        const seen = new Set()
-        const flat = []
-
-        // From skills[] groups
-        if (Array.isArray(skills)) {
-            skills.forEach(group => {
-                const items = Array.isArray(group?.items) ? group.items : [group?.items].filter(Boolean)
-                items.forEach(skill => {
-                    const s = String(skill).toLowerCase().trim()
-                    if (s && !seen.has(s)) {
-                        seen.add(s)
-                        flat.push(skill)
-                    }
-                })
-            })
-        }
-
-        // From masteredSkills[]
-        if (Array.isArray(masteredSkills)) {
-            masteredSkills.forEach(s => {
-                const name = s?.name || s?.skill || s
-                const sn = String(name).toLowerCase().trim()
-                if (sn && !seen.has(sn)) {
-                    seen.add(sn)
-                    flat.push(name)
-                }
-            })
-        }
-
-        flat.forEach(skill => {
-            html += `
-                <div style="display: inline-block; color: white; border: 1px solid #475569; border-radius: 3px; padding: 2px 7px; font-size: 9.5px; margin: 2px 3px; line-height: 1.2;">
-                    ${skill}
+        const filteredGroups = skills.filter(g => g && g.category !== 'Mastered Skills')
+        if (filteredGroups.length === 0) return ''
+        const groupsHtml = filteredGroups.map(group => {
+            const items = Array.isArray(group.items) ? group.items : []
+            return `
+                <div style="margin-bottom: 6px;">
+                    <span style="font-size: 13px; font-weight: 600; color: #cbd5e1;">${group.category}: </span>
+                    <span style="font-size: 12px; color: #94a3b8;">${items.join(', ')}</span>
                 </div>
             `
-        })
-
-        return `<div style="padding: 8px 16px 16px; display: flex; flex-wrap: wrap; gap: 2px;">${html}</div>`
+        }).join('')
+        return `<div style="padding: 0 24px 16px;">${groupsHtml}</div>`
     }
 
     return `
@@ -125,34 +97,39 @@ export function generateProfessionalHtml(data) {
     <meta charset="UTF-8">
     <title>Resume - ${fullName}</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; background: white; color: #334155; line-height: 1.5; }
-        .page { width: 595.28px; min-height: 841.89px; display: flex; flex-direction: row; }
+        body { font-family: 'Arial', sans-serif; background: white; color: #334155; line-height: 1.5; letter-spacing: 0.01em; }
+        .page { width: 595.28px; min-height: 841.89px; display: flex; flex-direction: row; overflow: visible; }
+        .section-heading { page-break-after: avoid; }
+        .heading-underline { page-break-after: avoid; }
+        .exp-item, .proj-item, .cert-item { page-break-inside: avoid; }
+        @media print {
+          .page { margin: 0; }
+        }
         
         /* Sidebar */
         .sidebar { width: 30%; background: #1e293b; color: white; min-height: 842px; display: flex; flex-direction: column; }
         .name-block { padding: 32px 24px 16px; border-bottom: 1px solid #334155; }
         .name-block h1 { font-size: 20px; font-weight: 700; color: white; margin-bottom: 4px; }
-        .name-block .role { color: #94a3b8; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
+        .name-block .role { color: #94a3b8; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
         
         .sidebar-section { border-bottom: 1px solid #334155; padding-bottom: 20px; }
-        .sidebar-label { color: #64748b; font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px; padding: 20px 24px 8px; font-weight: 700; }
-        .sidebar-item { color: white; font-size: 10px; padding: 4px 24px; word-break: break-all; }
+        .sidebar-label { color: rgba(255,255,255,0.6); font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em; padding: 20px 24px 8px; font-weight: 700; }
+        .sidebar-item { color: white; font-size: 12px; padding: 4px 24px; word-break: break-all; }
         
         /* Main Content */
         .content { width: 70%; background: white; padding: 40px 36px; }
-        .section-heading { font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 700; color: #1e293b; text-transform: uppercase; letter-spacing: 1px; margin-top: 24px; margin-bottom: 4px; }
+        .section-heading { font-family: 'Arial', sans-serif; font-size: 14px; font-weight: 700; color: #1e293b; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 24px; margin-bottom: 6px; }
         .heading-underline { height: 2px; background: #1e293b; width: 100%; margin-bottom: 10px; }
-        .summary-text { font-family: 'EB Garamond', serif; font-size: 11px; color: #334155; line-height: 1.6; text-align: justify; }
+        .summary-text { font-family: 'Arial', sans-serif; font-size: 13px; color: #334155; line-height: 1.6; text-align: justify; }
         
         /* Lists */
         .exp-item, .proj-item, .cert-item { margin-bottom: 16px; }
         .item-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 2px; }
-        .item-title { font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 700; color: #1e293b; }
-        .item-subtitle { font-family: 'Inter', sans-serif; font-size: 10px; font-style: italic; color: #475569; }
-        .item-meta { font-family: 'Inter', sans-serif; font-size: 9px; color: #64748b; }
-        .item-description { font-family: 'EB Garamond', serif; font-size: 11px; color: #334155; line-height: 1.5; white-space: pre-line; margin-top: 4px; }
+        .item-title { font-family: 'Arial', sans-serif; font-size: 13px; font-weight: 600; color: #1e293b; }
+        .item-subtitle { font-family: 'Arial', sans-serif; font-size: 13px; font-style: italic; color: #475569; }
+        .item-meta { font-family: 'Arial', sans-serif; font-size: 12px; color: #64748b; font-style: italic; }
+        .item-description { font-family: 'Arial', sans-serif; font-size: 13px; color: #334155; line-height: 1.5; white-space: pre-line; margin-top: 4px; }
     </style>
 </head>
 <body>
@@ -160,44 +137,44 @@ export function generateProfessionalHtml(data) {
         <!-- Sidebar -->
         <div class="sidebar">
             <div style="padding: 36px 24px 24px; border-bottom: 1px solid #2d3f55;">
-                <h1 style="font-size: 18px; font-weight: 700; color: white; line-height: 1.3; letter-spacing: 0.3px; margin: 0;">${fullName}</h1>
+                <h1 style="font-size: 20px; font-weight: 700; color: white; line-height: 1.3; letter-spacing: 0.3px; margin: 0;">${fullName}</h1>
                 ${(() => {
             const jobTitle = data.targetJob || data.targetJobRole
             if (jobTitle && jobTitle.trim() !== '' && jobTitle.toLowerCase() !== 'candidate') {
-                return `<p style="color: #94a3b8; font-size: 10px; text-transform: uppercase; letter-spacing: 1.2px; margin-top: 6px; font-weight: 500;">${jobTitle}</p>`
+                return `<p style="color: #94a3b8; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 6px; font-weight: 500;">${jobTitle}</p>`
             }
             return ''
         })()}
             </div>
 
             <div style="padding: 20px 24px; border-bottom: 1px solid #2d3f55;">
-                <div style="color: #64748b; font-size: 8.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 12px;">CONTACT</div>
+                        <div style="color: rgba(255,255,255,0.6); font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px;">CONTACT</div>
                 <div style="display: flex; flex-direction: column; gap: 8px;">
                     <div style="display: flex; align-items: center; gap: 8px;">
                         <div style="width: 6px; height: 6px; background: #475569; border-radius: 50%;"></div>
-                        <div style="color: #cbd5e1; font-size: 10px; line-height: 1.4;">${email}</div>
+                        <div style="color: #cbd5e1; font-size: 12px; line-height: 1.5; margin-bottom: 3px;">${email}</div>
                     </div>
                     <div style="display: flex; align-items: center; gap: 8px;">
                         <div style="width: 6px; height: 6px; background: #475569; border-radius: 50%;"></div>
-                        <div style="color: #cbd5e1; font-size: 10px; line-height: 1.4;">${phoneNumber}</div>
+                        <div style="color: #cbd5e1; font-size: 12px; line-height: 1.5; margin-bottom: 3px;">${phoneNumber}</div>
                     </div>
                     <div style="display: flex; align-items: center; gap: 8px;">
                         <div style="width: 6px; height: 6px; background: #475569; border-radius: 50%;"></div>
-                        <div style="color: #cbd5e1; font-size: 10px; line-height: 1.4;">${locationStr}</div>
+                        <div style="color: #cbd5e1; font-size: 12px; line-height: 1.5; margin-bottom: 3px;">${locationStr}</div>
                     </div>
                     ${github ? `
                     <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
                         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="white">
                             <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
                         </svg>
-                        <span style="color: #cbd5e1; font-size: 10px; line-height: 1.4;">${github.replace(/https?:\/\/(www\.)?github\.com\//, '').replace(/\/$/, '')}</span>
+                        <span style="color: #cbd5e1; font-size: 12px; line-height: 1.5; margin-bottom: 3px;">${github.replace(/https?:\/\/(www\.)?github\.com\//, '').replace(/\/$/, '')}</span>
                     </div>` : ''}
                     ${linkedin ? `
                     <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
                         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="white">
                             <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771 C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
                         </svg>
-                        <span style="color: #cbd5e1; font-size: 10px; line-height: 1.4;">${(() => {
+                        <span style="color: #cbd5e1; font-size: 12px; line-height: 1.5; margin-bottom: 3px;">${(() => {
                 let cleaned = String(linkedin).trim()
                 cleaned = cleaned.replace(/https?:\/\//i, '')
                 cleaned = cleaned.replace(/^www\./i, '')
@@ -213,18 +190,18 @@ export function generateProfessionalHtml(data) {
             </div>
 
             <div style="padding: 20px 24px; border-bottom: 1px solid #2d3f55;">
-                <div style="color: #64748b; font-size: 8.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 12px;">SKILLS</div>
+                <div style="color: rgba(255,255,255,0.6); font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px;">SKILLS</div>
                 ${renderSkills()}
             </div>
 
             <div style="padding: 20px 24px;">
-                <div style="color: #64748b; font-size: 8.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 12px;">EDUCATION</div>
+                <div style="color: rgba(255,255,255,0.6); font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px;">EDUCATION</div>
                 <div style="display: flex; flex-direction: column; gap: 12px;">
                     ${education.map(edu => `
                         <div>
-                            <p style="color: white; font-size: 10.5px; font-weight: 600; line-height: 1.2; margin: 0 0 2px 0;">${edu.institution}</p>
-                            <p style="color: #94a3b8; font-size: 9.5px; margin: 0;">${edu.degree}${edu.field ? ` in ${edu.field}` : ''}</p>
-                            <p style="color: #64748b; font-size: 9px; margin: 2px 0 0 0;">${edu.year}</p>
+                            <p style="color: white; font-size: 13px; font-weight: 600; line-height: 1.3; margin: 0 0 2px 0;">${edu.institution}</p>
+                            <p style="color: #94a3b8; font-size: 13px; margin: 0;">${edu.degree}${edu.field ? ` in ${edu.field}` : ''}</p>
+                            <p style="color: #64748b; font-size: 12px; margin: 2px 0 0 0; font-style: italic;">${edu.year}</p>
                         </div>
                     `).join('')}
                 </div>
@@ -239,6 +216,21 @@ export function generateProfessionalHtml(data) {
                 <div class="heading-underline"></div>
                 <p class="summary-text">${summary}</p>
             </div>
+
+            <!-- Projects -->
+            ${projects.length > 0 ? `
+                <div class="section-heading">PROJECTS</div>
+                <div class="heading-underline"></div>
+                ${projects.map(proj => `
+                    <div class="proj-item">
+                        <div class="item-header">
+                            <span class="item-title">${safe(proj.title)}</span>
+                            <span class="item-subtitle" style="font-size: 9px;">${safeArray(proj.techStack).join(', ')}</span>
+                        </div>
+                        <div class="item-description">${safe(proj.description)}</div>
+                    </div>
+                `).join('')}
+            ` : ''}
 
             <!-- Experience -->
             ${experience.length > 0 ? `
@@ -259,37 +251,17 @@ export function generateProfessionalHtml(data) {
                 `).join('')}
             ` : ''}
 
-            <!-- Achievements -->
-            ${achievements.length > 0 ? `
-                <div class="section-heading">KEY ACHIEVEMENTS</div>
+            <!-- Education -->
+            ${education.length > 0 ? `
+                <div class="section-heading">EDUCATION</div>
                 <div class="heading-underline"></div>
-                <div class="achievements-list" style="margin-left: 16px; margin-top: 12px; margin-bottom: 16px;">
-                    ${achievements.map(achievement => {
-                        // Handle both string and object format
-                        const text = typeof achievement === 'string' 
-                            ? achievement 
-                            : (achievement.polishedText || achievement.text)
-                        return `
-                        <div style="display: flex; margin-bottom: 6px; font-size: 11px; color: #334155; line-height: 1.6;">
-                            <span style="margin-right: 8px;">•</span>
-                            <span>${safe(text)}</span>
-                        </div>
-                        `
-                    }).join('')}
-                </div>
-            ` : ''}
-
-            <!-- Projects -->
-            ${projects.length > 0 ? `
-                <div class="section-heading">PROJECTS</div>
-                <div class="heading-underline"></div>
-                ${projects.map(proj => `
-                    <div class="proj-item">
+                ${education.map(edu => `
+                    <div class="exp-item">
                         <div class="item-header">
-                            <span class="item-title">${safe(proj.title)}</span>
-                            <span class="item-subtitle" style="font-size: 9px;">${safeArray(proj.techStack).join(', ')}</span>
+                            <span class="item-title">${safe(edu.institution)}</span>
+                            <span class="item-meta">${safe(edu.year)}</span>
                         </div>
-                        <div class="item-description">${safe(proj.description)}</div>
+                        <div class="item-subtitle">${safe(edu.degree)}${edu.field ? ` in ${edu.field}` : ''}</div>
                     </div>
                 `).join('')}
             ` : ''}
@@ -307,6 +279,32 @@ export function generateProfessionalHtml(data) {
                         <div class="item-subtitle">${safe(cert.issuer)}</div>
                     </div>
                 `).join('')}
+            ` : ''}
+
+            <!-- Achievements -->
+            ${achievements.length > 0 ? `
+                <div class="section-heading">KEY ACHIEVEMENTS</div>
+                <div class="heading-underline"></div>
+                <div class="achievements-list" style="margin-left: 16px; margin-top: 12px; margin-bottom: 16px;">
+                    ${achievements.map(achievement => {
+                        const text = typeof achievement === 'string'
+                            ? achievement
+                            : (achievement.polishedText || achievement.text || achievement.heading || '')
+                        return `
+                        <div style="display: flex; margin-bottom: 6px; font-size: 13px; color: #334155; line-height: 1.5;">
+                            <span style="margin-right: 8px;">•</span>
+                            <span>${safe(text)}</span>
+                        </div>
+                        `
+                    }).join('')}
+                </div>
+            ` : ''}
+
+            <!-- Interests -->
+            ${safeArray(data.interests).length > 0 ? `
+                <div class="section-heading">INTERESTS</div>
+                <div class="heading-underline"></div>
+                <p style="font-family: 'Arial', sans-serif; font-size: 12px; color: #334155; line-height: 1.6;">${safeArray(data.interests).join(', ')}</p>
             ` : ''}
         </div>
     </div>

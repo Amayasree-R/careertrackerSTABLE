@@ -67,6 +67,11 @@ const EditableSection = ({ sectionName, data, onSave, renderDisplay, renderEdit 
   )
 }
 
+const shortUrl = (url) => {
+  if (!url) return ''
+  return url.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '')
+}
+
 const renderHeading = (title, themeColor) => (
   <div className="mb-4">
     <h3 className="text-sm font-bold text-white/90 uppercase tracking-wide" style={{ color: 'inherit' }}>
@@ -85,6 +90,31 @@ const renderHeadingMain = (title, themeColor) => (
   </div>
 )
 
+const pageStyle = {
+  width: '210mm',
+  minHeight: '297mm',
+  display: 'flex',
+  flexDirection: 'row',
+  alignItems: 'stretch',
+  boxShadow: '0 0 0 1px #ddd',
+  margin: '10px auto',
+  overflow: 'visible',
+  background: 'white',
+  fontFamily: "'Arial', sans-serif",
+  fontSize: '13px',
+  lineHeight: '1.5',
+  letterSpacing: '0.01em',
+  color: '#1f2937',
+  boxSizing: 'border-box',
+}
+
+const printStyles = `
+@media print {
+  .resume-page { margin: 0; box-shadow: none; }
+  .resume-section { page-break-inside: avoid; }
+}
+`
+
 export default function ModernSidebarTemplate({ data, onSectionEdit, themeColor = '#4F46E5' }) {
   if (!data || Object.keys(data).length <= 1) {
     return (
@@ -94,35 +124,103 @@ export default function ModernSidebarTemplate({ data, onSectionEdit, themeColor 
     )
   }
 
-  const safe = (val, fallback) => val !== undefined && val !== null ? val : fallback
   const safeArray = (val) => Array.isArray(val) ? val : []
+
+  const hasProjects = safeArray(data.projects).length > 0
+  const hasExperience = safeArray(data.experience).length > 0
+  const hasEducation = safeArray(data.education).length > 0
+  const hasCerts = safeArray(data.certificates).length > 0
+  const hasAchievements = safeArray(data.achievements).length > 0
+  const hasLanguages = safeArray(data.languages).length > 0
+  const hasInterests = safeArray(data.interests).length > 0
+
+  const sidebarStyle = {
+    width: '30%',
+    padding: '20px 16px',
+    backgroundColor: themeColor,
+    color: 'white',
+    boxSizing: 'border-box',
+    flexShrink: 0,
+  }
+
+  const mainStyle = {
+    width: '70%',
+    padding: '20px 24px',
+    boxSizing: 'border-box',
+  }
+
+  const sectionHeadingStyle = {
+    fontSize: '14px',
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+    color: 'rgba(255,255,255,0.6)',
+    marginBottom: '6px',
+    marginTop: '16px',
+  }
+
+  const mainHeadingStyle = {
+    fontSize: '14px',
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+    color: themeColor,
+    marginBottom: '6px',
+    marginTop: '16px',
+  }
+
+  const mainHrStyle = {
+    border: 'none',
+    borderTop: `2px solid ${themeColor}`,
+    marginBottom: '10px',
+  }
 
   return (
     <ResumeErrorBoundary>
-      <div className="flex w-full bg-white min-h-[1056px] text-gray-800">
-        {/* LEFT SIDEBAR */}
-        <aside className="w-[30%] p-10 text-white" style={{ backgroundColor: themeColor }}>
-          {/* Name */}
-          <div className="mb-8 pb-6 border-b" style={{ borderColor: 'rgba(255,255,255,0.2)' }}>
-            <h1 className="text-2xl font-bold mb-2">
+      <style>{printStyles}</style>
+
+      {/* PAGE 1: Header+Summary+Skills+Projects+Experience in sidebar+main layout */}
+      <div className="resume-page" style={pageStyle}>
+        {/* Sidebar Page 1 */}
+        <aside style={sidebarStyle}>
+          {/* Name & Contact */}
+          <div style={{ paddingBottom: '16px', borderBottom: '1px solid rgba(255,255,255,0.2)', marginBottom: '4px' }}>
+            <h1 style={{ fontSize: '20px', fontWeight: '700', lineHeight: '1.2', marginBottom: '10px' }}>
               {data.fullName || 'Your Name'}
             </h1>
-            <p className="text-white/80 text-xs opacity-90">
-              {[data.contact?.email || data.email, data.contact?.phone || data.phoneNumber]
-                .filter(Boolean)
-                .join(' • ')}
-            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+              {(data.email || data.contact?.email) && (
+                <p style={{ fontSize: '12px', wordBreak: 'break-word', marginBottom: '3px' }}>
+                  <span style={{ fontWeight: '600' }}>Email: </span>{data.email || data.contact?.email}
+                </p>
+              )}
+              {(data.phoneNumber || data.contact?.phone) && (
+                <p style={{ fontSize: '12px', marginBottom: '3px' }}>
+                  <span style={{ fontWeight: '600' }}>Phone: </span>{data.phoneNumber || data.contact?.phone}
+                </p>
+              )}
+              {(data.linkedin || data.contact?.linkedin) && (
+                <p style={{ fontSize: '12px', wordBreak: 'break-word', marginBottom: '3px' }}>
+                  <span style={{ fontWeight: '600' }}>LinkedIn: </span>{shortUrl(data.linkedin || data.contact?.linkedin)}
+                </p>
+              )}
+              {(data.github || data.contact?.github) && (
+                <p style={{ fontSize: '12px', wordBreak: 'break-word', marginBottom: '3px' }}>
+                  <span style={{ fontWeight: '600' }}>GitHub: </span>{shortUrl(data.github || data.contact?.github)}
+                </p>
+              )}
+            </div>
           </div>
 
           {/* Skills */}
-          {data.skills && data.skills.length > 0 && (
-            <div className="mb-8">
-              {renderHeading('SKILLS', themeColor)}
-              <div className="space-y-3">
-                {data.skills.map((skillGroup, i) => (
+          {safeArray(data.skills).length > 0 && (
+            <div className="resume-section">
+              <div style={sectionHeadingStyle}>SKILLS</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {data.skills.filter(g => g.category !== 'Mastered Skills').map((skillGroup, i) => (
                   <div key={i}>
-                    <p className="text-xs font-semibold text-white/90 mb-1">{skillGroup.category}</p>
-                    <p className="text-xs text-white/75">{safeArray(skillGroup.items).join(', ')}</p>
+                    <p style={{ fontSize: '13px', fontWeight: '600', marginBottom: '2px', color: 'rgba(255,255,255,0.9)' }}>{skillGroup.category}</p>
+                    <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.75)' }}>{safeArray(skillGroup.items).join(', ')}</p>
                   </div>
                 ))}
               </div>
@@ -130,206 +228,135 @@ export default function ModernSidebarTemplate({ data, onSectionEdit, themeColor 
           )}
 
           {/* Languages */}
-          {data.languages && data.languages.length > 0 && (
-            <div className="mb-8">
-              {renderHeading('LANGUAGES', themeColor)}
-              <p className="text-xs text-white/80">
+          {hasLanguages && (
+            <div className="resume-section">
+              <div style={sectionHeadingStyle}>LANGUAGES</div>
+              <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.8)' }}>
                 {data.languages.map((lang, i) => {
-                  const langName = typeof lang === 'string' ? lang : lang.name || lang
-                  return <span key={i}>{langName}{i < data.languages.length - 1 ? ', ' : ''}</span>
-                })}
+                  const name = typeof lang === 'string' ? lang : lang.name || String(lang)
+                  return name + (i < data.languages.length - 1 ? ', ' : '')
+                }).join('')}
               </p>
             </div>
           )}
 
           {/* Interests */}
-          {data.interests && data.interests.length > 0 && (
-            <div className="mb-8">
-              {renderHeading('INTERESTS', themeColor)}
-              <p className="text-xs text-white/80">
-                {data.interests.join(', ')}
-              </p>
-            </div>
-          )}
-
-          {/* Education */}
-          {data.education && data.education.length > 0 && (
-            <div>
-              {renderHeading('EDUCATION', themeColor)}
-              {data.education.slice(0, 2).map((edu, i) => (
-                <div key={i} className="mb-4">
-                  <p className="text-xs font-semibold text-white/90">{edu.institution}</p>
-                  <p className="text-xs text-white/75">{edu.degree}</p>
-                </div>
-              ))}
+          {hasInterests && (
+            <div className="resume-section">
+              <div style={sectionHeadingStyle}>INTERESTS</div>
+              <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.8)' }}>{data.interests.join(', ')}</p>
             </div>
           )}
         </aside>
 
-        {/* RIGHT CONTENT */}
-        <main className="w-[70%] p-12">
+        {/* Main Content Page 1 */}
+        <main style={mainStyle}>
           {/* Summary */}
           {data.summary && (
-            <EditableSection
-              sectionName="summary"
-              data={data.summary}
-              onSave={onSectionEdit}
-              renderDisplay={() => (
-                <div className="mb-8">
-                  {renderHeadingMain('PROFESSIONAL SUMMARY', themeColor)}
-                  <p className="text-sm text-gray-700 leading-relaxed">{data.summary}</p>
-                </div>
-              )}
-              renderEdit={(val, setVal) => (
-                <textarea
-                  value={val}
-                  onChange={(e) => setVal(e.target.value)}
-                  rows="3"
-                  className="w-full p-2 text-sm border rounded"
-                />
-              )}
-            />
+            <div className="resume-section">
+              <div style={mainHeadingStyle}>PROFESSIONAL SUMMARY</div>
+              <hr style={mainHrStyle} />
+              <p style={{ fontSize: '13px', color: '#374151', lineHeight: '1.5' }}>{data.summary}</p>
+            </div>
+          )}
+
+          {/* Projects — ATS order: before experience */}
+          {hasProjects && (
+            <div className="resume-section">
+              <div style={mainHeadingStyle}>PROJECTS</div>
+              <hr style={mainHrStyle} />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {safeArray(data.projects).map((proj, i) => (
+                  <div key={i}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                      <span style={{ fontSize: '13px', fontWeight: '600', color: '#111827' }}>{proj.title}</span>
+                      {proj.techStack && (
+                        <span style={{ fontSize: '12px', color: '#6b7280', fontStyle: 'italic' }}>{safeArray(proj.techStack).join(', ')}</span>
+                      )}
+                    </div>
+                    <p style={{ fontSize: '13px', color: '#374151', lineHeight: '1.5', marginTop: '2px', whiteSpace: 'pre-line' }}>{proj.description}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
 
           {/* Experience */}
-          {data.experience && data.experience.length > 0 && (
-            <EditableSection
-              sectionName="experience"
-              data={data.experience}
-              onSave={onSectionEdit}
-              renderDisplay={() => (
-                <div className="mb-8">
-                  {renderHeadingMain('WORK EXPERIENCE', themeColor)}
-                  <div className="space-y-4">
-                    {data.experience.map((exp, i) => (
-                      <div key={i}>
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <h3 className="font-bold text-gray-900">{exp.role}</h3>
-                            <p className="text-sm text-gray-600">{exp.company}</p>
-                          </div>
-                          <p className="text-sm text-gray-600">{exp.duration}</p>
-                        </div>
-                        <p className="text-sm text-gray-700 mt-2">{exp.description}</p>
+          {hasExperience && (
+            <div className="resume-section">
+              <div style={mainHeadingStyle}>WORK EXPERIENCE</div>
+              <hr style={mainHrStyle} />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {safeArray(data.experience).map((exp, i) => (
+                  <div key={i}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                      <div>
+                        <span style={{ fontSize: '13px', fontWeight: '600', color: '#111827' }}>{exp.role}</span>
+                        <span style={{ fontSize: '13px', color: '#6b7280', marginLeft: '6px' }}>{exp.company}</span>
                       </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-              renderEdit={(val, setVal) => (
-                <div className="space-y-4">
-                  {val.map((exp, i) => (
-                    <div key={i} className="p-3 border rounded">
-                      <input
-                        value={exp.role}
-                        onChange={(e) => { const n = [...val]; n[i].role = e.target.value; setVal(n) }}
-                        className="w-full p-1 text-sm border rounded mb-2" placeholder="Role"
-                      />
-                      <input
-                        value={exp.company}
-                        onChange={(e) => { const n = [...val]; n[i].company = e.target.value; setVal(n) }}
-                        className="w-full p-1 text-sm border rounded mb-2" placeholder="Company"
-                      />
-                      <input
-                        value={exp.duration}
-                        onChange={(e) => { const n = [...val]; n[i].duration = e.target.value; setVal(n) }}
-                        className="w-full p-1 text-sm border rounded mb-2" placeholder="Duration"
-                      />
-                      <textarea
-                        value={exp.description}
-                        onChange={(e) => { const n = [...val]; n[i].description = e.target.value; setVal(n) }}
-                        rows="2" className="w-full p-1 text-sm border rounded" placeholder="Description"
-                      />
+                      <span style={{ fontSize: '12px', color: '#6b7280', whiteSpace: 'nowrap', fontStyle: 'italic' }}>{exp.duration}</span>
                     </div>
-                  ))}
-                </div>
-              )}
-            />
+                    <p style={{ fontSize: '13px', color: '#374151', lineHeight: '1.5', marginTop: '3px', whiteSpace: 'pre-line' }}>{exp.polishedDescription || exp.description}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {/* Education */}
+          {hasEducation && (
+            <div className="resume-section" style={{ pageBreakInside: 'avoid', marginBottom: '4px' }}>
+              <div style={mainHeadingStyle}>EDUCATION</div>
+              <hr style={mainHrStyle} />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {safeArray(data.education).map((edu, i) => (
+                  <div key={i} style={{ pageBreakInside: 'avoid' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                      <span style={{ fontSize: '13px', fontWeight: '600', color: '#111827' }}>{edu.institution}</span>
+                      <span style={{ fontSize: '12px', color: '#6b7280', fontStyle: 'italic' }}>{edu.year}</span>
+                    </div>
+                    <p style={{ fontSize: '13px', color: '#374151' }}>{edu.degree}{edu.field ? ` in ${edu.field}` : ''}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
 
-          {/* Projects */}
-          {data.projects && data.projects.length > 0 && (
-            <EditableSection
-              sectionName="projects"
-              data={data.projects}
-              onSave={onSectionEdit}
-              renderDisplay={() => (
-                <div className="mb-8">
-                  {renderHeadingMain('PROJECTS', themeColor)}
-                  <div className="space-y-4">
-                    {data.projects.map((proj, i) => (
-                      <div key={i}>
-                        <h3 className="font-bold text-gray-900">
-                          {proj.title} {proj.techStack && `(${safeArray(proj.techStack).join(', ')})`}
-                        </h3>
-                        <p className="text-sm text-gray-700">{proj.description}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-              renderEdit={(val, setVal) => (
-                <div className="space-y-3">
-                  {val.map((proj, i) => (
-                    <div key={i} className="p-3 border rounded">
-                      <input
-                        value={proj.title}
-                        onChange={(e) => { const n = [...val]; n[i].title = e.target.value; setVal(n) }}
-                        className="w-full p-1 text-sm border rounded mb-2" placeholder="Title"
-                      />
-                      <textarea
-                        value={proj.description}
-                        onChange={(e) => { const n = [...val]; n[i].description = e.target.value; setVal(n) }}
-                        rows="2" className="w-full p-1 text-sm border rounded" placeholder="Description"
-                      />
+          {/* Certifications */}
+          {hasCerts && (
+            <div className="resume-section" style={{ pageBreakInside: 'avoid', marginBottom: '4px' }}>
+              <div style={mainHeadingStyle}>CERTIFICATIONS</div>
+              <hr style={mainHrStyle} />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                {safeArray(data.certificates).map((cert, i) => (
+                  <div key={i} style={{ pageBreakInside: 'avoid' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                      <span style={{ fontSize: '13px', fontWeight: '600', color: '#111827' }}>{cert.name || cert.title}</span>
+                      <span style={{ fontSize: '12px', color: '#6b7280', fontStyle: 'italic' }}>{cert.year || cert.issueYear}</span>
                     </div>
-                  ))}
-                </div>
-              )}
-            />
+                    {cert.issuer && <p style={{ fontSize: '13px', color: '#6b7280', fontStyle: 'italic' }}>{cert.issuer}</p>}
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
 
           {/* Achievements */}
-          {data.achievements && data.achievements.length > 0 && (
-            <EditableSection
-              sectionName="achievements"
-              data={data.achievements}
-              onSave={onSectionEdit}
-              renderDisplay={() => (
-                <div>
-                  {renderHeadingMain('KEY ACHIEVEMENTS', themeColor)}
-                  <ul className="space-y-2 ml-4 list-disc">
-                    {data.achievements.map((ach, i) => {
-                      const heading = typeof ach === 'string' ? ach : ach.heading
-                      const description = typeof ach === 'string' ? '' : ach.description
-                      return (
-                        <li key={i} className="text-sm text-gray-700">
-                          <strong>{heading}</strong> {description && `– ${description}`}
-                        </li>
-                      )
-                    })}
-                  </ul>
-                </div>
-              )}
-              renderEdit={(val, setVal) => (
-                <div className="space-y-3">
-                  {val.map((ach, i) => (
-                    <div key={i} className="p-3 border rounded">
-                      <input
-                        value={typeof ach === 'string' ? ach : ach.heading}
-                        onChange={(e) => { const n = [...val]; n[i] = { heading: e.target.value, description: typeof ach === 'string' ? '' : ach.description }; setVal(n) }}
-                        className="w-full p-1 text-sm border rounded mb-2" placeholder="Achievement"
-                      />
-                      <textarea
-                        value={typeof ach === 'string' ? '' : ach.description}
-                        onChange={(e) => { const n = [...val]; n[i].description = e.target.value; setVal(n) }}
-                        rows="2" className="w-full p-1 text-sm border rounded" placeholder="Description"
-                      />
-                    </div>
-                  ))}
-                </div>
-              )}
-            />
+          {hasAchievements && (
+            <div className="resume-section" style={{ pageBreakInside: 'avoid', marginBottom: '4px' }}>
+              <div style={mainHeadingStyle}>KEY ACHIEVEMENTS</div>
+              <hr style={mainHrStyle} />
+              <ul style={{ listStyle: 'disc', paddingLeft: '16px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                {safeArray(data.achievements).map((ach, i) => {
+                  const heading = typeof ach === 'string' ? ach : ach.heading
+                  const description = typeof ach === 'string' ? '' : ach.description
+                  return (
+                    <li key={i} style={{ fontSize: '13px', color: '#374151', pageBreakInside: 'avoid' }}>
+                      <strong>{heading}</strong>{description ? ` – ${description}` : ''}
+                    </li>
+                  )
+                })}
+              </ul>
+            </div>
           )}
         </main>
       </div>

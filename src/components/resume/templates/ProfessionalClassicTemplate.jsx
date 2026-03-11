@@ -72,14 +72,42 @@ const EditableSection = ({ sectionName, data, onSave, renderDisplay, renderEdit 
   )
 }
 
+const shortUrl = (url) => {
+  if (!url) return ''
+  return url.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '')
+}
+
 const renderHeading = (title, themeColor) => (
-  <div className="mt-6 mb-4">
-    <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wider" style={{ color: themeColor }}>
+  <div style={{ marginTop: '18px', marginBottom: '6px' }}>
+    <h2 style={{ fontSize: '14px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em', color: themeColor, marginBottom: '4px' }}>
       {title}
     </h2>
-    <hr className="border-none mt-2 mb-3" style={{ borderTop: `2px solid ${themeColor}` }} />
+    <hr style={{ border: 'none', borderTop: `2px solid ${themeColor}`, marginBottom: '6px' }} />
   </div>
 )
+
+const pageStyle = {
+  width: '210mm',
+  minHeight: '297mm',
+  padding: '15mm',
+  boxSizing: 'border-box',
+  boxShadow: '0 0 0 1px #ddd',
+  margin: '10px auto',
+  overflow: 'visible',
+  background: 'white',
+  fontFamily: "'Arial', sans-serif",
+  fontSize: '13px',
+  lineHeight: '1.5',
+  letterSpacing: '0.01em',
+  color: '#1f2937',
+}
+
+const printStyles = `
+@media print {
+  .resume-page { margin: 0; box-shadow: none; padding: 15mm; box-sizing: border-box; }
+  .resume-section { page-break-inside: avoid; }
+}
+`
 
 export default function ProfessionalClassicTemplate({ data, onSectionEdit, themeColor = '#1e293b' }) {
   if (!data || Object.keys(data).length <= 1) {
@@ -90,345 +118,160 @@ export default function ProfessionalClassicTemplate({ data, onSectionEdit, theme
     )
   }
 
-  const safe = (val, fallback) => val !== undefined && val !== null ? val : fallback
   const safeArray = (val) => Array.isArray(val) ? val : []
+  const ss = { marginBottom: '8px', pageBreakInside: 'avoid' }
 
   return (
     <ResumeErrorBoundary>
-      <div className="w-full bg-white p-12 min-h-[1056px] text-gray-800" style={{ fontFamily: "'Inter', sans-serif" }}>
+      <style>{printStyles}</style>
+      <div className="resume-page" style={pageStyle}>
+
         {/* Header */}
-        <div className="mb-8 border-b-2 pb-6" style={{ borderColor: themeColor }}>
-          <h1 className="text-4xl font-bold mb-2" style={{ color: themeColor }}>
+        <div className="resume-section" style={{ ...ss, borderBottom: `2px solid ${themeColor}`, paddingBottom: '8px', marginBottom: '12px' }}>
+          <h1 style={{ fontSize: '20px', fontWeight: '700', color: themeColor, marginBottom: '4px' }}>
             {data.fullName || 'Your Name'}
           </h1>
-          <p className="text-sm text-gray-600">
-            {[data.contact?.email || data.email, data.contact?.phone || data.phoneNumber, data.location]
-              .filter(Boolean)
-              .join(' • ')}
+          <p style={{ fontSize: '12px', color: '#4b5563', marginBottom: '3px' }}>
+            {[data.email || data.contact?.email, data.phoneNumber || data.contact?.phone, typeof data.location === 'string' ? data.location : ''].filter(Boolean).join(' • ')}
           </p>
-          {(data.contact?.linkedin || data.linkedin) && (
-            <p className="text-sm text-gray-600">
-              LinkedIn: {data.contact?.linkedin || data.linkedin}
-            </p>
-          )}
+          <p style={{ fontSize: '12px', color: '#4b5563', marginBottom: '3px' }}>
+            {[(data.linkedin || data.contact?.linkedin) ? `LinkedIn: ${shortUrl(data.linkedin || data.contact?.linkedin)}` : '', (data.github || data.contact?.github) ? `GitHub: ${shortUrl(data.github || data.contact?.github)}` : ''].filter(Boolean).join(' • ')}
+          </p>
         </div>
 
         {/* Summary */}
         {data.summary && (
-          <EditableSection
-            sectionName="summary"
-            data={data.summary}
-            onSave={onSectionEdit}
-            renderDisplay={() => (
-              <div>
-                {renderHeading('PROFESSIONAL SUMMARY', themeColor)}
-                <p className="text-sm text-gray-700 leading-relaxed">{data.summary}</p>
-              </div>
-            )}
-            renderEdit={(val, setVal) => (
-              <textarea
-                value={val}
-                onChange={(e) => setVal(e.target.value)}
-                rows="3"
-                className="w-full p-2 text-sm border rounded"
-              />
-            )}
-          />
-        )}
-
-        {/* Experience */}
-        {data.experience && data.experience.length > 0 && (
-          <EditableSection
-            sectionName="experience"
-            data={data.experience}
-            onSave={onSectionEdit}
-            renderDisplay={() => (
-              <div>
-                {renderHeading('WORK EXPERIENCE', themeColor)}
-                <div className="space-y-4">
-                  {data.experience.map((exp, i) => (
-                    <div key={i}>
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h3 className="font-bold text-gray-900">{exp.role}</h3>
-                          <p className="text-sm text-gray-600">{exp.company}</p>
-                        </div>
-                        <p className="text-sm text-gray-600">{exp.duration}</p>
-                      </div>
-                      <p className="text-sm text-gray-700 mt-2">{exp.description}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-            renderEdit={(val, setVal) => (
-              <div className="space-y-4">
-                {val.map((exp, i) => (
-                  <div key={i} className="p-3 border rounded">
-                    <input
-                      value={exp.role}
-                      onChange={(e) => { const n = [...val]; n[i].role = e.target.value; setVal(n) }}
-                      className="w-full p-1 text-sm border rounded mb-2" placeholder="Role"
-                    />
-                    <input
-                      value={exp.company}
-                      onChange={(e) => { const n = [...val]; n[i].company = e.target.value; setVal(n) }}
-                      className="w-full p-1 text-sm border rounded mb-2" placeholder="Company"
-                    />
-                    <input
-                      value={exp.duration}
-                      onChange={(e) => { const n = [...val]; n[i].duration = e.target.value; setVal(n) }}
-                      className="w-full p-1 text-sm border rounded mb-2" placeholder="Duration"
-                    />
-                    <textarea
-                      value={exp.description}
-                      onChange={(e) => { const n = [...val]; n[i].description = e.target.value; setVal(n) }}
-                      rows="2" className="w-full p-1 text-sm border rounded" placeholder="Description"
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
-          />
+          <div className="resume-section" style={ss}>
+            {renderHeading('PROFESSIONAL SUMMARY', themeColor)}
+            <p style={{ fontSize: '13px', color: '#374151', lineHeight: '1.5' }}>{data.summary}</p>
+          </div>
         )}
 
         {/* Skills */}
-        {data.skills && data.skills.length > 0 && (
-          <EditableSection
-            sectionName="skills"
-            data={data.skills}
-            onSave={onSectionEdit}
-            renderDisplay={() => (
-              <div>
-                {renderHeading('SKILLS', themeColor)}
-                <div className="space-y-3">
-                  {data.skills.map((skillGroup, i) => (
-                    <div key={i}>
-                      <h4 className="font-semibold text-sm text-gray-900">{skillGroup.category}</h4>
-                      <p className="text-sm text-gray-700">{safeArray(skillGroup.items).join(', ')}</p>
-                    </div>
-                  ))}
+        {safeArray(data.skills).filter(g => g.category !== 'Mastered Skills').length > 0 && (
+          <div className="resume-section" style={ss}>
+            {renderHeading('SKILLS', themeColor)}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              {safeArray(data.skills).filter(g => g.category !== 'Mastered Skills').map((skillGroup, i) => (
+                <div key={i}>
+                  <span style={{ fontWeight: '600', fontSize: '13px', color: '#111827' }}>{skillGroup.category}: </span>
+                  <span style={{ fontSize: '12px', color: '#374151' }}>{safeArray(skillGroup.items).join(', ')}</span>
                 </div>
-              </div>
-            )}
-            renderEdit={(val, setVal) => (
-              <div className="space-y-3">
-                {val.map((skillGroup, i) => (
-                  <div key={i} className="p-3 border rounded">
-                    <input
-                      value={skillGroup.category}
-                      onChange={(e) => { const n = [...val]; n[i].category = e.target.value; setVal(n) }}
-                      className="w-full p-1 text-sm border rounded mb-2" placeholder="Category"
-                    />
-                    <textarea
-                      value={safeArray(skillGroup.items).join(', ')}
-                      onChange={(e) => { const n = [...val]; n[i].items = e.target.value.split(',').map(s => s.trim()); setVal(n) }}
-                      rows="2" className="w-full p-1 text-sm border rounded" placeholder="Skills (comma separated)"
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
-          />
-        )}
-
-        {/* Education */}
-        {data.education && data.education.length > 0 && (
-          <EditableSection
-            sectionName="education"
-            data={data.education}
-            onSave={onSectionEdit}
-            renderDisplay={() => (
-              <div>
-                {renderHeading('EDUCATION', themeColor)}
-                <div className="space-y-3">
-                  {data.education.map((edu, i) => (
-                    <div key={i}>
-                      <h3 className="font-bold text-gray-900">{edu.institution}</h3>
-                      <p className="text-sm text-gray-700">{edu.degree} {edu.field && `in ${edu.field}`}</p>
-                      {edu.startYear && <p className="text-sm text-gray-600">{edu.startYear} - {edu.endYear}</p>}
-                      {edu.description && <p className="text-sm text-gray-700 mt-1">{edu.description}</p>}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-            renderEdit={(val, setVal) => (
-              <div className="space-y-3">
-                {val.map((edu, i) => (
-                  <div key={i} className="p-3 border rounded">
-                    <input
-                      value={edu.institution}
-                      onChange={(e) => { const n = [...val]; n[i].institution = e.target.value; setVal(n) }}
-                      className="w-full p-1 text-sm border rounded mb-2" placeholder="Institution"
-                    />
-                    <input
-                      value={edu.degree}
-                      onChange={(e) => { const n = [...val]; n[i].degree = e.target.value; setVal(n) }}
-                      className="w-full p-1 text-sm border rounded mb-2" placeholder="Degree"
-                    />
-                    <input
-                      value={edu.field}
-                      onChange={(e) => { const n = [...val]; n[i].field = e.target.value; setVal(n) }}
-                      className="w-full p-1 text-sm border rounded mb-2" placeholder="Field"
-                    />
-                    <textarea
-                      value={edu.description}
-                      onChange={(e) => { const n = [...val]; n[i].description = e.target.value; setVal(n) }}
-                      rows="2" className="w-full p-1 text-sm border rounded" placeholder="Description"
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
-          />
-        )}
-
-        {/* Achievements */}
-        {data.achievements && data.achievements.length > 0 && (
-          <EditableSection
-            sectionName="achievements"
-            data={data.achievements}
-            onSave={onSectionEdit}
-            renderDisplay={() => (
-              <div>
-                {renderHeading('KEY ACHIEVEMENTS', themeColor)}
-                <ul className="space-y-2 ml-4 list-disc">
-                  {data.achievements.map((ach, i) => {
-                    const heading = typeof ach === 'string' ? ach : ach.heading
-                    const description = typeof ach === 'string' ? '' : ach.description
-                    return (
-                      <li key={i} className="text-sm text-gray-700">
-                        <strong>{heading}</strong> {description && `– ${description}`}
-                      </li>
-                    )
-                  })}
-                </ul>
-              </div>
-            )}
-            renderEdit={(val, setVal) => (
-              <div className="space-y-3">
-                {val.map((ach, i) => (
-                  <div key={i} className="p-3 border rounded">
-                    <input
-                      value={typeof ach === 'string' ? ach : ach.heading}
-                      onChange={(e) => { const n = [...val]; n[i] = { heading: e.target.value, description: typeof ach === 'string' ? '' : ach.description }; setVal(n) }}
-                      className="w-full p-1 text-sm border rounded mb-2" placeholder="Achievement"
-                    />
-                    <textarea
-                      value={typeof ach === 'string' ? '' : ach.description}
-                      onChange={(e) => { const n = [...val]; n[i].description = e.target.value; setVal(n) }}
-                      rows="2" className="w-full p-1 text-sm border rounded" placeholder="Description"
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
-          />
+              ))}
+            </div>
+          </div>
         )}
 
         {/* Projects */}
-        {data.projects && data.projects.length > 0 && (
-          <EditableSection
-            sectionName="projects"
-            data={data.projects}
-            onSave={onSectionEdit}
-            renderDisplay={() => (
-              <div>
-                {renderHeading('PROJECTS', themeColor)}
-                <div className="space-y-4">
-                  {data.projects.map((proj, i) => (
-                    <div key={i}>
-                      <h3 className="font-bold text-gray-900">
-                        {proj.title} {proj.techStack && `(${safeArray(proj.techStack).join(', ')})`}
-                      </h3>
-                      <p className="text-sm text-gray-700">{proj.description}</p>
-                    </div>
-                  ))}
+        {safeArray(data.projects).length > 0 && (
+          <div className="resume-section" style={ss}>
+            {renderHeading('PROJECTS', themeColor)}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {safeArray(data.projects).map((proj, i) => (
+                <div key={i} style={{ pageBreakInside: 'avoid' }}>
+                  <p style={{ fontWeight: '600', fontSize: '13px', color: '#111827' }}>
+                    {proj.title}{safeArray(proj.techStack).length > 0 && ` (${safeArray(proj.techStack).join(', ')})`}
+                  </p>
+                  <p style={{ fontSize: '13px', color: '#374151', lineHeight: '1.5' }}>{proj.description}</p>
                 </div>
-              </div>
-            )}
-            renderEdit={(val, setVal) => (
-              <div className="space-y-3">
-                {val.map((proj, i) => (
-                  <div key={i} className="p-3 border rounded">
-                    <input
-                      value={proj.title}
-                      onChange={(e) => { const n = [...val]; n[i].title = e.target.value; setVal(n) }}
-                      className="w-full p-1 text-sm border rounded mb-2" placeholder="Title"
-                    />
-                    <textarea
-                      value={proj.description}
-                      onChange={(e) => { const n = [...val]; n[i].description = e.target.value; setVal(n) }}
-                      rows="2" className="w-full p-1 text-sm border rounded" placeholder="Description"
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
-          />
+              ))}
+            </div>
+          </div>
         )}
 
-        {/* Languages */}
-        {data.languages && data.languages.length > 0 && (
-          <EditableSection
-            sectionName="languages"
-            data={data.languages}
-            onSave={onSectionEdit}
-            renderDisplay={() => (
-              <div>
-                {renderHeading('LANGUAGES', themeColor)}
-                <p className="text-sm text-gray-700">
-                  {data.languages.map((lang, i) => {
-                    const langName = typeof lang === 'string' ? lang : lang.name || lang
-                    return <span key={i}>{langName}{i < data.languages.length - 1 ? ', ' : ''}</span>
-                  })}
-                </p>
-              </div>
-            )}
-            renderEdit={(val, setVal) => (
-              <div className="space-y-2">
-                {val.map((lang, i) => (
-                  <input
-                    key={i}
-                    value={typeof lang === 'string' ? lang : lang.name || lang}
-                    onChange={(e) => { const n = [...val]; n[i] = e.target.value; setVal(n) }}
-                    className="w-full p-1 text-sm border rounded" placeholder="Language"
-                  />
-                ))}
-              </div>
-            )}
-          />
+        {/* Experience */}
+        {safeArray(data.experience).length > 0 && (
+          <div className="resume-section" style={ss}>
+            {renderHeading('WORK EXPERIENCE', themeColor)}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {safeArray(data.experience).map((exp, i) => (
+                <div key={i} style={{ pageBreakInside: 'avoid' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <div>
+                      <p style={{ fontWeight: '600', fontSize: '13px', color: '#111827' }}>{exp.role}</p>
+                      <p style={{ fontSize: '13px', color: '#6b7280' }}>{exp.company}</p>
+                    </div>
+                    <p style={{ fontSize: '12px', color: '#6b7280', whiteSpace: 'nowrap', fontStyle: 'italic' }}>{exp.duration}</p>
+                  </div>
+                  <p style={{ fontSize: '13px', color: '#374151', lineHeight: '1.5', marginTop: '3px', whiteSpace: 'pre-line' }}>{exp.polishedDescription || exp.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Education */}
+        {safeArray(data.education).length > 0 && (
+          <div className="resume-section" style={ss}>
+            {renderHeading('EDUCATION', themeColor)}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {safeArray(data.education).map((edu, i) => (
+                <div key={i} style={{ pageBreakInside: 'avoid' }}>
+                  <p style={{ fontWeight: '600', fontSize: '13px', color: '#111827' }}>{edu.institution}</p>
+                  <p style={{ fontSize: '13px', color: '#374151' }}>{edu.degree}{edu.field ? ` in ${edu.field}` : ''}</p>
+                  {(edu.startYear || edu.year) && (
+                    <p style={{ fontSize: '12px', color: '#6b7280', fontStyle: 'italic' }}>{edu.startYear ? `${edu.startYear} – ${edu.endYear || 'Present'}` : edu.year}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Certifications */}
+        {safeArray(data.certificates).length > 0 && (
+          <div className="resume-section" style={ss}>
+            {renderHeading('CERTIFICATIONS', themeColor)}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              {safeArray(data.certificates).map((cert, i) => (
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', pageBreakInside: 'avoid' }}>
+                  <div>
+                    <p style={{ fontWeight: '600', fontSize: '13px', color: '#111827' }}>{cert.name || cert.title || cert.polishedTitle}</p>
+                    <p style={{ fontSize: '13px', color: '#6b7280' }}>{cert.issuer}</p>
+                  </div>
+                  <p style={{ fontSize: '12px', color: '#6b7280', whiteSpace: 'nowrap', fontStyle: 'italic' }}>{cert.year || cert.issueYear}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Achievements */}
+        {safeArray(data.achievements).length > 0 && (
+          <div className="resume-section" style={ss}>
+            {renderHeading('KEY ACHIEVEMENTS', themeColor)}
+            <ul style={{ paddingLeft: '16px', listStyleType: 'disc', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              {safeArray(data.achievements).map((ach, i) => {
+                const heading = typeof ach === 'string' ? ach : ach.heading
+                const description = typeof ach === 'string' ? '' : ach.description
+                return (
+                  <li key={i} style={{ fontSize: '13px', color: '#374151', pageBreakInside: 'avoid' }}>
+                    <strong>{heading}</strong>{description && ` – ${description}`}
+                  </li>
+                )
+              })}
+            </ul>
+          </div>
         )}
 
         {/* Interests */}
-        {data.interests && data.interests.length > 0 && (
-          <EditableSection
-            sectionName="interests"
-            data={data.interests}
-            onSave={onSectionEdit}
-            renderDisplay={() => (
-              <div>
-                {renderHeading('INTERESTS', themeColor)}
-                <p className="text-sm text-gray-700">
-                  {data.interests.join(', ')}
-                </p>
-              </div>
-            )}
-            renderEdit={(val, setVal) => (
-              <div className="space-y-2">
-                {val.map((interest, i) => (
-                  <input
-                    key={i}
-                    value={interest}
-                    onChange={(e) => { const n = [...val]; n[i] = e.target.value; setVal(n) }}
-                    className="w-full p-1 text-sm border rounded" placeholder="Interest"
-                  />
-                ))}
-              </div>
-            )}
-          />
+        {safeArray(data.interests).length > 0 && (
+          <div className="resume-section" style={ss}>
+            {renderHeading('INTERESTS', themeColor)}
+            <p style={{ fontSize: '12px', color: '#374151' }}>{safeArray(data.interests).join(', ')}</p>
+          </div>
         )}
+
+        {/* Languages */}
+        {safeArray(data.languages).length > 0 && (
+          <div className="resume-section" style={ss}>
+            {renderHeading('LANGUAGES', themeColor)}
+            <p style={{ fontSize: '12px', color: '#374151' }}>
+              {safeArray(data.languages).map(lang => typeof lang === 'string' ? lang : lang.name || lang).join(', ')}
+            </p>
+          </div>
+        )}
+
       </div>
     </ResumeErrorBoundary>
   )

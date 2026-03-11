@@ -165,7 +165,7 @@ export function getAggregatedResumeData(user) {
         // Career data
         education,
         experience,
-        masteredSkills,
+        masteredSkills: masteredSkills.map(s => s.skill),
         certifiedSkills,  // Skills verified by certificates
         knownSkills,
         certificates: certsForResume || [],
@@ -173,7 +173,7 @@ export function getAggregatedResumeData(user) {
         targetJobRole,
         // AI Instruction for skills categorization
         aiInstructions: {
-            skills: "masteredSkills must appear in the skills section of the resume, grouped under a category called 'Mastered Skills'"
+            skills: "Categorize ALL skills from both knownSkills and masteredSkills into appropriate categories like Programming Languages, Frameworks, Tools, Databases, etc. Do NOT create a 'Mastered Skills' category."
         }
     }
 }

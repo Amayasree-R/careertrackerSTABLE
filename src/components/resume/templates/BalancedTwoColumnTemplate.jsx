@@ -57,200 +57,211 @@ const renderHeading = (title, themeColor) => (
 
 const safeArray = (val) => Array.isArray(val) ? val : []
 
+const shortUrl = (url) => {
+  if (!url) return ''
+  return url.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '')
+}
+
+const pageStyle = {
+  width: '210mm',
+  minHeight: '297mm',
+  background: 'white',
+  padding: '15mm',
+  boxSizing: 'border-box',
+  margin: '10px auto',
+  boxShadow: '0 0 0 1px #ddd',
+  overflow: 'visible',
+  fontFamily: "'Arial', sans-serif",
+  fontSize: '13px',
+  lineHeight: '1.5',
+  letterSpacing: '0.01em',
+  color: '#1f2937',
+}
+
+const printStyles = `
+@media print {
+  .resume-page { page-break-after: always; page-break-inside: avoid; }
+  .resume-page:last-child { page-break-after: avoid; }
+  .resume-section { page-break-inside: avoid; }
+}
+`
+
 export default function BalancedTwoColumnTemplate({ data, onSectionEdit, themeColor = '#1e293b' }) {
   if (!data || Object.keys(data).length <= 1) {
     return <div className="w-full flex justify-center items-center min-h-[400px] border-2 border-dashed"><p className="text-slate-400">Generate a resume</p></div>
   }
 
+  const sectionStyle = {
+    marginBottom: '14px',
+  }
+
+  const secHeadStyle = {
+    fontSize: '14px',
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+    color: themeColor,
+    borderBottom: `2px solid ${themeColor}`,
+    paddingBottom: '3px',
+    marginBottom: '6px',
+  }
+
+  const contactLine = [
+    data.email || data.contact?.email,
+    data.phoneNumber || data.contact?.phone,
+    typeof data.location === 'string' ? data.location : [data.location?.city, data.location?.state, data.location?.country].filter(Boolean).join(', '),
+  ].filter(Boolean).join(' • ')
+
+  const socialLine = [
+    (data.linkedin || data.contact?.linkedin) ? `LinkedIn: ${shortUrl(data.linkedin || data.contact?.linkedin)}` : '',
+    (data.github || data.contact?.github) ? `GitHub: ${shortUrl(data.github || data.contact?.github)}` : '',
+  ].filter(Boolean).join('   |   ')
+
   return (
     <ResumeErrorBoundary>
-      <div className="w-full bg-white p-12 min-h-[1056px] text-gray-800">
+      <style>{printStyles}</style>
+      <div className="resume-page" style={pageStyle}>
         {/* Header */}
-        <div className="mb-8 pb-6 border-b-2" style={{ borderColor: themeColor }}>
-          <h1 className="text-3xl font-bold mb-1" style={{ color: themeColor }}>
+        <div className="resume-section" style={{ marginBottom: '14px', paddingBottom: '10px', borderBottom: `2px solid ${themeColor}` }}>
+          <h1 style={{ fontSize: '20px', fontWeight: '700', color: themeColor, marginBottom: '4px' }}>
             {data.fullName || 'Your Name'}
           </h1>
-          <p className="text-xs text-gray-600">
-            {[data.contact?.email || data.email, data.contact?.phone || data.phoneNumber, data.location]
-              .filter(Boolean)
-              .join(' • ')}
-          </p>
+          {contactLine && <p style={{ fontSize: '12px', color: '#6b7280', marginBottom: '3px' }}>{contactLine}</p>}
+          {socialLine && <p style={{ fontSize: '12px', color: '#6b7280', marginBottom: '3px' }}>{socialLine}</p>}
         </div>
 
-        {/* Summary */}
+        {/* Summary — full width */}
         {data.summary && (
-          <EditableSection
-            sectionName="summary"
-            data={data.summary}
-            onSave={onSectionEdit}
-            renderDisplay={() => (
-              <div className="mb-8">
-                {renderHeading('PROFESSIONAL SUMMARY', themeColor)}
-                <p className="text-sm text-gray-700 leading-relaxed">{data.summary}</p>
-              </div>
-            )}
-            renderEdit={(val, setVal) => (
-              <textarea value={val} onChange={(e) => setVal(e.target.value)} rows="3" className="w-full p-2 text-sm border rounded" />
-            )}
-          />
+          <div className="resume-section" style={sectionStyle}>
+            <h2 style={secHeadStyle}>PROFESSIONAL SUMMARY</h2>
+            <p style={{ fontSize: '13px', color: '#374151', lineHeight: '1.5' }}>{data.summary}</p>
+          </div>
         )}
 
-        {/* Two Column Layout */}
-        <div className="grid grid-cols-2 gap-12">
-          {/* LEFT COLUMN */}
+        {/* Two Column Grid */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginTop: '4px', alignItems: 'start' }}>
+          {/* LEFT COLUMN: Skills → Languages → Interests */}
           <div>
-            {/* Skills */}
-            {data.skills && data.skills.length > 0 && (
-              <div className="mb-8">
-                {renderHeading('SKILLS', themeColor)}
-                {data.skills.map((skillGroup, i) => (
-                  <div key={i} className="mb-4">
-                    <p className="font-semibold text-sm text-gray-900">{skillGroup.category}</p>
-                    <p className="text-sm text-gray-700">{safeArray(skillGroup.items).join(', ')}</p>
+            {safeArray(data.skills).length > 0 && (
+              <div className="resume-section" style={sectionStyle}>
+                <h2 style={secHeadStyle}>SKILLS</h2>
+                {data.skills.filter(g => g.category !== 'Mastered Skills').map((skillGroup, i) => (
+                  <div key={i} style={{ marginBottom: '8px' }}>
+                    <p style={{ fontSize: '13px', fontWeight: '600', color: '#111827' }}>{skillGroup.category}</p>
+                    <p style={{ fontSize: '12px', color: '#374151' }}>{safeArray(skillGroup.items).join(', ')}</p>
                   </div>
                 ))}
               </div>
             )}
 
-            {/* Languages */}
-            {data.languages && data.languages.length > 0 && (
-              <div className="mb-8">
-                {renderHeading('LANGUAGES', themeColor)}
-                <p className="text-sm text-gray-700">
+            {safeArray(data.languages).length > 0 && (
+              <div className="resume-section" style={sectionStyle}>
+                <h2 style={secHeadStyle}>LANGUAGES</h2>
+                <p style={{ fontSize: '12px', color: '#374151' }}>
                   {data.languages.map((lang, i) => {
-                    const langName = typeof lang === 'string' ? lang : lang.name || lang
-                    return <span key={i}>{langName}{i < data.languages.length - 1 ? ', ' : ''}</span>
-                  })}
+                    const name = typeof lang === 'string' ? lang : lang.name || String(lang)
+                    return name + (i < data.languages.length - 1 ? ', ' : '')
+                  }).join('')}
                 </p>
               </div>
             )}
 
-            {/* Interests */}
-            {data.interests && data.interests.length > 0 && (
-              <div className="mb-8">
-                {renderHeading('INTERESTS', themeColor)}
-                <p className="text-sm text-gray-700">
-                  {data.interests.join(', ')}
-                </p>
+            {safeArray(data.interests).length > 0 && (
+              <div className="resume-section" style={sectionStyle}>
+                <h2 style={secHeadStyle}>INTERESTS</h2>
+                <p style={{ fontSize: '12px', color: '#374151' }}>{data.interests.join(', ')}</p>
               </div>
             )}
           </div>
 
-          {/* RIGHT COLUMN */}
+          {/* RIGHT COLUMN: Projects → Experience → Education → Certifications → Achievements */}
           <div>
-            {/* Experience */}
-            {data.experience && data.experience.length > 0 && (
-              <EditableSection
-                sectionName="experience"
-                data={data.experience}
-                onSave={onSectionEdit}
-                renderDisplay={() => (
-                  <div className="mb-8">
-                    {renderHeading('EXPERIENCE', themeColor)}
-                    <div className="space-y-4">
-                      {data.experience.map((exp, i) => (
-                        <div key={i}>
-                          <h3 className="font-bold text-gray-900">{exp.role}</h3>
-                          <p className="text-xs text-gray-600">{exp.company} • {exp.duration}</p>
-                          <p className="text-sm text-gray-700 mt-1">{exp.description}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                renderEdit={(val, setVal) => (
-                  <div className="space-y-3">
-                    {val.map((exp, i) => (
-                      <div key={i} className="p-3 border rounded">
-                        <input value={exp.role} onChange={(e) => { const n = [...val]; n[i].role = e.target.value; setVal(n) }} className="w-full p-1 text-sm border rounded mb-2" placeholder="Role" />
-                        <input value={exp.company} onChange={(e) => { const n = [...val]; n[i].company = e.target.value; setVal(n) }} className="w-full p-1 text-sm border rounded mb-2" placeholder="Company" />
-                        <textarea value={exp.description} onChange={(e) => { const n = [...val]; n[i].description = e.target.value; setVal(n) }} rows="2" className="w-full p-1 text-sm border rounded" />
+            {safeArray(data.projects).length > 0 && (
+              <div className="resume-section" style={sectionStyle}>
+                <h2 style={secHeadStyle}>PROJECTS</h2>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {safeArray(data.projects).map((proj, i) => (
+                    <div key={i}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                        <span style={{ fontSize: '13px', fontWeight: '600', color: '#111827' }}>{proj.title}</span>
+                        {proj.techStack && (
+                          <span style={{ fontSize: '12px', color: '#6b7280', fontStyle: 'italic' }}>{safeArray(proj.techStack).join(', ')}</span>
+                        )}
                       </div>
-                    ))}
-                  </div>
-                )}
-              />
-            )}
-
-            {/* Projects */}
-            {data.projects && data.projects.length > 0 && (
-              <EditableSection
-                sectionName="projects"
-                data={data.projects}
-                onSave={onSectionEdit}
-                renderDisplay={() => (
-                  <div className="mb-8">
-                    {renderHeading('PROJECTS', themeColor)}
-                    <div className="space-y-4">
-                      {data.projects.map((proj, i) => (
-                        <div key={i}>
-                          <h3 className="font-bold text-gray-900">{proj.title}</h3>
-                          <p className="text-xs text-gray-600">{proj.techStack && safeArray(proj.techStack).join(', ')}</p>
-                          <p className="text-sm text-gray-700 mt-1">{proj.description}</p>
-                        </div>
-                      ))}
+                      <p style={{ fontSize: '13px', color: '#374151', lineHeight: '1.5', marginTop: '2px', whiteSpace: 'pre-line' }}>{proj.description}</p>
                     </div>
-                  </div>
-                )}
-                renderEdit={(val, setVal) => (
-                  <div className="space-y-3">
-                    {val.map((proj, i) => (
-                      <div key={i} className="p-3 border rounded">
-                        <input value={proj.title} onChange={(e) => { const n = [...val]; n[i].title = e.target.value; setVal(n) }} className="w-full p-1 text-sm border rounded mb-2" placeholder="Title" />
-                        <textarea value={proj.description} onChange={(e) => { const n = [...val]; n[i].description = e.target.value; setVal(n) }} rows="2" className="w-full p-1 text-sm border rounded" />
-                      </div>
-                    ))}
-                  </div>
-                )}
-              />
-            )}
-
-            {/* Education */}
-            {data.education && data.education.length > 0 && (
-              <div className="mb-8">
-                {renderHeading('EDUCATION', themeColor)}
-                {data.education.map((edu, i) => (
-                  <div key={i} className="mb-4">
-                    <h3 className="font-bold text-gray-900">{edu.institution}</h3>
-                    <p className="text-sm text-gray-700">{edu.degree} {edu.field && `in ${edu.field}`}</p>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             )}
 
-            {/* Achievements */}
-            {data.achievements && data.achievements.length > 0 && (
-              <EditableSection
-                sectionName="achievements"
-                data={data.achievements}
-                onSave={onSectionEdit}
-                renderDisplay={() => (
-                  <div>
-                    {renderHeading('KEY ACHIEVEMENTS', themeColor)}
-                    <ul className="space-y-2 ml-4 list-disc">
-                      {data.achievements.map((ach, i) => {
-                        const heading = typeof ach === 'string' ? ach : ach.heading
-                        const description = typeof ach === 'string' ? '' : ach.description
-                        return (
-                          <li key={i} className="text-sm text-gray-700">
-                            <strong>{heading}</strong> {description && `– ${description}`}
-                          </li>
-                        )
-                      })}
-                    </ul>
-                  </div>
-                )}
-                renderEdit={(val, setVal) => (
-                  <div className="space-y-3">
-                    {val.map((ach, i) => (
-                      <div key={i} className="p-3 border rounded">
-                        <input value={typeof ach === 'string' ? ach : ach.heading} onChange={(e) => { const n = [...val]; n[i] = { heading: e.target.value, description: typeof ach === 'string' ? '' : ach.description }; setVal(n) }} className="w-full p-1 text-sm border rounded mb-2" />
-                        <textarea value={typeof ach === 'string' ? '' : ach.description} onChange={(e) => { const n = [...val]; n[i].description = e.target.value; setVal(n) }} rows="2" className="w-full p-1 text-sm border rounded" />
+            {safeArray(data.experience).length > 0 && (
+              <div className="resume-section" style={sectionStyle}>
+                <h2 style={secHeadStyle}>EXPERIENCE</h2>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {safeArray(data.experience).map((exp, i) => (
+                    <div key={i}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                        <span style={{ fontSize: '13px', fontWeight: '600', color: '#111827' }}>{exp.role}</span>
+                        <span style={{ fontSize: '12px', color: '#6b7280', fontStyle: 'italic' }}>{exp.duration}</span>
                       </div>
-                    ))}
-                  </div>
-                )}
-              />
+                      <p style={{ fontSize: '13px', color: '#6b7280', fontStyle: 'italic' }}>{exp.company}</p>
+                      <p style={{ fontSize: '13px', color: '#374151', lineHeight: '1.5', marginTop: '2px', whiteSpace: 'pre-line' }}>{exp.polishedDescription || exp.description}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {safeArray(data.education).length > 0 && (
+              <div className="resume-section" style={sectionStyle}>
+                <h2 style={secHeadStyle}>EDUCATION</h2>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  {safeArray(data.education).map((edu, i) => (
+                    <div key={i}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                        <span style={{ fontSize: '13px', fontWeight: '600', color: '#111827' }}>{edu.institution}</span>
+                        <span style={{ fontSize: '12px', color: '#6b7280', fontStyle: 'italic' }}>{edu.year}</span>
+                      </div>
+                      <p style={{ fontSize: '13px', color: '#374151' }}>{edu.degree}{edu.field ? ` in ${edu.field}` : ''}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {safeArray(data.certificates).length > 0 && (
+              <div className="resume-section" style={sectionStyle}>
+                <h2 style={secHeadStyle}>CERTIFICATIONS</h2>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  {safeArray(data.certificates).map((cert, i) => (
+                    <div key={i}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                        <span style={{ fontSize: '13px', fontWeight: '600', color: '#111827' }}>{cert.name || cert.title}</span>
+                        <span style={{ fontSize: '12px', color: '#6b7280', fontStyle: 'italic' }}>{cert.year || cert.issueYear}</span>
+                      </div>
+                      {cert.issuer && <p style={{ fontSize: '13px', color: '#6b7280', fontStyle: 'italic' }}>{cert.issuer}</p>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {safeArray(data.achievements).length > 0 && (
+              <div className="resume-section" style={sectionStyle}>
+                <h2 style={secHeadStyle}>KEY ACHIEVEMENTS</h2>
+                <ul style={{ listStyle: 'disc', paddingLeft: '14px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  {safeArray(data.achievements).map((ach, i) => {
+                    const heading = typeof ach === 'string' ? ach : ach.heading
+                    const description = typeof ach === 'string' ? '' : ach.description
+                    return (
+                      <li key={i} style={{ fontSize: '13px', color: '#374151' }}>
+                        <strong>{heading}</strong>{description ? ` – ${description}` : ''}
+                      </li>
+                    )
+                  })}
+                </ul>
+              </div>
             )}
           </div>
         </div>
