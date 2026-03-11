@@ -117,7 +117,11 @@ const userSchema = new mongoose.Schema({
     ],
     yearsOfExperience: Number,
     primaryTechStack: [String],
-    targetJobRole: String
+    targetJobRole: String,
+    visualRoadmap: {
+      type: Object,
+      default: null
+    }
   },
   // Uploaded resume file reference
   resumeFile: {
