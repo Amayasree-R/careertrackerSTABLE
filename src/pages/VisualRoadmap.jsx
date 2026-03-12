@@ -351,16 +351,13 @@ const VisualRoadmap = () => {
                     <div key={r} className="bg-white border border-gray-100 rounded-3xl p-5 hover:border-indigo-200 hover:shadow-lg transition-all group shadow-sm">
                       <div className="flex justify-between items-start mb-4">
                         <div className="p-2.5 bg-gray-50 rounded-2xl group-hover:bg-indigo-50 transition-colors">
-                          {res.platform?.toLowerCase() === 'youtube' ? <Youtube size={22} className="text-red-500" /> :
-                           res.platform?.toLowerCase() === 'udemy' ? <ChevronRight size={22} className="text-purple-500" /> :
-                           res.platform?.toLowerCase() === 'coursera' ? <GraduationCap size={22} className="text-blue-500" /> :
-                           <Globe size={22} className="text-gray-400" />}
+                          {(() => { const p = (res.platform || res.type || res.source || '').toLowerCase(); return p === 'youtube' ? <Youtube size={22} className="text-red-500" /> : p === 'udemy' ? <ChevronRight size={22} className="text-purple-500" /> : p === 'coursera' ? <GraduationCap size={22} className="text-blue-500" /> : <Globe size={22} className="text-gray-400" />; })()}
                         </div>
-                        <span className={`text-[9px] font-black px-2 py-0.5 rounded-full tracking-wider border ${res.free ? 'bg-green-100 text-green-700 border-green-200' : 'bg-orange-100 text-orange-700 border-orange-200'}`}>
-                          {res.free ? 'FREE' : 'PAID'}
+                        <span className={`text-[9px] font-black px-2 py-0.5 rounded-full tracking-wider border ${(res.free || res.isFree || res.is_free) ? 'bg-green-100 text-green-700 border-green-200' : 'bg-orange-100 text-orange-700 border-orange-200'}`}>
+                          {(res.free || res.isFree || res.is_free) ? 'FREE' : 'PAID'}
                         </span>
                       </div>
-                      <h4 className="text-sm font-bold text-gray-900 mb-5 line-clamp-2 leading-relaxed h-10">{res.name}</h4>
+                      <h4 className="text-sm font-bold text-gray-900 mb-5 line-clamp-2 leading-relaxed h-10">{res.name || res.title || 'View Course'}</h4>
                       <a 
                         href={res.url} 
                         target="_blank" 

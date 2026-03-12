@@ -1,51 +1,79 @@
 import { Link, useLocation } from 'react-router-dom'
-import { FolderGit2, Map } from 'lucide-react'
+import {
+  LayoutDashboard,
+  User,
+  FileText,
+  FolderGit2,
+  Award,
+  Briefcase,
+  Map,
+} from 'lucide-react'
+
+const navItems = [
+  { name: 'Dashboard',      path: '/dashboard',                icon: LayoutDashboard },
+  { name: 'Resume Builder', path: '/dashboard/resume-builder', icon: FileText },
+  { name: 'Projects',       path: '/dashboard/projects',       icon: FolderGit2 },
+  { name: 'Certificates',   path: '/dashboard/certificates',   icon: Award },
+  { name: 'Job Matches',    path: '/dashboard/jobs',           icon: Briefcase },
+  { name: 'Visual Roadmap', path: '/dashboard/visual-roadmap', icon: Map },
+]
+
+const profileItem = { name: 'Profile', path: '/dashboard/profile', icon: User }
 
 export default function Sidebar() {
-    const location = useLocation()
+  const location = useLocation()
 
-    const navItems = [
-        { name: 'Dashboard', path: '/dashboard', icon: '🏠' },
-        { name: 'Profile', path: '/dashboard/profile', icon: '👤' },
-        { name: 'Resume Builder', path: '/dashboard/resume-builder', icon: '🚀' },
-        { name: 'Projects', path: '/dashboard/projects', icon: <FolderGit2 size={20} /> },
-        { name: 'Certificates', path: '/dashboard/certificates', icon: '📜' },
-        { name: 'Job Matches', path: '/dashboard/jobs', icon: '💼' },
-        { name: 'Visual Roadmap', path: '/dashboard/visual-roadmap', icon: <Map size={20} /> },
-    ]
-
+  const renderLink = ({ name, path, icon: Icon }) => {
+    const isActive = location.pathname === path
     return (
-        <aside className="fixed left-0 top-0 bottom-0 w-64 bg-white border-r border-slate-200 z-50">
-            <div className="flex flex-col h-full">
-                <div className="p-6">
-                    <h1 className="text-2xl font-black bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                        CareerPath
-                    </h1>
-                </div>
-
-                <nav className="flex-1 px-4 space-y-2">
-                    {navItems.map((item) => {
-                        const isActive = location.pathname === item.path
-                        return (
-                            <Link
-                                key={item.name}
-                                to={item.path}
-                                className={`flex items-center gap-3 px-4 py-3 rounded-2xl font-bold transition-all ${isActive
-                                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-200 translate-x-1'
-                                    : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
-                                    }`}
-                            >
-                                <span className="text-xl flex items-center">{item.icon}</span>
-                                {item.name}
-                            </Link>
-                        )
-                    })}
-                </nav>
-
-                <div className="p-6 border-t border-slate-100 italic text-xs text-slate-400 font-medium">
-                    CareerPath v1.0.0
-                </div>
-            </div>
-        </aside>
+      <Link
+        key={name}
+        to={path}
+        className={`group relative flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
+          isActive
+            ? 'bg-blue-600 text-white shadow-sm'
+            : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 hover:translate-x-0.5'
+        }`}
+      >
+        {isActive && (
+          <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-white/40 rounded-full" />
+        )}
+        <Icon
+          size={18}
+          className={`flex-shrink-0 transition-colors duration-200 ${
+            isActive ? 'text-white' : 'text-slate-400 group-hover:text-slate-600'
+          }`}
+        />
+        <span className="truncate">{name}</span>
+      </Link>
     )
+  }
+
+  return (
+    <aside className="fixed left-0 top-0 bottom-0 w-64 bg-white border-r border-slate-200 shadow-sm z-50 flex flex-col">
+
+      {/* Logo */}
+      <div className="flex items-center gap-2.5 px-6 py-6 border-b border-slate-200">
+        <span className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center text-sm font-semibold select-none">
+          CP
+        </span>
+        <h1 className="text-lg font-semibold tracking-tight text-slate-900">
+          CareerPath
+        </h1>
+      </div>
+
+      {/* Main Nav */}
+      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+        {navItems.map(renderLink)}
+      </nav>
+
+      {/* Bottom: Profile */}
+      <div className="px-3 pb-5 pt-4 border-t border-slate-200">
+        {renderLink(profileItem)}
+      </div>
+
+    </aside>
+  )
 }
+
+

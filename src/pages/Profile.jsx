@@ -66,20 +66,20 @@ export default function Profile() {
     const isWorkingProf = user.currentStatus === 'Working Professional'
 
     return (
-        <div className="space-y-6 max-w-5xl mx-auto pb-12">
+        <div className="space-y-8 max-w-5xl mx-auto pb-12">
             {/* 1. Header Section */}
-            <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100 flex flex-col md:flex-row items-center gap-6">
+            <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-200 flex flex-col md:flex-row items-center gap-6 hover:shadow-md transition-all duration-200">
                 <Avatar name={user.fullName} size="xl" />
                 <div className="text-center md:text-left flex-1">
-                    <h1 className="text-3xl font-black text-slate-900">{user.fullName}</h1>
+                    <h1 className="text-3xl font-bold text-slate-900">{user.fullName}</h1>
                     <p className="text-slate-500 font-medium">{user.email}</p>
                     <div className="mt-3 flex flex-wrap justify-center md:justify-start gap-2">
-                        <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-bold uppercase tracking-wider">
+                        <span className="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-xs font-semibold uppercase tracking-wider">
                             {user.currentStatus}
                         </span>
                         {user.personalDetails?.location?.city && (
-                            <span className="px-3 py-1 bg-slate-50 text-slate-600 rounded-full text-xs font-bold">
-                                📍 {user.personalDetails.location.city}, {user.personalDetails.location.country}
+                            <span className="px-3 py-1 bg-slate-50 text-slate-600 rounded-full text-xs font-semibold">
+                                {user.personalDetails.location.city}, {user.personalDetails.location.country}
                             </span>
                         )}
                     </div>
@@ -88,9 +88,9 @@ export default function Profile() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* 2. Personal Information Card */}
-                <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
-                    <h2 className="text-xl font-black text-slate-900 mb-6 flex items-center gap-2">
-                        <span>👤</span> Personal Information
+                <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 hover:shadow-md transition-all duration-200">
+                    <h2 className="text-lg font-semibold text-slate-900 mb-6">
+                        Personal Information
                     </h2>
                     <div className="space-y-4">
                         <InfoRow label="Full Name" value={user.fullName} />
@@ -109,9 +109,9 @@ export default function Profile() {
                 </div>
 
                 {/* 5. Social & Portfolio Links Card */}
-                <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
-                    <h2 className="text-xl font-black text-slate-900 mb-6 flex items-center gap-2">
-                        <span>🔗</span> Links & Portfolio
+                <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 hover:shadow-md transition-all duration-200">
+                    <h2 className="text-lg font-semibold text-slate-900 mb-6">
+                        Links &amp; Portfolio
                     </h2>
                     <div className="space-y-4">
                         <SocialLink
@@ -137,17 +137,17 @@ export default function Profile() {
             </div>
 
             {/* 3. Education Details Card */}
-            <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
-                <h2 className="text-xl font-black text-slate-900 mb-6 flex items-center gap-2">
-                    <span>🎓</span> Education Details
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 hover:shadow-md transition-all duration-200">
+                <h2 className="text-lg font-semibold text-slate-900 mb-6">
+                    Education Details
                 </h2>
                 <div className="space-y-6">
                     {user.education && user.education.length > 0 ? (
                         user.education.map((edu, idx) => (
-                            <div key={idx} className="border-l-4 border-blue-500 pl-4 py-1">
-                                <h3 className="font-bold text-lg text-slate-800">{edu.degree} in {edu.specialization}</h3>
-                                <p className="text-slate-600 font-medium">{edu.college}</p>
-                                <p className="text-blue-600 text-sm font-bold mt-1">{edu.startYear} – {edu.endYear}</p>
+                            <div key={idx} className="border-l-2 border-blue-500 pl-4 py-1">
+                                <h3 className="font-semibold text-base text-slate-900">{edu.degree} in {edu.specialization}</h3>
+                                <p className="text-slate-600">{edu.college}</p>
+                                <p className="text-blue-600 text-sm font-medium mt-1">{edu.startYear} – {edu.endYear}</p>
                             </div>
                         ))
                     ) : (
@@ -158,17 +158,17 @@ export default function Profile() {
 
             {/* 4. Professional Details Card */}
             {isWorkingProf && (
-                <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
-                    <h2 className="text-xl font-black text-slate-900 mb-6 flex items-center gap-2">
-                        <span>🏢</span> Professional Experience
+                <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 hover:shadow-md transition-all duration-200">
+                    <h2 className="text-lg font-semibold text-slate-900 mb-6">
+                        Professional Experience
                     </h2>
                     <div className="space-y-6">
                         {user.experience && user.experience.length > 0 ? (
                             user.experience.map((exp, idx) => (
-                                <div key={idx} className="border-l-4 border-indigo-500 pl-4 py-1">
-                                    <h3 className="font-bold text-lg text-slate-800">{exp.role}</h3>
-                                    <p className="text-slate-600 font-medium">{exp.company}</p>
-                                    <p className="text-indigo-600 text-sm font-bold mt-1">
+                            <div key={idx} className="border-l-2 border-indigo-500 pl-4 py-1">
+                                <h3 className="font-semibold text-base text-slate-900">{exp.role}</h3>
+                                <p className="text-slate-600">{exp.company}</p>
+                                <p className="text-indigo-600 text-sm font-medium mt-1">
                                         {exp.startDate ? new Date(exp.startDate).toLocaleDateString() : 'N/A'} – {exp.endDate ? new Date(exp.endDate).toLocaleDateString() : 'Present'}
                                     </p>
                                     {exp.responsibilities && (
@@ -191,9 +191,9 @@ export default function Profile() {
 function InfoRow({ label, value }) {
     if (!value || value.trim() === ',' || value === 'Invalid Date') return null
     return (
-        <div className="flex justify-between border-b border-slate-50 pb-2">
-            <span className="text-slate-400 text-sm font-bold uppercase tracking-wider">{label}</span>
-            <span className="text-slate-700 font-bold text-right">{value}</span>
+        <div className="flex justify-between border-b border-slate-100 pb-2">
+            <span className="text-xs font-semibold uppercase text-slate-400 tracking-wider">{label}</span>
+            <span className="text-slate-700 font-medium text-right">{value}</span>
         </div>
     )
 }
@@ -205,13 +205,12 @@ function SocialLink({ icon, label, url }) {
             href={url.startsWith('http') ? url : `https://${url}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-between p-3 rounded-2xl hover:bg-slate-50 transition border border-transparent hover:border-slate-100 group"
+            className="flex items-center justify-between p-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 hover:shadow-sm transition-all duration-200 group"
         >
             <div className="flex items-center gap-3">
-                <span className="text-xl">{icon}</span>
-                <span className="font-bold text-slate-700">{label}</span>
+                <span className="text-sm font-semibold text-slate-500">{label}</span>
             </div>
-            <span className="text-slate-300 group-hover:text-blue-600 group-hover:translate-x-1 transition-all">➜</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-300 group-hover:text-blue-600 group-hover:translate-x-1 transition-all duration-200"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
         </a>
     )
 }
