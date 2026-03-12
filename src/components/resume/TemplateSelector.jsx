@@ -1,11 +1,10 @@
 import React from 'react'
-import { Layout, Sidebar, Grid3x3 } from 'lucide-react'
+import { Layout, Sidebar } from 'lucide-react'
 
 export default function TemplateSelector({ selectedTemplate, onTemplateChange }) {
     const templates = [
         { id: 'professional', name: 'Professional', desc: 'Traditional single-column', icon: Layout },
         { id: 'modern-sidebar', name: 'Modern Sidebar', desc: 'Two-part sidebar design', icon: Sidebar },
-        { id: 'balanced', name: 'Balanced', desc: 'Efficient section layout', icon: Grid3x3 }
     ]
 
     return (

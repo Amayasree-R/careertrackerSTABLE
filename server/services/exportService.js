@@ -12,15 +12,14 @@ export async function generatePdfFromHtml(htmlContent) {
             args: ['--no-sandbox', '--disable-setuid-sandbox']
         })
         const page = await browser.newPage()
+        // A4 at 96 DPI: 210mm × 297mm = 794 × 1123 px — prevents blank right-side space
+        await page.setViewport({ width: 794, height: 1123, deviceScaleFactor: 1 })
         await page.setContent(htmlContent, { waitUntil: 'networkidle0' })
-
-        // Use screen media type to match what user sees in preview
-        await page.emulateMediaType('screen')
 
         const pdfBuffer = await page.pdf({
             format: 'A4',
             printBackground: true,
-            margin: { top: '0.5in', right: '0.5in', bottom: '0.5in', left: '0.5in' }
+            margin: { top: '0mm', right: '0mm', bottom: '0mm', left: '0mm' }
         })
 
         return pdfBuffer
@@ -33,10 +32,186 @@ export async function generatePdfFromHtml(htmlContent) {
 }
 
 /**
- * Generates Professional Template HTML that matches the React component exactly.
- * Uses inline styles only (no Tailwind) for Puppeteer compatibility.
+ * Dispatcher: routes to the correct HTML generator based on the selected template.
  */
-export function generateProfessionalHtml(data) {
+export function generateResumeHtml(data, template = 'professional', themeColor = '#1e293b') {
+    if (template === 'modern-sidebar') {
+        return generateModernSidebarHtml(data, themeColor)
+    }
+    // Default: 'professional' — classic single-column layout
+    return generateProfessionalClassicHtml(data, themeColor)
+}
+
+/**
+ * Generates Professional Classic Template HTML — single-column layout.
+ * Matches ProfessionalClassicTemplate.jsx exactly.
+ */
+export function generateProfessionalClassicHtml(data, themeColor = '#1e293b') {
+    const safe = (val) => val || ''
+    const safeArray = (val) => Array.isArray(val) ? val : []
+
+    const fullName = safe(data.fullName)
+    const email = safe(data.email || data.contact?.email)
+    const phoneNumber = (() => {
+        const phone = data.phoneNumber || data.contact?.phone
+        if (!phone) return ''
+        let p = String(phone).trim()
+        p = p.replace(/^\+91/, '').replace(/^0091/, '').replace(/^0(?=\d{10})/, '')
+        return p.trim()
+    })()
+    const summary = safe(data.summary)
+
+    let locationStr = ''
+    if (typeof data.location === 'object' && data.location !== null) {
+        const loc = data.location
+        locationStr = [loc.city, loc.state, loc.country].filter(Boolean).join(', ')
+    } else {
+        locationStr = safe(data.location)
+    }
+
+    const github = safe(data.github || data.contact?.github || data.socialLinks?.github)
+    const linkedin = safe(data.linkedin || data.contact?.linkedin || data.socialLinks?.linkedin)
+
+    const shortUrl = (url) => url.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '')
+
+    const skills = safeArray(data.skills)
+    const experience = safeArray(data.experience)
+    const education = safeArray(data.education)
+    const certificates = safeArray(data.certificates)
+    const projects = safeArray(data.projects)
+    const achievements = safeArray(data.achievements)
+    const interests = safeArray(data.interests)
+    const languages = safeArray(data.languages)
+
+    const tc = themeColor  // shorthand
+
+    const sectionHeading = (title) => `
+        <div style="margin-top: 18px; margin-bottom: 6px;">
+            <h2 style="font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: ${tc}; margin-bottom: 4px;">${title}</h2>
+            <hr style="border: none; border-top: 2px solid ${tc}; margin-bottom: 6px;" />
+        </div>`
+
+    const contactParts = [email, phoneNumber, locationStr].filter(Boolean)
+    const socialParts = [
+        linkedin ? `LinkedIn: ${shortUrl(linkedin)}` : '',
+        github ? `GitHub: ${shortUrl(github)}` : '',
+    ].filter(Boolean)
+
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Resume - ${fullName}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { width: 210mm; margin: 0; background: white; }
+        body { font-family: Arial, sans-serif; color: #1f2937; font-size: 13px; line-height: 1.5; letter-spacing: 0.01em; }
+        .resume-page { width: 210mm; min-height: 297mm; padding: 15mm; box-sizing: border-box; background: white; }
+        @page { size: A4; margin: 0; }
+    </style>
+</head>
+<body>
+    <div class="resume-page">
+        <!-- Header -->
+        <div style="border-bottom: 2px solid ${tc}; padding-bottom: 8px; margin-bottom: 12px;">
+            <h1 style="font-size: 20px; font-weight: 700; color: ${tc}; margin-bottom: 4px;">${fullName}</h1>
+            ${contactParts.length ? `<p style="font-size: 12px; color: #4b5563; margin-bottom: 3px;">${contactParts.join(' • ')}</p>` : ''}
+            ${socialParts.length ? `<p style="font-size: 12px; color: #4b5563;">${socialParts.join(' • ')}</p>` : ''}
+        </div>
+
+        <!-- Summary -->
+        ${summary ? `${sectionHeading('PROFESSIONAL SUMMARY')}
+        <p style="font-size: 13px; color: #374151; line-height: 1.5; margin-bottom: 8px;">${summary}</p>` : ''}
+
+        <!-- Skills -->
+        ${skills.filter(g => g && g.category !== 'Mastered Skills').length > 0 ? `${sectionHeading('SKILLS')}
+        <div style="display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px;">
+            ${skills.filter(g => g && g.category !== 'Mastered Skills').map(sg => `
+            <div>
+                <span style="font-weight: 600; font-size: 13px; color: #111827;">${safe(sg.category)}: </span>
+                <span style="font-size: 12px; color: #374151;">${safeArray(sg.items).join(', ')}</span>
+            </div>`).join('')}
+        </div>` : ''}
+
+        <!-- Projects -->
+        ${projects.length > 0 ? `${sectionHeading('PROJECTS')}
+        <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px;">
+            ${projects.map(proj => `
+            <div>
+                <p style="font-weight: 600; font-size: 13px; color: #111827;">
+                    ${safe(proj.title)}${safeArray(proj.techStack).length > 0 ? ` (${safeArray(proj.techStack).join(', ')})` : ''}
+                </p>
+                <p style="font-size: 13px; color: #374151; line-height: 1.5; white-space: pre-line;">${safe(proj.description)}</p>
+            </div>`).join('')}
+        </div>` : ''}
+
+        <!-- Experience -->
+        ${experience.length > 0 ? `${sectionHeading('WORK EXPERIENCE')}
+        <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 8px;">
+            ${experience.map(exp => `
+            <div>
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div>
+                        <p style="font-weight: 600; font-size: 13px; color: #111827;">${safe(exp.role)}</p>
+                        <p style="font-size: 13px; color: #6b7280;">${safe(exp.company)}</p>
+                    </div>
+                    <p style="font-size: 12px; color: #6b7280; white-space: nowrap; font-style: italic;">${safe(exp.duration)}</p>
+                </div>
+                <p style="font-size: 13px; color: #374151; line-height: 1.5; margin-top: 3px; white-space: pre-line;">${safe(exp.polishedDescription || exp.description)}</p>
+            </div>`).join('')}
+        </div>` : ''}
+
+        <!-- Education -->
+        ${education.length > 0 ? `${sectionHeading('EDUCATION')}
+        <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px;">
+            ${education.map(edu => `
+            <div>
+                <p style="font-weight: 600; font-size: 13px; color: #111827;">${safe(edu.institution)}</p>
+                <p style="font-size: 13px; color: #374151;">${safe(edu.degree)}${edu.field ? ` in ${safe(edu.field)}` : ''}</p>
+                ${edu.year ? `<p style="font-size: 12px; color: #6b7280; font-style: italic;">${safe(edu.year)}</p>` : ''}
+            </div>`).join('')}
+        </div>` : ''}
+
+        <!-- Certifications -->
+        ${certificates.length > 0 ? `${sectionHeading('CERTIFICATIONS')}
+        <div style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px;">
+            ${certificates.map(cert => `
+            <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                <div>
+                    <p style="font-weight: 600; font-size: 13px; color: #111827;">${safe(cert.name || cert.title || cert.polishedTitle)}</p>
+                    ${cert.issuer ? `<p style="font-size: 13px; color: #6b7280;">${safe(cert.issuer)}</p>` : ''}
+                </div>
+                <p style="font-size: 12px; color: #6b7280; white-space: nowrap; font-style: italic;">${safe(cert.year || cert.issueYear)}</p>
+            </div>`).join('')}
+        </div>` : ''}
+
+        <!-- Achievements -->
+        ${achievements.length > 0 ? `${sectionHeading('KEY ACHIEVEMENTS')}
+        <ul style="padding-left: 16px; list-style-type: disc; display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px;">
+            ${achievements.map(ach => {
+                const heading = typeof ach === 'string' ? ach : safe(ach.heading)
+                const description = typeof ach === 'string' ? '' : safe(ach.description)
+                return `<li style="font-size: 13px; color: #374151;"><strong>${heading}</strong>${description ? ` – ${description}` : ''}</li>`
+            }).join('')}
+        </ul>` : ''}
+
+        <!-- Interests -->
+        ${interests.length > 0 ? `${sectionHeading('INTERESTS')}
+        <p style="font-size: 12px; color: #374151; margin-bottom: 8px;">${interests.join(', ')}</p>` : ''}
+
+        <!-- Languages -->
+        ${languages.length > 0 ? `${sectionHeading('LANGUAGES')}
+        <p style="font-size: 12px; color: #374151; margin-bottom: 8px;">${languages.map(l => typeof l === 'string' ? l : safe(l.name)).join(', ')}</p>` : ''}
+    </div>
+</body>
+</html>`
+}
+
+/**
+ * Generates Modern Sidebar Template HTML — sidebar + main content layout.
+ * Matches ModernSidebarTemplate.jsx exactly.
+ */
+export function generateModernSidebarHtml(data, themeColor = '#4F46E5') {
     // Safe accessors
     const safe = (val) => val || ''
     const safeArray = (val) => Array.isArray(val) ? val : []
@@ -98,17 +273,16 @@ export function generateProfessionalHtml(data) {
     <title>Resume - ${fullName}</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Arial', sans-serif; background: white; color: #334155; line-height: 1.5; letter-spacing: 0.01em; }
-        .page { width: 595.28px; min-height: 841.89px; display: flex; flex-direction: row; overflow: visible; }
+        html, body { width: 210mm; margin: 0; background: white; }
+        body { font-family: 'Arial', sans-serif; color: #334155; line-height: 1.5; letter-spacing: 0.01em; }
+        .page { width: 210mm; min-height: 297mm; display: flex; flex-direction: row; overflow: visible; }
         .section-heading { page-break-after: avoid; }
         .heading-underline { page-break-after: avoid; }
         .exp-item, .proj-item, .cert-item { page-break-inside: avoid; }
-        @media print {
-          .page { margin: 0; }
-        }
+        @page { size: A4; margin: 0; }
         
         /* Sidebar */
-        .sidebar { width: 30%; background: #1e293b; color: white; min-height: 842px; display: flex; flex-direction: column; }
+        .sidebar { width: 30%; background: ${themeColor}; color: white; min-height: 297mm; display: flex; flex-direction: column; }
         .name-block { padding: 32px 24px 16px; border-bottom: 1px solid #334155; }
         .name-block h1 { font-size: 20px; font-weight: 700; color: white; margin-bottom: 4px; }
         .name-block .role { color: #94a3b8; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
@@ -119,14 +293,14 @@ export function generateProfessionalHtml(data) {
         
         /* Main Content */
         .content { width: 70%; background: white; padding: 40px 36px; }
-        .section-heading { font-family: 'Arial', sans-serif; font-size: 14px; font-weight: 700; color: #1e293b; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 24px; margin-bottom: 6px; }
-        .heading-underline { height: 2px; background: #1e293b; width: 100%; margin-bottom: 10px; }
+        .section-heading { font-family: 'Arial', sans-serif; font-size: 14px; font-weight: 700; color: ${themeColor}; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 24px; margin-bottom: 6px; }
+        .heading-underline { height: 2px; background: ${themeColor}; width: 100%; margin-bottom: 10px; }
         .summary-text { font-family: 'Arial', sans-serif; font-size: 13px; color: #334155; line-height: 1.6; text-align: justify; }
         
         /* Lists */
         .exp-item, .proj-item, .cert-item { margin-bottom: 16px; }
         .item-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 2px; }
-        .item-title { font-family: 'Arial', sans-serif; font-size: 13px; font-weight: 600; color: #1e293b; }
+        .item-title { font-family: 'Arial', sans-serif; font-size: 13px; font-weight: 600; color: ${themeColor}; }
         .item-subtitle { font-family: 'Arial', sans-serif; font-size: 13px; font-style: italic; color: #475569; }
         .item-meta { font-family: 'Arial', sans-serif; font-size: 12px; color: #64748b; font-style: italic; }
         .item-description { font-family: 'Arial', sans-serif; font-size: 13px; color: #334155; line-height: 1.5; white-space: pre-line; margin-top: 4px; }

@@ -368,13 +368,12 @@ export async function enhanceResumeText(req, res) {
 export async function exportResume(req, res) {
   try {
     const { format } = req.params
-    const { resumeData, htmlContent } = req.body
+    const { resumeData, htmlContent, template = 'professional', themeColor = '#1e293b' } = req.body
 
     if (format === 'pdf') {
       let content = htmlContent
       if (!content && resumeData) {
-        // Generate Professional Template HTML that matches the live preview exactly
-        content = exportService.generateProfessionalHtml(resumeData)
+        content = exportService.generateResumeHtml(resumeData, template, themeColor)
       }
 
       if (!content) {

@@ -4,7 +4,6 @@ import { AlertTriangle } from 'lucide-react'
 // Import template components
 import ProfessionalClassicTemplate from './resume/templates/ProfessionalClassicTemplate'
 import ModernSidebarTemplate from './resume/templates/ModernSidebarTemplate'
-import BalancedTwoColumnTemplate from './resume/templates/BalancedTwoColumnTemplate'
 
 // Error Boundary to prevent white screen crashes
 class ResumeErrorBoundary extends Component {
@@ -79,8 +78,6 @@ export default function ResumePreview({
         return <ProfessionalClassicTemplate {...props} />
       case 'modern-sidebar':
         return <ModernSidebarTemplate {...props} />
-      case 'balanced':
-        return <BalancedTwoColumnTemplate {...props} />
       default:
         return <ProfessionalClassicTemplate {...props} />
     }

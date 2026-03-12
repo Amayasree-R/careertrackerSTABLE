@@ -1,5 +1,6 @@
-import React, { useState, Component } from 'react'
+import React, { useState, useLayoutEffect, useRef, Component } from 'react'
 import { AlertTriangle, Pencil, Check, X } from 'lucide-react'
+import { packSectionsIntoPages } from '../../../utils/paginateSections'
 
 class ResumeErrorBoundary extends Component {
   constructor(props) {
@@ -92,13 +93,13 @@ const renderHeadingMain = (title, themeColor) => (
 
 const pageStyle = {
   width: '210mm',
-  minHeight: '297mm',
+  height: '29.7cm',
   display: 'flex',
   flexDirection: 'row',
   alignItems: 'stretch',
   boxShadow: '0 0 0 1px #ddd',
   margin: '10px auto',
-  overflow: 'visible',
+  overflow: 'hidden',
   background: 'white',
   fontFamily: "'Arial', sans-serif",
   fontSize: '13px',
@@ -109,13 +110,68 @@ const pageStyle = {
 }
 
 const printStyles = `
+@page { size: A4; margin: 0; }
 @media print {
-  .resume-page { margin: 0; box-shadow: none; }
+  .resume-page { margin: 0 !important; box-shadow: none !important; page-break-after: always; }
+  .resume-page:last-child { page-break-after: avoid; }
   .resume-section { page-break-inside: avoid; }
 }
 `
 
+// Usable main-panel height: 297mm page − 20px top − 20px bottom ≈ 1082px
+const MAIN_USABLE_HEIGHT_PX = 297 * (96 / 25.4) - 40
+
+const MAIN_SECTIONS = ['summary', 'projects', 'experience', 'education', 'certificates', 'achievements']
+
+// Measurement container width for main panel: 70% of 210mm minus horizontal padding (24px*2)
+const MAIN_MEASURE_STYLE = {
+  position: 'fixed',
+  top: 0,
+  left: '-9999px',
+  width: 'calc(210mm * 0.7 - 48px)',
+  fontFamily: "'Arial', sans-serif",
+  fontSize: '13px',
+  lineHeight: '1.5',
+  letterSpacing: '0.01em',
+  color: '#1f2937',
+  visibility: 'hidden',
+  pointerEvents: 'none',
+  zIndex: -9999,
+}
+
 export default function ModernSidebarTemplate({ data, onSectionEdit, themeColor = '#4F46E5' }) {
+  const [mainPages, setMainPages] = useState(null)
+  const measureRef = useRef(null)
+  const safeArray = (val) => Array.isArray(val) ? val : []
+
+  const activeMainSections = React.useMemo(() => {
+    if (!data) return []
+    return MAIN_SECTIONS.filter(k => {
+      switch (k) {
+        case 'summary':      return !!data.summary
+        case 'projects':     return safeArray(data.projects).length > 0
+        case 'experience':   return safeArray(data.experience).length > 0
+        case 'education':    return safeArray(data.education).length > 0
+        case 'certificates': return safeArray(data.certificates).length > 0
+        case 'achievements': return safeArray(data.achievements).length > 0
+        default: return false
+      }
+    })
+  }, [data])
+
+  useLayoutEffect(() => {
+    if (!measureRef.current || activeMainSections.length === 0) {
+      setMainPages([activeMainSections])
+      return
+    }
+    const measurements = activeMainSections.map(k => {
+      const el = measureRef.current.querySelector(`[data-msec="${k}"]`)
+      return { key: k, height: el ? el.offsetHeight + 8 : 0 }
+    })
+    const packed = packSectionsIntoPages(measurements, MAIN_USABLE_HEIGHT_PX)
+    setMainPages(packed)
+  }, [data, themeColor, activeMainSections])
+
   if (!data || Object.keys(data).length <= 1) {
     return (
       <div className="w-full flex justify-center items-center min-h-[400px] border-2 border-dashed border-slate-200 rounded-lg">
@@ -124,16 +180,6 @@ export default function ModernSidebarTemplate({ data, onSectionEdit, themeColor 
     )
   }
 
-  const safeArray = (val) => Array.isArray(val) ? val : []
-
-  const hasProjects = safeArray(data.projects).length > 0
-  const hasExperience = safeArray(data.experience).length > 0
-  const hasEducation = safeArray(data.education).length > 0
-  const hasCerts = safeArray(data.certificates).length > 0
-  const hasAchievements = safeArray(data.achievements).length > 0
-  const hasLanguages = safeArray(data.languages).length > 0
-  const hasInterests = safeArray(data.interests).length > 0
-
   const sidebarStyle = {
     width: '30%',
     padding: '20px 16px',
@@ -141,12 +187,14 @@ export default function ModernSidebarTemplate({ data, onSectionEdit, themeColor 
     color: 'white',
     boxSizing: 'border-box',
     flexShrink: 0,
+    overflow: 'hidden',
   }
 
   const mainStyle = {
     width: '70%',
     padding: '20px 24px',
     boxSizing: 'border-box',
+    overflow: 'hidden',
   }
 
   const sectionHeadingStyle = {
@@ -169,197 +217,212 @@ export default function ModernSidebarTemplate({ data, onSectionEdit, themeColor 
     marginTop: '16px',
   }
 
-  const mainHrStyle = {
-    border: 'none',
-    borderTop: `2px solid ${themeColor}`,
-    marginBottom: '10px',
+  const mainHrStyle = { border: 'none', borderTop: `2px solid ${themeColor}`, marginBottom: '10px' }
+
+  // ── Sidebar JSX (shown on every page) ──────────────────────────────────────
+  const sidebarJsx = (
+    <>
+      {/* Name & Contact */}
+      <div style={{ paddingBottom: '16px', borderBottom: '1px solid rgba(255,255,255,0.2)', marginBottom: '4px' }}>
+        <h1 style={{ fontSize: '20px', fontWeight: '700', lineHeight: '1.2', marginBottom: '10px' }}>
+          {data.fullName || 'Your Name'}
+        </h1>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+          {(data.email || data.contact?.email) && (
+            <p style={{ fontSize: '12px', wordBreak: 'break-word', marginBottom: '3px' }}>
+              <span style={{ fontWeight: '600' }}>Email: </span>{data.email || data.contact?.email}
+            </p>
+          )}
+          {(data.phoneNumber || data.contact?.phone) && (
+            <p style={{ fontSize: '12px', marginBottom: '3px' }}>
+              <span style={{ fontWeight: '600' }}>Phone: </span>{data.phoneNumber || data.contact?.phone}
+            </p>
+          )}
+          {(data.linkedin || data.contact?.linkedin) && (
+            <p style={{ fontSize: '12px', wordBreak: 'break-word', marginBottom: '3px' }}>
+              <span style={{ fontWeight: '600' }}>LinkedIn: </span>{shortUrl(data.linkedin || data.contact?.linkedin)}
+            </p>
+          )}
+          {(data.github || data.contact?.github) && (
+            <p style={{ fontSize: '12px', wordBreak: 'break-word', marginBottom: '3px' }}>
+              <span style={{ fontWeight: '600' }}>GitHub: </span>{shortUrl(data.github || data.contact?.github)}
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* Skills */}
+      {safeArray(data.skills).length > 0 && (
+        <div className="resume-section">
+          <div style={sectionHeadingStyle}>SKILLS</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {data.skills.filter(g => g.category !== 'Mastered Skills').map((sg, i) => (
+              <div key={i}>
+                <p style={{ fontSize: '13px', fontWeight: '600', marginBottom: '2px', color: 'rgba(255,255,255,0.9)' }}>{sg.category}</p>
+                <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.75)' }}>{safeArray(sg.items).join(', ')}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Languages */}
+      {safeArray(data.languages).length > 0 && (
+        <div className="resume-section">
+          <div style={sectionHeadingStyle}>LANGUAGES</div>
+          <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.8)' }}>
+            {data.languages.map((lang, i) => {
+              const name = typeof lang === 'string' ? lang : lang.name || String(lang)
+              return name + (i < data.languages.length - 1 ? ', ' : '')
+            }).join('')}
+          </p>
+        </div>
+      )}
+
+      {/* Interests */}
+      {safeArray(data.interests).length > 0 && (
+        <div className="resume-section">
+          <div style={sectionHeadingStyle}>INTERESTS</div>
+          <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.8)' }}>{data.interests.join(', ')}</p>
+        </div>
+      )}
+    </>
+  )
+
+  // ── Main content section renderer ──────────────────────────────────────────
+  const ss = { marginBottom: '8px', pageBreakInside: 'avoid' }
+
+  const renderMainSection = (key) => {
+    switch (key) {
+      case 'summary':
+        return (
+          <div key="summary" className="resume-section" style={ss}>
+            <div style={mainHeadingStyle}>PROFESSIONAL SUMMARY</div>
+            <hr style={mainHrStyle} />
+            <p style={{ fontSize: '13px', color: '#374151', lineHeight: '1.5' }}>{data.summary}</p>
+          </div>
+        )
+      case 'projects':
+        return (
+          <div key="projects" className="resume-section" style={ss}>
+            <div style={mainHeadingStyle}>PROJECTS</div>
+            <hr style={mainHrStyle} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {safeArray(data.projects).map((proj, i) => (
+                <div key={i}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                    <span style={{ fontSize: '13px', fontWeight: '600', color: '#111827' }}>{proj.title}</span>
+                    {proj.techStack && (
+                      <span style={{ fontSize: '12px', color: '#6b7280', fontStyle: 'italic' }}>{safeArray(proj.techStack).join(', ')}</span>
+                    )}
+                  </div>
+                  <p style={{ fontSize: '13px', color: '#374151', lineHeight: '1.5', marginTop: '2px', whiteSpace: 'pre-line' }}>{proj.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )
+      case 'experience':
+        return (
+          <div key="experience" className="resume-section" style={ss}>
+            <div style={mainHeadingStyle}>WORK EXPERIENCE</div>
+            <hr style={mainHrStyle} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {safeArray(data.experience).map((exp, i) => (
+                <div key={i}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                    <div>
+                      <span style={{ fontSize: '13px', fontWeight: '600', color: '#111827' }}>{exp.role}</span>
+                      <span style={{ fontSize: '13px', color: '#6b7280', marginLeft: '6px' }}>{exp.company}</span>
+                    </div>
+                    <span style={{ fontSize: '12px', color: '#6b7280', whiteSpace: 'nowrap', fontStyle: 'italic' }}>{exp.duration}</span>
+                  </div>
+                  <p style={{ fontSize: '13px', color: '#374151', lineHeight: '1.5', marginTop: '3px', whiteSpace: 'pre-line' }}>{exp.polishedDescription || exp.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )
+      case 'education':
+        return (
+          <div key="education" className="resume-section" style={{ ...ss, pageBreakInside: 'avoid' }}>
+            <div style={mainHeadingStyle}>EDUCATION</div>
+            <hr style={mainHrStyle} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {safeArray(data.education).map((edu, i) => (
+                <div key={i} style={{ pageBreakInside: 'avoid' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                    <span style={{ fontSize: '13px', fontWeight: '600', color: '#111827' }}>{edu.institution}</span>
+                    <span style={{ fontSize: '12px', color: '#6b7280', fontStyle: 'italic' }}>{edu.year}</span>
+                  </div>
+                  <p style={{ fontSize: '13px', color: '#374151' }}>{edu.degree}{edu.field ? ` in ${edu.field}` : ''}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )
+      case 'certificates':
+        return (
+          <div key="certificates" className="resume-section" style={{ ...ss, pageBreakInside: 'avoid' }}>
+            <div style={mainHeadingStyle}>CERTIFICATIONS</div>
+            <hr style={mainHrStyle} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              {safeArray(data.certificates).map((cert, i) => (
+                <div key={i} style={{ pageBreakInside: 'avoid' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                    <span style={{ fontSize: '13px', fontWeight: '600', color: '#111827' }}>{cert.name || cert.title}</span>
+                    <span style={{ fontSize: '12px', color: '#6b7280', fontStyle: 'italic' }}>{cert.year || cert.issueYear}</span>
+                  </div>
+                  {cert.issuer && <p style={{ fontSize: '13px', color: '#6b7280', fontStyle: 'italic' }}>{cert.issuer}</p>}
+                </div>
+              ))}
+            </div>
+          </div>
+        )
+      case 'achievements':
+        return (
+          <div key="achievements" className="resume-section" style={{ ...ss, pageBreakInside: 'avoid' }}>
+            <div style={mainHeadingStyle}>KEY ACHIEVEMENTS</div>
+            <hr style={mainHrStyle} />
+            <ul style={{ listStyle: 'disc', paddingLeft: '16px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              {safeArray(data.achievements).map((ach, i) => {
+                const heading = typeof ach === 'string' ? ach : ach.heading
+                const description = typeof ach === 'string' ? '' : ach.description
+                return (
+                  <li key={i} style={{ fontSize: '13px', color: '#374151', pageBreakInside: 'avoid' }}>
+                    <strong>{heading}</strong>{description ? ` – ${description}` : ''}
+                  </li>
+                )
+              })}
+            </ul>
+          </div>
+        )
+      default: return null
+    }
   }
+
+  const displayPages = mainPages || [activeMainSections]
 
   return (
     <ResumeErrorBoundary>
       <style>{printStyles}</style>
 
-      {/* PAGE 1: Header+Summary+Skills+Projects+Experience in sidebar+main layout */}
-      <div className="resume-page" style={pageStyle}>
-        {/* Sidebar Page 1 */}
-        <aside style={sidebarStyle}>
-          {/* Name & Contact */}
-          <div style={{ paddingBottom: '16px', borderBottom: '1px solid rgba(255,255,255,0.2)', marginBottom: '4px' }}>
-            <h1 style={{ fontSize: '20px', fontWeight: '700', lineHeight: '1.2', marginBottom: '10px' }}>
-              {data.fullName || 'Your Name'}
-            </h1>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-              {(data.email || data.contact?.email) && (
-                <p style={{ fontSize: '12px', wordBreak: 'break-word', marginBottom: '3px' }}>
-                  <span style={{ fontWeight: '600' }}>Email: </span>{data.email || data.contact?.email}
-                </p>
-              )}
-              {(data.phoneNumber || data.contact?.phone) && (
-                <p style={{ fontSize: '12px', marginBottom: '3px' }}>
-                  <span style={{ fontWeight: '600' }}>Phone: </span>{data.phoneNumber || data.contact?.phone}
-                </p>
-              )}
-              {(data.linkedin || data.contact?.linkedin) && (
-                <p style={{ fontSize: '12px', wordBreak: 'break-word', marginBottom: '3px' }}>
-                  <span style={{ fontWeight: '600' }}>LinkedIn: </span>{shortUrl(data.linkedin || data.contact?.linkedin)}
-                </p>
-              )}
-              {(data.github || data.contact?.github) && (
-                <p style={{ fontSize: '12px', wordBreak: 'break-word', marginBottom: '3px' }}>
-                  <span style={{ fontWeight: '600' }}>GitHub: </span>{shortUrl(data.github || data.contact?.github)}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* Skills */}
-          {safeArray(data.skills).length > 0 && (
-            <div className="resume-section">
-              <div style={sectionHeadingStyle}>SKILLS</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {data.skills.filter(g => g.category !== 'Mastered Skills').map((skillGroup, i) => (
-                  <div key={i}>
-                    <p style={{ fontSize: '13px', fontWeight: '600', marginBottom: '2px', color: 'rgba(255,255,255,0.9)' }}>{skillGroup.category}</p>
-                    <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.75)' }}>{safeArray(skillGroup.items).join(', ')}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Languages */}
-          {hasLanguages && (
-            <div className="resume-section">
-              <div style={sectionHeadingStyle}>LANGUAGES</div>
-              <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.8)' }}>
-                {data.languages.map((lang, i) => {
-                  const name = typeof lang === 'string' ? lang : lang.name || String(lang)
-                  return name + (i < data.languages.length - 1 ? ', ' : '')
-                }).join('')}
-              </p>
-            </div>
-          )}
-
-          {/* Interests */}
-          {hasInterests && (
-            <div className="resume-section">
-              <div style={sectionHeadingStyle}>INTERESTS</div>
-              <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.8)' }}>{data.interests.join(', ')}</p>
-            </div>
-          )}
-        </aside>
-
-        {/* Main Content Page 1 */}
-        <main style={mainStyle}>
-          {/* Summary */}
-          {data.summary && (
-            <div className="resume-section">
-              <div style={mainHeadingStyle}>PROFESSIONAL SUMMARY</div>
-              <hr style={mainHrStyle} />
-              <p style={{ fontSize: '13px', color: '#374151', lineHeight: '1.5' }}>{data.summary}</p>
-            </div>
-          )}
-
-          {/* Projects — ATS order: before experience */}
-          {hasProjects && (
-            <div className="resume-section">
-              <div style={mainHeadingStyle}>PROJECTS</div>
-              <hr style={mainHrStyle} />
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                {safeArray(data.projects).map((proj, i) => (
-                  <div key={i}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                      <span style={{ fontSize: '13px', fontWeight: '600', color: '#111827' }}>{proj.title}</span>
-                      {proj.techStack && (
-                        <span style={{ fontSize: '12px', color: '#6b7280', fontStyle: 'italic' }}>{safeArray(proj.techStack).join(', ')}</span>
-                      )}
-                    </div>
-                    <p style={{ fontSize: '13px', color: '#374151', lineHeight: '1.5', marginTop: '2px', whiteSpace: 'pre-line' }}>{proj.description}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Experience */}
-          {hasExperience && (
-            <div className="resume-section">
-              <div style={mainHeadingStyle}>WORK EXPERIENCE</div>
-              <hr style={mainHrStyle} />
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {safeArray(data.experience).map((exp, i) => (
-                  <div key={i}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                      <div>
-                        <span style={{ fontSize: '13px', fontWeight: '600', color: '#111827' }}>{exp.role}</span>
-                        <span style={{ fontSize: '13px', color: '#6b7280', marginLeft: '6px' }}>{exp.company}</span>
-                      </div>
-                      <span style={{ fontSize: '12px', color: '#6b7280', whiteSpace: 'nowrap', fontStyle: 'italic' }}>{exp.duration}</span>
-                    </div>
-                    <p style={{ fontSize: '13px', color: '#374151', lineHeight: '1.5', marginTop: '3px', whiteSpace: 'pre-line' }}>{exp.polishedDescription || exp.description}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-          {/* Education */}
-          {hasEducation && (
-            <div className="resume-section" style={{ pageBreakInside: 'avoid', marginBottom: '4px' }}>
-              <div style={mainHeadingStyle}>EDUCATION</div>
-              <hr style={mainHrStyle} />
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                {safeArray(data.education).map((edu, i) => (
-                  <div key={i} style={{ pageBreakInside: 'avoid' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                      <span style={{ fontSize: '13px', fontWeight: '600', color: '#111827' }}>{edu.institution}</span>
-                      <span style={{ fontSize: '12px', color: '#6b7280', fontStyle: 'italic' }}>{edu.year}</span>
-                    </div>
-                    <p style={{ fontSize: '13px', color: '#374151' }}>{edu.degree}{edu.field ? ` in ${edu.field}` : ''}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Certifications */}
-          {hasCerts && (
-            <div className="resume-section" style={{ pageBreakInside: 'avoid', marginBottom: '4px' }}>
-              <div style={mainHeadingStyle}>CERTIFICATIONS</div>
-              <hr style={mainHrStyle} />
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                {safeArray(data.certificates).map((cert, i) => (
-                  <div key={i} style={{ pageBreakInside: 'avoid' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                      <span style={{ fontSize: '13px', fontWeight: '600', color: '#111827' }}>{cert.name || cert.title}</span>
-                      <span style={{ fontSize: '12px', color: '#6b7280', fontStyle: 'italic' }}>{cert.year || cert.issueYear}</span>
-                    </div>
-                    {cert.issuer && <p style={{ fontSize: '13px', color: '#6b7280', fontStyle: 'italic' }}>{cert.issuer}</p>}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Achievements */}
-          {hasAchievements && (
-            <div className="resume-section" style={{ pageBreakInside: 'avoid', marginBottom: '4px' }}>
-              <div style={mainHeadingStyle}>KEY ACHIEVEMENTS</div>
-              <hr style={mainHrStyle} />
-              <ul style={{ listStyle: 'disc', paddingLeft: '16px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                {safeArray(data.achievements).map((ach, i) => {
-                  const heading = typeof ach === 'string' ? ach : ach.heading
-                  const description = typeof ach === 'string' ? '' : ach.description
-                  return (
-                    <li key={i} style={{ fontSize: '13px', color: '#374151', pageBreakInside: 'avoid' }}>
-                      <strong>{heading}</strong>{description ? ` – ${description}` : ''}
-                    </li>
-                  )
-                })}
-              </ul>
-            </div>
-          )}
-        </main>
+      {/* Hidden measurement container (main-panel width) */}
+      <div ref={measureRef} style={MAIN_MEASURE_STYLE} aria-hidden="true">
+        {activeMainSections.map(k => (
+          <div key={k} data-msec={k}>{renderMainSection(k)}</div>
+        ))}
       </div>
+
+      {/* Paginated A4 pages */}
+      {displayPages.map((pageSections, pi) => (
+        <div key={pi} className="resume-page" style={pageStyle}>
+          <aside style={sidebarStyle}>{sidebarJsx}</aside>
+          <main style={mainStyle}>
+            {pageSections.map(k => renderMainSection(k))}
+          </main>
+        </div>
+      ))}
     </ResumeErrorBoundary>
   )
 }

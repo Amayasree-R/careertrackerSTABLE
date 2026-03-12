@@ -336,7 +336,7 @@ export default function ResumeBuilder() {
         try {
             const token = localStorage.getItem('token')
             const response = await axios.post(`${API_BASE_URL}/resume/export/pdf`,
-                { resumeData },
+                { resumeData, template: selectedTemplate, themeColor },
                 {
                     headers: { Authorization: `Bearer ${token}` },
                     responseType: 'blob'
