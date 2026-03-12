@@ -16,6 +16,12 @@
 13. [Setup & Installation](#setup--installation)
 14. [Running the Application](#running-the-application)
 15. [Environment Variables](#environment-variables)
+16. [Visual Roadmap System](#visual-roadmap-system)
+17. [Resume AI Prompts & Generation Logic](#resume-ai-prompts--generation-logic)
+18. [Skill Normalization System](#skill-normalization-system)
+19. [Text Processing Utilities](#text-processing-utilities)
+20. [UI Component Details](#ui-component-details)
+21. [Routing & Layout Architecture](#routing--layout-architecture)
 
 ---
 
@@ -69,7 +75,7 @@
 - **AI Services:**
   - Groq SDK 0.37.0 — Llama 3.3 70B (resume generation, quiz generation, certificate analysis, skill details, roadmap)
   - Cerebras Cloud SDK 1.64.1 — llama3.1-8b (project README analysis)
-  - Google Generative AI 0.24.1 (available, not actively used in main flow)
+  - Google Generative AI 0.24.1 — Gemini 1.5-flash (Visual Roadmap tier organization)
 - **Job Matching:** Adzuna REST API (job board search + skill scoring)
 - **API Integration:**
   - GitHub API via @octokit/rest 22.0.1 (roadmap skill sourcing)
@@ -94,10 +100,11 @@
 │                       Frontend (React)                   │
 │  ┌─────────────────────────────────────────────────┐   │
 │  │  Pages: Dashboard, Profile, ResumeBuilder,      │   │
-│  │  Certificates, Projects, Quiz, Roadmap         │   │
+│  │  Certificates, Projects, Quiz, Roadmap,         │   │
+│  │  Visual Roadmap (Tiered), Job Matches            │   │
 │  │                                                   │   │
-│  │  Components: Skill Cards, Charts, Forms,        │   │
-│  │  Preview Panels, Modals                         │   │
+│  │  Components: Skill Cards, Radar Chart, Forms,   │   │
+│  │  Preview Panels, Modals, Skill Tooltips          │   │
 │  └─────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────┘
                           ↓ (Axios)
@@ -120,9 +127,10 @@
 │          Controllers & Services Layer                    │
 │  ┌─────────────────────────────────────────────────┐   │
 │  │ Quiz Generator Service                          │   │
-│  │ Resume Parser/Generator Service                 │   │
+│  │ Resume Parser/Generator/Analyzer Service        │   │
 │  │ Roadmap Generator Service                       │   │
-│  │ Skill Matching Service                          │   │
+│  │ Visual Roadmap Service (Tiered/Gemini)          │   │
+│  │ Skill Matching/Normalization Service            │   │
 │  │ Certificate Service                             │   │
 │  │ AI Enhancement Service                          │   │
 │  │ GitHub Integration Service                      │   │
@@ -132,10 +140,12 @@
 ┌─────────────────────────────────────────────────────────┐
 │         External AI & Data Services                      │
 │  ┌─────────────────────────────────────────────────┐   │
-│  │ Groq API (Quiz & Roadmap Generation)            │   │
-│  │ Google Generative AI                            │   │
-│  │ GitHub API (Project Extraction)                 │   │
-│  │ Stack Overflow (Skill Data)                     │   │
+│  │ Groq API (Quiz, Resume, Roadmap, Certs, Skills) │   │
+│  │ Google Generative AI / Gemini (Visual Roadmap)  │   │
+│  │ Cerebras API (Project README Analysis)          │   │
+│  │ Adzuna API (Job Matching)                       │   │
+│  │ GitHub API (Roadmap + Resume Analysis)          │   │
+│  │ Stack Overflow API (Skill Trends)               │   │
 │  └─────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────┘
                           ↓
@@ -199,17 +209,18 @@ src/
 │   └── DashboardLayout.jsx      # Protected dashboard wrapper
 ├── pages/                       # Page components
 │   ├── Certificates.jsx         # Certification management
-│   ├── Dashboard.jsx            # Main dashboard (radar chart, skill columns)
+│   ├── Dashboard.jsx            # Main dashboard (radar chart, skill columns, focus skill)
 │   ├── Home.jsx                 # Landing page (inside App.jsx as inline component)
 │   ├── JobMatches.jsx           # Job matching page (Adzuna API)
 │   ├── Login.jsx                # Login page
 │   ├── Profile.jsx              # User profile view (read-only)
 │   ├── ProfileForm.jsx          # Profile setup / edit form
 │   ├── Projects.jsx             # Project dashboard (README upload + Cerebras analysis)
-│   ├── Quiz.jsx                 # Quiz interface
+│   ├── Quiz.jsx                 # Quiz interface (25 MCQ, 90% pass)
 │   ├── ResumeBuilder.jsx        # Resume builder (multi-template, AI-powered)
-│   ├── Roadmap.jsx              # Learning roadmap page
-│   └── Signup.jsx               # User registration
+│   ├── Roadmap.jsx              # Learning roadmap page (linear list with skill gap stats)
+│   ├── Signup.jsx               # User registration (multi-section form)
+│   └── VisualRoadmap.jsx        # Tiered visual roadmap (Gemini AI + alternating timeline)
 ├── utils/
 │   ├── textPolisher.js          # Client-side text formatting helpers (no AI)
 │   └── useDescriptionEnhancer.js # Custom React hook for debounced AI description enhancement
@@ -246,7 +257,8 @@ server/
 │   ├── quiz.js                      # GET /:skill (Groq quiz generation)
 │   ├── resume.js                    # Upload, parse, analyze, generate, enhance, export, versions
 │   ├── roadmap.js                   # GET / (cached or fresh AI roadmap)
-│   └── skillDetail.js               # POST /skill-detail (AI + MongoDB cache)
+│   ├── skillDetail.js               # POST /skill-detail (AI + MongoDB cache)
+│   └── visualRoadmap.js             # GET / (Gemini tiered roadmap, cached in careerInfo.visualRoadmap)
 ├── services/
 │   ├── aiEnhancementService.js      # Groq: summary, achievement, project description helpers
 │   ├── cerebrasService.js           # Cerebras llama3.1-8b: README analysis
@@ -256,11 +268,12 @@ server/
 │   ├── jobMatchingService.js        # Adzuna API: fetch jobs + score against user skills
 │   ├── projectSkillIntegrationService.js # Promote README-extracted skills to Mastered
 │   ├── quizGenerator.js             # Groq llama-3.1-8b-instant: 25-question quiz
-│   ├── resumeAnalyzerService.js     # Resume section scoring and improvement suggestions
+│   ├── resumeAnalyzerService.js     # GitHub-based industry skill gap analysis service
 │   ├── resumeGeneratorService.js    # Data aggregator + student/professional profile detector
 │   ├── resumeParserService.js       # PDF text extraction (pdf-parse + pdfjs-dist fallback)
 │   ├── roadmapGenerator.js          # Groq + GitHub + Stack Overflow roadmap builder
-│   └── skillMatchingService.js      # Fuzzy skill matching (aliases, substrings, normalization)
+│   ├── skillMatchingService.js      # Fuzzy skill matching (aliases, substrings, normalization)
+│   └── visualRoadmapService.js      # Google Gemini 1.5-flash: tiered visual roadmap generator
 ├── utils/
 │   ├── skillNormalizer.js           # Skill name normalization
 │   └── textCleaner.js               # Text processing utilities
@@ -347,7 +360,7 @@ server/
       data: Array,
       generatedAt: Date
     },
-    lastProfileUpdate: Date
+    lastProfileUpdate: Date                 // Updated whenever currentSkills/targetJob/experienceLevel changes
   },
 
   // Career Info
@@ -364,7 +377,8 @@ server/
     }],
     yearsOfExperience: Number,
     primaryTechStack: [String],
-    targetJobRole: String
+    targetJobRole: String,
+    visualRoadmap: Object          // Cached tiered roadmap from Gemini (tiers[], targetJob)
   },
 
   // Uploaded Resume File Reference
@@ -488,9 +502,11 @@ server/
 
 #### 1. **Home Page (App.jsx — inline `Home` component)**
 - Landing page with hero section
-- Navigation bar with CareerPath branding
+- Navigation bar with CareerPath branding and backdrop blur
 - "Start Your Journey" and "Get Started" CTAs linking to `/signup`
 - Gradient background (`from-blue-50 via-white to-purple-50`)
+- Login link in navbar
+- Hero headline: "Your Personalized Path to Your Dream Career"
 
 #### 2. **Login Page (Login.jsx)**
 - Form-based login with username + password
@@ -501,13 +517,25 @@ server/
 
 #### 3. **Dashboard (Dashboard.jsx)**
 - Main hub post-login
-- Radar chart (Recharts) showing skill progress across the full roadmap
+- **Intro prompt** shown when profile is incomplete (no `targetJob`) — CTA to `/profile`
+- **Target Career Path header** showing target job title with "Full Roadmap" and "Edit Profile" buttons
+- **Stats panel** (left column): Mastered count / required total, Learning count, AI Resume shortcut, Overall Match % progress bar
+  - Progress formula: `(mastered + learning × 0.5) / required × 100`
+- **Radar chart** ("Skill Fingerprint 🧬") — Recharts RadarChart showing skill mastery levels
+  - Mastered = 100, Learning = 60, To Learn = 20
+  - Labels truncated at 12 chars, uppercase tracking
+- **Certificate CTA card** — black gradient banner linking to `/dashboard/certificates`
+- **Skill Acquisition section** — filter toolbar + three-column kanban layout
 - Three-column skill layout: **To Learn** / **Learning** / **Mastered**
-- Skill filtering: search term, priority filter, status filter, hide mastered
-- Optimistic UI: loads cached profile and roadmap from `localStorage` before API response
-- Skill interactions: toggle skill status (3-state cycle), set focus skill
-- Hover tooltips (`SkillTooltip`) showing skill description + resources
-- Skeleton loaders while fetching
+- Skill filtering: search term (`searchTerm`), priority filter (All/High/Medium/Low), status filter (All/To Learn/Learning/Mastered), hide mastered toggle
+- Skill cards sorted by priority weight: High=1, Medium=2, Low=3
+- Optimistic UI: parallel `Promise.all` for profile + roadmap; shows cached `localStorage` data first
+- **Skill interactions:**
+  - Click skill card → 3-state toggle cycle (To Learn → Learning → Mastered → To Learn)
+  - ⭐ focus icon → `POST /api/profile/focus-skill` (toggles current focus skill)
+  - Click skill name → opens `SkillTooltip` modal with AI-generated description + resources
+- Skeleton loaders: `StatsCardSkeleton` × 3, `SkillCardSkeleton` for skill list
+- Parallel data fetch: `GET /api/profile` + `GET /api/roadmap`
 
 **Skill Status Cycle:**
 ```
@@ -526,6 +554,8 @@ To Learn → Learning → Mastered → To Learn
 - Edit/setup form for all profile fields
 - Sets `currentSkills`, `targetJob`, `experienceLevel`
 - Sends data to `POST /api/profile`
+- On save: server auto-adds `currentSkills` to `completedSkills` (if not already present)
+- Triggers `lastProfileUpdate` timestamp update → invalidates roadmap and visual roadmap caches
 
 #### 6. **Resume Builder (ResumeBuilder.jsx)**
 - Multi-section AI-powered resume builder
@@ -597,26 +627,79 @@ To Learn → Learning → Mastered → To Learn
 - Links to live job posting via "View Job" button
 
 #### 11. **Roadmap Page (Roadmap.jsx)**
-- Learning path visualization from AI-generated roadmap
-- Cached per user — regenerates only when profile changes
-- Shows skill dependencies, resources, time estimates, priority levels
+- Classic linear roadmap page (separate from VisualRoadmap)
+- **Skill Gap Analysis panel:** displays Current Skills count, Required Skills count, Match Percentage, gradient progress bar, and Missing Skills list
+- **Learning Path cards:** per-skill cards with priority badge, time estimate, descriptions, and resource links
+- Mastered skill cards shown with green checkmark badge
+- Skill cards interactive: hover opens `SkillTooltip` (click on skill name), ESC or click-outside closes
+- Animated loading screen with bouncing dots and 🗺️ emoji
+- Optimistic UI: loads from `localStorage` (`userRoadmap`) before API response
+- Parallel fetch: `GET /api/profile` + `GET /api/roadmap`
+- Back to Dashboard button in header
+
+#### 12. **Visual Roadmap Page (VisualRoadmap.jsx)** *(New)*
+- Located at `/dashboard/visual-roadmap` (within `DashboardLayout`)
+- Tiered roadmap view with alternating left/right timeline layout
+- **Header card:** target job title, "Regenerate Path" button, overall mastery progress bar
+- **Progress calculation:** counts Mastered skills across all tiers → percentage
+- **Vertical timeline spine:** center line with gradient (`#6366f1` → `#8b5cf6`)
+- **Tiers displayed in sequence:**
+  - Tier 0: "Mastered" (green badge)
+  - Tier 1: "Start Here" (indigo badge)
+  - Tier 2: "Next Steps" (purple badge)
+  - Tier 3: "Advanced/Optional" (orange badge)
+- Skills alternate left/right of the center line per tier
+- **Skill node dot color:** mastered=green, High priority=indigo, Medium=purple, Low=gray
+- **Skill card:** shows skill name, category badge, time estimate, priority, dependencies list, optional resources
+- Click skill card → **Detail slide-in panel** showing course resources (YouTube, Course, Docs, etc.)
+- Resource icons by type: YouTube → YouTube icon, Course → GraduationCap, Docs → BookOpen, others → Globe
+- **Cache:** stored in `user.careerInfo.visualRoadmap` in MongoDB
+- **Refresh:** query `?refresh=true` forces Gemini regeneration + cache update
+- Skeleton loader: animated pulse layout with header + 3 timeline entries
 
 ### Component Library
 
 #### `Sidebar.jsx`
-Navigation links: Dashboard, Profile, Resume Builder, Projects, Certificates, Job Matches
+Navigation links: Dashboard, Profile, Resume Builder, Projects (FolderGit2 icon), Certificates, Job Matches, Visual Roadmap (Map icon)
+
+- Fixed left sidebar (w-64)
+- Active state: blue-600 background + white text + shadow + slight x-translate
+- Inactive: slate-500 text, hover to slate-900
+- Footer: version label "CareerPath v1.0.0"
 
 #### `SkillTooltip.jsx`
-Hover popup with skill description, why it matters, and learning resources (fetched from `POST /api/skill-detail`)
+Modal overlay (not a hover popup) — opens as a full-screen backdrop when a skill name is clicked:
+- Fixed `inset-0` overlay with `bg-black/40 backdrop-blur-sm`
+- Content: max-w-2xl, max-h-85vh scrollable modal
+- Header: gradient avatar with skill initial, skill name, close button
+- Skill description paragraph
+- "Why it matters" section
+- Resources list with **9 resource type icons** (Docs, Course, Video, Tutorial, Practice, Tool, Search, Book, Playground)
+- Per-type badge colors for visual scanning
+- Closes on: backdrop click, ESC key, close button
+- Cancels fetch on unmount (via `cancelled` flag)
+- Fetches from: `POST /api/skill-detail` with `{ skill, targetJob }`
 
 #### `resume/AIEnhancementModal.jsx`
 Modal opens when user clicks "AI Enhance" on a text field. Shows original vs. enhanced comparison + up to 3 variations to pick from.
 
 #### `resume/TemplateSelector.jsx`
-Three templates: Professional Classic, Modern Sidebar, Balanced Two-Column
+Three templates with gradient header:
+- `professional` — Traditional single-column (Layout icon)
+- `modern-sidebar` — Two-part sidebar design (Sidebar icon)
+- `balanced` — Efficient section layout (Grid3x3 icon)
+
+Active state: indigo-50 background + indigo-500 border + ring
 
 #### `resume/ValidationChecklist.jsx`
-Quality score panel with 5 checks: summary length >100 chars, skills ≥3, projects ≥2, experience present, education present.
+Quality score panel (0–100%) with 5 weighted checks:
+- Summary length > 100 characters
+- Skills count ≥ 3
+- Projects count ≥ 2
+- Experience section present
+- Education section present
+
+Each check worth 20 points; score shown as percentage.
 
 #### `resume/ThemeColorPicker.jsx`
 Color picker for resume accent color.
@@ -625,11 +708,29 @@ Color picker for resume accent color.
 Custom React hook with 800ms debounce for real-time Groq-powered description enhancement.
 
 #### `utils/textPolisher.js`
-Client-side formatting: trim, punctuation spacing, sentence capitalization, abbreviation uppercasing (API, UI, AWS, etc.), bullet normalization.
+Client-side formatting (no AI call):
+- Trim, punctuation spacing, sentence capitalization
+- Abbreviation uppercasing: API, UI, AWS, CSS, HTML, JS, etc.
+- Bullet normalization
+- Used in ResumeBuilder for instant lightweight text cleanup
 
 ---
 
 ## Backend Implementation
+
+### Layout System
+
+#### DashboardLayout (`DashboardLayout.jsx`)
+- Wraps all `/dashboard/*` routes via React Router `<Outlet />`
+- Fixed left `<Sidebar />` (w-64)
+- Right content area with `ml-64` offset
+- **Sticky top nav bar** (`backdrop-blur-md bg-white/80 border-b`) containing:
+  - Right-aligned: "Logged in as" label + `fullName`, `Avatar` (sm), Logout button
+- **Logout handler:** removes `token` + `userProfile` from `localStorage`, navigates to `/login`
+- Fetches `GET /api/profile` on mount to populate top bar name
+- Main content: `max-w-7xl mx-auto px-6 py-10`
+
+---
 
 ### Authentication System
 
@@ -661,7 +762,34 @@ export const protect = (req, res, next) => {
 }
 ```
 
-> **Note:** Some routes (roadmap, quiz, profile) define a local inline `authMiddleware` that sets only `req.userId`. All certificate routes use the shared `protect` middleware from `authMiddleware.js`.
+> **Note:** Routes have two different auth middleware patterns:
+> - `profile.js`, `roadmap.js`, `quiz.js`: inline local middleware — sets only `req.userId = decoded.userId`
+> - `resume.js`, `visualRoadmap.js`: inline middleware that additionally fetches full `User` from DB — sets `req.user` (full document)
+> - `certificate.js`: uses shared `protect` from `authMiddleware.js` — sets `req.user = { _id }` and `req.userId`
+
+### Signup Form Validation
+
+**`Signup.jsx`** performs client-side validation before submitting:
+- `fullName` — required
+- `username` — required
+- `email` — required + regex format check
+- `phoneNumber` — required + must be numeric only
+- `password` — required + minimum 6 characters
+- `confirmPassword` — must match password
+- `currentStatus` — required (Student / Working Professional)
+- **Education fields** — required for **all** statuses (degree, specialization, college, years)
+- **Experience fields** — required only for `Working Professional` (company, role, dates)
+- Social links — optional but URL format validated if provided
+- **Password strength indicator** via `getPasswordStrength()` helper
+- On error: auto-scrolls to top to reveal first error
+
+**Data transformation on submit:**
+- Education years string `"2020-2024"` → split into `startYear` / `endYear`
+- Experience dates string `"Jan 2022 - Present"` → `startDate` / `endDate` ("present" → `null`)
+- Non-professional users: `experience: []` sent to server
+- On success: stores `token`, `userId`, `username` in `localStorage`
+
+---
 
 ### Controllers
 
@@ -709,6 +837,16 @@ POST   /focus-skill         — Set or unset the focus skill (toggle)
 ```
 GET    /                    — Return cached roadmap or generate fresh one
                               Invalidates cache when profile.lastProfileUpdate > roadmapCache.generatedAt
+                              Query: refresh=true to force regeneration
+```
+
+### Visual Roadmap Routes (`/api/visual-roadmap`)
+```
+GET    /                    — Get tiered visual roadmap (Gemini AI)
+                              Cache: stored in user.careerInfo.visualRoadmap (invalidated by refresh param)
+                              Query: refresh=true to force Gemini regeneration
+                              Returns: { tiers: [{ tier, label, skills[] }], targetJob }
+                              Falls back to priority-based tiering if GEMINI_API_KEY missing
 ```
 
 ### Quiz Routes (`/api/quiz`)
@@ -922,6 +1060,48 @@ GET    /matches             — Fetch + score job listings from Adzuna API
 - Used internally by `roadmapGenerator.js` to source real-world skill requirements
 - Not directly exposed to users as a browseable page
 
+### 13. Resume Analyzer Service (`resumeAnalyzerService.js`)
+
+**Purpose:** Perform detailed skill gap analysis using GitHub as the industry demand signal
+
+**Class:** `ResumeAnalyzerService` (exported as singleton)
+
+**Key Methods:**
+- `initGithubClient(githubToken)` — stores GitHub token for authenticated requests
+- `getIndustrySkills(jobRole, limit=50)` — queries GitHub search API: runs 3 search queries (`[role] project`, `[role] template`, `[role]`), extracts topics/languages/descriptions from top repos, deduplicates, returns top 50 most frequent skills. In-memory cache per jobRole.
+- `analyzeSkillGap(userSkills, jobRole)` — returns: `{ matchingSkills, missingSkills, suggestedSkills, industryDemandSkills, matchPercentage }`
+- `getLearningRecommendations(analysis)` — categorizes skills into `{ critical (top 5), important (5–10), nice_to_have }` from suggested skills
+- `getRelatedSkills(skills)` — hardcoded skill relation map (e.g., React → Redux, Next.js, TypeScript, Jest)
+- `generateRoadmap(analysis, currentLevel)` — divides suggested skills into 4 phases: Foundation (0-2m), Intermediate (2-4m), Advanced (4-6m), Specialization (6+m)
+- Fallback: `getDefaultSkillsForRole(jobRole)` with hardcoded arrays for 6 roles: frontend, backend, full stack, devops, data scientist, mobile developer
+
+**GitHub topic normalization map (sample):** js→JavaScript, ts→TypeScript, react→React, springboot→Spring Boot, k8s→Kubernetes, postgres→PostgreSQL (30+ mappings)
+
+### 14. Visual Roadmap Service (`visualRoadmapService.js`)
+
+**AI Model:** Google Gemini `gemini-1.5-flash`  
+**Purpose:** Organize the learning path into a tiered, visually-ordered roadmap
+
+**Key Function:** `generateVisualRoadmap(profile)`
+1. Calls `generateRoadmap(profile)` from `roadmapGenerator.js` to get raw `learningPath`
+2. Initializes Gemini with `GEMINI_API_KEY`
+3. Sends skill data + target job to Gemini with system prompt: *"organize into ordered TIERS, assign categories, provide 3 real course resources per skill"*
+4. Parses JSON response (strips markdown fences if present)
+5. Falls back to `generateFallbackRoadmap()` if Gemini unavailable or parse fails
+
+**`generateFallbackRoadmap(learningPath)`:**
+- Tier 0: Mastered
+- Tier 1: High priority (Start Here)
+- Tier 2: Medium priority (Next Steps)
+- Tier 3: Low priority (Advanced/Optional)
+- All skills assigned category: "General"
+
+**Gemini AI Instructions:**
+- Groups skills into ordered tiers (Tier 0 = Mastered, Tier 1 = learn first, etc.)
+- Assigns each skill a `category`: Language | Framework | Tool | Database | DevOps
+- Returns 3 real course resources per non-mastered skill (Udemy, Coursera, YouTube, official docs)
+- Response format: strict JSON, no markdown
+
 ### 12. Skill Matching Service (`skillMatchingService.js`)
 
 **Purpose:** Fuzzy skill matching for resume analysis and certificate skill mapping
@@ -930,6 +1110,21 @@ GET    /matches             — Fetch + score job listings from Adzuna API
 1. Normalized exact match (lowercase, trim special chars)
 2. Substring matching
 3. Alias matching (JS = JavaScript, Node = Node.js, etc.)
+
+---
+
+## Role Skills Configuration (`config/roleSkills.js`)
+
+Predefined skill sets for common roles with three tiers per role:
+
+| Role | Core Skills | Supporting Skills | Optional Skills |
+|---|---|---|---|
+| `frontend` | html, css, javascript, typescript, react | redux, tailwind, vite, git, rest | next.js, react-native, jest, cypress, accessibility |
+| `backend` | javascript, node.js, express, mongodb, sql | sequelize, mongoose, docker, jwt, redis | graphql, kubernetes, microservices, aws |
+| `data_scientist` | python, pandas, numpy, scikit-learn, sql | tensorflow, pytorch, jupyter, matplotlib | spark, hadoop, aws |
+| `cloud_engineer` | aws, linux, docker, kubernetes, networking | terraform, ci-cd, git, monitoring | azure, gcp, ansible |
+
+Used by `roadmapGenerator.js` as a fallback/supplement when GitHub/Stack Overflow data is unavailable.
 
 ---
 
@@ -959,19 +1154,34 @@ GET /api/quiz/:skill
     ↓
 Groq llama-3.1-8b-instant generates 25 MCQs (JSON)
     ↓
-Quiz interface renders questions one at a time
+Quiz interface renders questions one at a time with Prev/Next navigation
+    ↓
+User selects one option per question (selectedAnswers: { questionIndex: option })
     ↓
 User submits all answers
     ↓
-Score = (correct / 25) * 100
+score = count(selectedAnswers[idx] === question.correctAnswer)
     ↓
-≥ 90%: Mark skill Mastered + confetti celebration
-< 90%: Offer retry with new questions
+passed = score >= 23  // exactly 23+ out of 25 (92%)
+    ↓
+≥ 23: Mark skill Mastered + confetti (colors: #2563eb, #3b82f6, #60a5fa)
+< 23: Offer retry (window.location.reload()) or Back to Dashboard
 ```
+
+**Result screen messages:**
+- Pass: 🏆 "Certification Earned!" — green, skill added to "skill fingerprint"
+- Fail: 📚 "Keep Learning!" — red, review resources and retry
 
 **On Pass:**
 - `POST /api/profile/toggle-skill` with `{ skill, score, forceMaster: true }`
 - Skill moves from learningSkills → completedSkills with score + date
+
+**Question object structure:**
+```json
+{ "id": 0, "difficulty": "medium", "question": "...", "options": ["A","B","C","D"], "correctAnswer": "A" }
+```
+
+> Note: The field is `correctAnswer` (not `correctOption`).
 
 ### 3. Resume Building & Enhancement
 
@@ -1092,10 +1302,224 @@ User can toggle resume inclusion or delete
 
 ### 8. Skill Detail Tooltips
 
-- Hovering a skill card calls `POST /api/skill-detail` with `{ skill, targetJob }`
+- **Triggered by clicking** a skill name on Dashboard or Roadmap page (not hover)
+- Opens `SkillTooltip` as a **full-screen modal** (fixed overlay with backdrop blur)
+- Calls `POST /api/skill-detail` with `{ skill, targetJob }` using JWT auth
 - Groq generates: description, whyItMatters, curated resources
-- Cached in MongoDB `SkillDetail` collection (30-day TTL)
+- Resources shown with **9 type icons**: Docs📄, Course🎓, Video🎬, Tutorial📝, Practice💻, Tool🛠️, Search🔍, Book📕, Playground🎮
+- Each resource has a color-coded type badge (blue=Docs, purple=Course, red=Video, etc.)
+- Cached in MongoDB `SkillDetail` collection (30-day TTL auto-expire)
 - On cache hit: returns instantly without AI call
+- Closes on: ESC key, backdrop click, or X button
+
+---
+
+---
+
+## Visual Roadmap System
+
+### Overview
+The Visual Roadmap is a dedicated tiered view of the user's learning path, powered by Google Gemini AI. It provides a more structured, dependency-aware representation compared to the classic Roadmap page.
+
+### Route
+- **Frontend:** `/dashboard/visual-roadmap` (`VisualRoadmap.jsx`)
+- **API:** `GET /api/visual-roadmap` (`routes/visualRoadmap.js`)
+- **Service:** `services/visualRoadmapService.js`
+
+### Data Flow
+```
+GET /api/visual-roadmap
+    ↓
+authMiddleware (shared protect) → req.user
+    ↓
+Check user.careerInfo.visualRoadmap cache
+    ↓ (if refresh=true or no cache)
+Fetch full roadmap via generateRoadmap(profile)  [roadmapGenerator.js]
+    ↓
+Send learningPath + targetJob to Gemini 1.5-flash
+    ↓
+Gemini organizes skills into tiers + assigns categories + provides resources
+    ↓ (if GEMINI_API_KEY missing or Gemini fails)
+Fallback: generateFallbackRoadmap() — priority-based tiering
+    ↓
+Save result to user.careerInfo.visualRoadmap in MongoDB
+    ↓
+Return { tiers, targetJob }
+```
+
+### Frontend Behaviour
+- Progress bar calculated from total skills vs. Mastered skills across all tiers
+- Skills rendered as **alternating left/right cards** on a vertical center line
+- Clicking a skill card toggles a **resource detail panel** (slides in with course links)
+- Tier labels color-coded: Mastered=green, Start Here=indigo, Next Steps=purple, Advanced=orange
+- Refreshing forces full Gemini regeneration and cache update
+
+---
+
+## Resume AI Prompts & Generation Logic
+
+### Profile Type Detection (`detectUserProfile`)
+```javascript
+{ isStudent: !data.experience || data.experience.length === 0,
+  hasExperience: data.experience.length > 0,
+  hasSkills: data.knownSkills.length > 0 }
+```
+
+### Student/Fresher Prompt Strategy
+When `isStudent === true`:
+- Summary: 3-4 sentences, academic background, passion for target role, growth mindset — **no "years of experience"**
+- Experience section: **replaced with `academicHighlights`** (projects, coursework, competitions)
+- Skills: categorized; `Mastered Skills` group always listed first
+- **Anti-hallucination rule**: empty fields return `[]`, never fabricated content
+
+**Expected student JSON structure:**
+```json
+{
+  "summary": "...",
+  "education": [...],
+  "academicHighlights": [{ "title": "...", "description": "..." }],
+  "skills": [{ "category": "Mastered Skills", "items": [...] }, ...],
+  "masteredSkills": [{ "name": "..." }],
+  "projects": [...],
+  "certificates": [{ "name": "polishedTitle", "issuer": "...", "year": "..." }],
+  "contact": { "email", "phone", "linkedin", "github" }
+}
+```
+
+### Professional Prompt Strategy
+When `isStudent === false`:
+- Summary: achievement-focused, years of experience, value proposition for target role
+- Experience: each entry gets **3 STAR-method bullet points** as `description` string (newline separated)
+- Skills: same categorization, `Mastered Skills` first
+- STAR bullets: Situation/Action/Result, action verbs, quantifiable achievements
+
+**Expected professional JSON structure:**
+```json
+{
+  "summary": "...",
+  "education": [...],
+  "experience": [{ "company", "role", "duration", "description": "bullet1\nbullet2\nbullet3" }],
+  "skills": [...],
+  "masteredSkills": [...],
+  "projects": [...],
+  "certificates": [...],
+  "contact": { "email", "phone", "linkedin", "github" }
+}
+```
+
+### Safety Guidelines Enforced in Prompts
+1. Never fabricate companies, job titles, dates, or skills not in user data
+2. Empty fields → empty arrays (never placeholder content)
+3. `contact` block returned EXACTLY as provided — no modifications
+4. `certificates` must use `polishedTitle` (not raw certificate title)
+5. `masteredSkills` always returned as `[{ "name": "..." }]` objects
+
+---
+
+## Skill Normalization System
+
+### `server/utils/skillNormalizer.js`
+
+Maintains a `skillNormalizationMap` with **80+ entries** mapping common variations to canonical names:
+
+| Raw Input | Normalized |
+|---|---|
+| js, es6, es2015 | JavaScript |
+| ts | TypeScript |
+| py, python3 | Python |
+| reactjs | React |
+| vuejs | Vue |
+| expressjs | Express |
+| springboot, spring boot | Spring Boot |
+| postgres | PostgreSQL |
+| mongo | MongoDB |
+| k8s | Kubernetes |
+| amazon web services | AWS |
+| google cloud | GCP |
+| dotnet, .net | .NET |
+| reactnative | React Native |
+| ...(80+ total) | ... |
+
+**Key functions exported:**
+- `normalizeSkill(skill)` — returns canonical name or original if not found
+- `normalizeSkills(skills[])` — maps array through normalization
+- `extractSkillsFromText(text, knownSkills)` — word-boundary regex match against known skills list
+- `getAllKnownSkills()` — returns complete list of canonical skill names
+
+---
+
+## Text Processing Utilities
+
+### `server/utils/textCleaner.js`
+
+Utilities for processing extracted resume text:
+
+- `normalizeWhitespace(text)` — converts `\r\n` → `\n`, collapses tabs/spaces
+- `cleanText(text)` — removes bullet chars (`•`, `-`, `*`, `→`, `▪`) and control characters
+- `getCleanLines(text)` — splits, cleans, filters empty lines
+- `detectSections(text)` — regex-based section header detection for 10 section types:
+  - SKILLS, EXPERIENCE, EDUCATION, PROJECTS, CERTIFICATIONS, SUMMARY, DECLARATION, REFERENCES, LANGUAGES, INTERESTS
+- `extractSection(lines, startIndex, endIndex)` — slices raw lines between section boundaries
+- `parseDuration(text)` — handles date ranges ("Jan 2020 - Dec 2021") and year counts ("2 years")
+- `extractEmail(text)` — regex email extraction from resume text
+
+---
+
+## UI Component Details
+
+### `Avatar.jsx`
+- Renders up to 2 initials from `fullName` (split on spaces, first letter each)
+- `size` prop variants: `xs` (w-8), `sm` (w-10), `md` (w-16), `lg` (w-24), `xl` (w-32), `2xl` (w-40)
+- Gradient: `from-blue-500 via-indigo-600 to-purple-600`
+- Glossy overlay via `bg-gradient-to-tr from-white/10 to-transparent`
+- Hover: `hover:scale-105 hover:rotate-3 hover:shadow-2xl`
+- Used in: `DashboardLayout` top bar, `Profile.jsx`
+
+### `Skeleton.jsx` — Three Loading Placeholder Variants
+- `Skeleton({ className })` — generic animated pulse block (base component)
+- `SkillCardSkeleton` — mimics skill card: icon placeholder, name/subtitle lines, description lines
+- `StatsCardSkeleton` — mimics stats card: label + large number placeholder
+- All use `animate-pulse bg-slate-200 rounded-xl`
+
+---
+
+## Routing & Layout Architecture
+
+### Complete Route Map (`App.jsx`)
+
+```
+/ (public)                     → Home (inline component)
+/login                         → Login.jsx
+/signup                        → Signup.jsx
+/profile                       → ProfileForm.jsx (NOT inside DashboardLayout)
+/roadmap                       → Roadmap.jsx (NOT inside DashboardLayout)
+/quiz/:skill                   → Quiz.jsx (NOT inside DashboardLayout)
+
+/dashboard/*                   → DashboardLayout (protected, has Sidebar + TopNav)
+├── /dashboard                 → Dashboard.jsx (index)
+├── /dashboard/profile         → Profile.jsx
+├── /dashboard/certificates    → Certificates.jsx
+├── /dashboard/resume-builder  → ResumeBuilder.jsx
+├── /dashboard/projects        → Projects.jsx
+├── /dashboard/job-matches     → JobMatches.jsx
+├── /dashboard/jobs            → JobMatches.jsx (alias)
+└── /dashboard/visual-roadmap  → VisualRoadmap.jsx
+```
+
+### Authentication Guard
+- `DashboardLayout` — fetches profile on mount; if no token → redirect to `/login`
+- Individual pages (`Quiz`, `Roadmap`, `ProfileForm`) also check for `localStorage.getItem('token')` on mount
+- No centralized `PrivateRoute` component — each page/layout handles its own auth check
+
+### localStorage Keys Used
+| Key | Set By | Used By |
+|---|---|---|
+| `token` | Login/Signup | All pages (auth header) |
+| `userId` | Signup | Signup, ResumeBuilder |
+| `username` | Signup | Signup |
+| `userProfile` | Dashboard, Roadmap | Dashboard, Roadmap (optimistic UI) |
+| `userRoadmap` | Dashboard, Roadmap | Dashboard, Roadmap (optimistic UI) |
+| `resumeData_<userId>` | ResumeBuilder | ResumeBuilder (user-scoped persistence) |
 
 ---
 
@@ -1208,6 +1632,31 @@ CERTIFICATE UPLOAD:
 
 ---
 
+### Visual Roadmap Workflow
+
+```
+User navigates to /dashboard/visual-roadmap
+    ↓
+VisualRoadmap.jsx mounts → fetchRoadmap()
+    ↓
+GET /api/visual-roadmap
+    ↓
+Check user.careerInfo.visualRoadmap (cache)
+    ↓ Cache hit → return cached data immediately
+    ↓ Cache miss or refresh=true:
+        1. generateRoadmap(profile)  [Groq + GitHub + Stack Overflow]
+        2. Gemini 1.5-flash organizes into tiers + categories + resources
+        3. Save to user.careerInfo.visualRoadmap
+        4. Return tiers + targetJob
+    ↓
+Frontend renders tiered timeline
+    ↓
+User can click any skill card → view course resources
+User can click "Regenerate Path" → refresh=true → forces new generation
+```
+
+---
+
 ## Setup & Installation
 
 ### Prerequisites
@@ -1256,18 +1705,21 @@ MONGODB_URI=mongodb://localhost:27017/career-tracker
 JWT_SECRET=your_super_secret_jwt_key_here_long_and_random
 
 # AI — Required
-GROQ_API_KEY=gsk_...          # console.groq.com
-CEREBRAS_API_KEY=csk-...      # cloud.cerebras.ai
+GROQ_API_KEY=gsk_...          # console.groq.com (quiz, resume, roadmap, certs, skill details)
+CEREBRAS_API_KEY=csk-...      # cloud.cerebras.ai (project README analysis)
 
 # Job Matching — Required for Job Matches page
 ADZUNA_APP_ID=your_app_id
 ADZUNA_APP_KEY=your_app_key
 
-# GitHub — Optional (improves roadmap quality)
+# GitHub — Optional (improves roadmap + resume analysis quality)
 GITHUB_TOKEN=ghp_...
 
+# Visual Roadmap — Optional (enables Gemini AI tiered roadmap; falls back gracefully if not set)
+GEMINI_API_KEY=AIza...
+
 # Optional
-# GEMINI_API_KEY=...
+# GOOGLE_GENERATIVE_AI_KEY=...   # alias for GEMINI_API_KEY
 ```
 
 ### Step 5: Start MongoDB
@@ -1327,7 +1779,8 @@ cd server && npm start
 | `ADZUNA_APP_KEY` | Yes | Adzuna app key — job matching |
 | `GITHUB_TOKEN` | No | GitHub personal access token — optional, improves roadmap |
 | `PORT` | No | Server port (default: 5000) |
-| `GOOGLE_GENERATIVE_AI_KEY` | No | Google Gemini key — available but not used in main flow |
+| `GEMINI_API_KEY` | No | Google Gemini key — used by Visual Roadmap tier organizer; falls back to priority-based if missing |
+| `GOOGLE_GENERATIVE_AI_KEY` | No | Alias for Gemini key — either name works |
 
 ---
 
@@ -1370,6 +1823,18 @@ Solutions:
 2. Make sure your profile has a Target Job Role set (Profile page)
 3. Check that you have skills listed in your profile
 4. Job cache is 3 hours — click Refresh to force new fetch
+5. Adzuna API is scoped to India ("in") — listings may be limited for other regions
+```
+
+### Visual Roadmap Not Loading
+```
+Error: Failed to generate visual roadmap
+Solutions:
+1. If GEMINI_API_KEY is missing: roadmap will still load via fallback (priority-based tiers)
+2. If GEMINI_API_KEY is present but invalid: check cloud.google.com/generative-ai for valid key
+3. Ensure GROQ_API_KEY is set (Visual Roadmap depends on roadmapGenerator.js which uses Groq)
+4. Try the "Regenerate Path" button to force a fresh generation
+5. Check server console for "Visual Roadmap Route Error FULL" logs
 ```
 
 ### CORS Issues
@@ -1403,12 +1868,13 @@ Solutions:
 ## Project Statistics
 
 ### Code Metrics
-- **Frontend Pages:** 11 route-level components
-- **Frontend Components:** 20+ React components (including resume sub-components)
-- **Backend Route Modules:** 9 (`auth`, `profile`, `resume`, `roadmap`, `quiz`, `certificate`, `projects`, `jobs`, `skillDetail`)
-- **Services:** 12 specialized service modules
+- **Frontend Pages:** 12 route-level components (added `VisualRoadmap.jsx`)
+- **Frontend Components:** 20+ React components (including resume sub-components, `Avatar`, `Skeleton`)
+- **Backend Route Modules:** 10 (`auth`, `profile`, `resume`, `roadmap`, `quiz`, `certificate`, `projects`, `jobs`, `skillDetail`, `visualRoadmap`)
+- **Services:** 14 specialized service modules (added `visualRoadmapService`, `resumeAnalyzerService`)
+- **Utilities:** 4 backend utility modules (`skillNormalizer`, `textCleaner`) + 2 frontend (`textPolisher`, `useDescriptionEnhancer`)
 - **Database Models:** 2 Mongoose schemas (`User`, `SkillDetail`)
-- **API Endpoints:** 30+ RESTful endpoints
+- **API Endpoints:** 32+ RESTful endpoints
 
 ### Key Dependencies
 | Category | Package | Version |
@@ -1440,7 +1906,8 @@ Solutions:
    - `authMiddleware.js` validates every protected route
 
 3. **CORS Protection**
-   - Origin restricted to `http://localhost:5173` in development
+   - `app.use(cors())` — all origins permitted in current development configuration
+   - For production: configure `cors({ origin: 'https://your-domain.com' })` in `server/index.js`
 
 4. **File Upload Security**
    - `multer` memory storage — files never written to disk in transit
@@ -1464,12 +1931,16 @@ Solutions:
 ## Performance Optimizations
 
 1. **Job Match Caching**
-   - Adzuna API results cached in MongoDB (`jobMatchCache`) for 3 hours per user
+   - Adzuna API results cached in MongoDB (`profile.jobMatchCache`) for 3 hours per user
    - Reduces external API calls; force-refresh available via `?refresh=true`
 
-2. **Roadmap Caching**
-   - Generated roadmaps cached in `careerInfo.roadmap`
-   - Re-generated only when profile changes or user forces refresh
+2. **Roadmap Caching (Linear)**
+   - Generated roadmaps cached in `profile.roadmapCache`
+   - Invalidated when `profile.lastProfileUpdate > roadmapCache.generatedAt`
+
+2b. **Visual Roadmap Caching (Tiered)**
+   - Tiered Gemini roadmap cached in `careerInfo.visualRoadmap` in MongoDB
+   - Only invalidated on explicit `refresh=true` request (no time-based expiry)
 
 3. **Skeleton Loaders**
    - Job Matches, Dashboard, and Resume pages show skeleton UI while data loads — no blank states
@@ -1486,6 +1957,10 @@ Solutions:
 
 7. **Groq JSON Mode**
    - Resume generator uses `response_format: { type: 'json_object' }` to eliminate parsing overhead and hallucinated wrapper text
+
+8. **Static File Serving**
+   - Certificate files served from `/certificates` path → mapped to `uploads/certificates/` directory
+   - `app.use('/certificates', express.static(path.join(__dirname, '../uploads/certificates')))`
 
 ---
 
@@ -1514,9 +1989,22 @@ Solutions:
 
 ## Conclusion
 
-Career Tracker is a full-stack MERN application with multi-model AI integration (Groq for resume/roadmap/quiz/certs, Cerebras for project analysis), live job matching via Adzuna, and a complete resume builder with three templates and export options. The codebase follows a clean service/route/controller separation, uses JWT auth throughout, and leverages MongoDB for all user data persistence.
+Career Tracker is a full-stack MERN application with **three-tier AI integration** (Groq for resume/roadmap/quiz/certs/skill-details, Cerebras for project README analysis, Google Gemini for tiered visual roadmap organization), live job matching via Adzuna, and a complete resume builder with three templates and export options.
 
-All major features are implemented and production-ready. The modular architecture makes it straightforward to extend individual services (swap AI providers, add job boards, etc.) without touching unrelated modules.
+The application provides two roadmap views:
+- **Classic Roadmap** (`/roadmap`) — linear skill gap analysis with Stats panel and skill cards
+- **Visual Roadmap** (`/dashboard/visual-roadmap`) — AI-tiered alternating timeline with skill category tags and course resources
+
+Key architectural highlights:
+- Clean service/route/controller separation across 10 route modules and 14 services
+- JWT auth throughout with two auth middleware patterns (lightweight userId-only vs. full user fetch)
+- MongoDB for all user + skill cache persistence with TTL auto-expiry on SkillDetail
+- Optimistic UI on Dashboard and Roadmap (localStorage cache → API refresh pattern)
+- User-scoped localStorage for resume data (`resumeData_<userId>`)
+- Anti-hallucination safety rules enforced in all AI prompts
+- Role-based profile detection (Student vs. Professional) for tailored resume generation
+
+All major features are implemented. The modular architecture makes it straightforward to extend individual services (swap AI providers, add job boards, add new roles to `roleSkills.js`, etc.) without touching unrelated modules.
 
 ---
 
