@@ -24,11 +24,11 @@ function ProjectCard({ project, onDelete, isPreview = false }) {
     }
 
     return (
-        <div className={`bg-white rounded-2xl border shadow-sm p-6 relative ${isPreview ? 'border-violet-300 ring-2 ring-violet-100' : 'border-slate-200'
+        <div className={`bg-white rounded-2xl border shadow-sm p-6 relative transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-lg ${isPreview ? 'border-slate-200 ring-2 ring-violet-200' : 'border-slate-200'
             }`}>
             {/* Preview badge */}
             {isPreview && (
-                <span className="absolute top-4 left-4 text-xs font-bold bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full">
+                <span className="absolute top-4 left-4 text-xs font-medium bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full">
                     Preview — not saved yet
                 </span>
             )}
@@ -46,7 +46,7 @@ function ProjectCard({ project, onDelete, isPreview = false }) {
             )}
 
             {/* Title */}
-            <h3 className={`font-black text-slate-900 text-lg mb-2 ${isPreview ? 'mt-5' : 'pr-8'}`}>
+            <h3 className={`font-semibold text-slate-900 text-lg mb-2 ${isPreview ? 'mt-5' : 'pr-8'}`}>
                 {project.projectName || 'Untitled Project'}
             </h3>
 
@@ -58,10 +58,10 @@ function ProjectCard({ project, onDelete, isPreview = false }) {
             {/* Tech Stack */}
             {project.techStack?.length > 0 && (
                 <div className="mb-4">
-                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Tech Stack</p>
+                    <p className="text-[11px] font-medium text-slate-400 uppercase tracking-wider mb-2">Tech Stack</p>
                     <div className="flex flex-wrap gap-1.5">
                         {project.techStack.map((tech, i) => (
-                            <span key={i} className="px-2.5 py-1 bg-indigo-50 text-indigo-700 text-xs font-semibold rounded-full border border-indigo-100">
+                            <span key={i} className="px-2 py-0.5 bg-indigo-50 text-indigo-700 text-xs font-medium rounded-full border border-indigo-100">
                                 {tech}
                             </span>
                         ))}
@@ -72,11 +72,11 @@ function ProjectCard({ project, onDelete, isPreview = false }) {
             {/* Key Features */}
             {project.keyFeatures?.length > 0 && (
                 <div className="mb-4">
-                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Key Features</p>
+                    <p className="text-[11px] font-medium text-slate-400 uppercase tracking-wider mb-2">Key Features</p>
                     <ul className="space-y-1">
                         {project.keyFeatures.map((f, i) => (
                             <li key={i} className="flex items-start gap-2 text-sm text-slate-700">
-                                <ChevronRight size={14} className="text-violet-500 mt-0.5 shrink-0" />
+                                <ChevronRight size={14} className="text-slate-300 mt-0.5 shrink-0" />
                                 {f}
                             </li>
                         ))}
@@ -87,12 +87,12 @@ function ProjectCard({ project, onDelete, isPreview = false }) {
             {/* Skills Extracted */}
             {project.skillsExtracted?.length > 0 && (
                 <div>
-                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">
+                    <p className="text-[11px] font-medium text-slate-400 uppercase tracking-wider mb-2">
                         Skills Extracted &amp; Mastered
                     </p>
                     <div className="flex flex-wrap gap-1.5 mb-1">
                         {project.skillsExtracted.map((skill, i) => (
-                            <span key={i} className="flex items-center gap-1 px-2.5 py-1 bg-emerald-50 text-emerald-700 text-xs font-semibold rounded-full border border-emerald-200">
+                            <span key={i} className="flex items-center gap-1 px-2 py-0.5 bg-emerald-50 text-emerald-700 text-xs font-medium rounded-full border border-emerald-200">
                                 <CheckCircle size={11} />
                                 {skill}
                             </span>
@@ -270,41 +270,41 @@ export default function Projects() {
     }
 
     return (
-        <div className="min-h-screen bg-slate-50">
+        <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
             {/* Sticky Header */}
             <div className="sticky top-0 z-10 bg-white border-b border-slate-200 px-8 py-4 flex items-center gap-3">
                 <div className="p-2 bg-violet-100 rounded-xl">
                     <FolderGit2 size={20} className="text-violet-600" />
                 </div>
                 <div>
-                    <h1 className="text-xl font-black text-slate-900">Project Dashboard</h1>
+                    <h1 className="text-lg font-semibold text-slate-900">Project Dashboard</h1>
                     <p className="text-xs text-slate-500">Analyze READMEs, extract skills, track your builds</p>
                 </div>
             </div>
 
             {/* Main layout */}
-            <div className="flex gap-6 p-8 min-h-[calc(100vh-72px)]">
+            <div className="grid grid-cols-12 gap-6 p-8 max-w-7xl mx-auto">
 
                 {/* ── LEFT PANEL ── */}
-                <div className="w-1/3 shrink-0">
-                    <div className="bg-gradient-to-br from-violet-600 to-indigo-600 rounded-3xl p-6 text-white sticky top-24">
+                <div className="col-span-4 shrink-0">
+                    <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-6 sticky top-24">
                         <div className="flex items-center gap-2 mb-1">
-                            <FolderGit2 size={22} />
-                            <h2 className="text-xl font-black">README Analyzer</h2>
+                            <FolderGit2 size={22} className="text-violet-600" />
+                            <h2 className="text-lg font-semibold text-slate-900">README Analyzer</h2>
                         </div>
-                        <p className="text-violet-200 text-sm mb-6 leading-relaxed">
+                        <p className="text-slate-500 text-sm mb-6 leading-relaxed">
                             Upload or paste your project README to extract skills and generate a project summary.
                         </p>
 
                         {/* Tab Toggle */}
-                        <div className="flex bg-white/10 rounded-2xl p-1 mb-5">
+                        <div className="flex bg-slate-100 rounded-xl p-1 mb-5">
                             {['upload', 'paste'].map(tab => (
                                 <button
                                     key={tab}
                                     onClick={() => { setActiveTab(tab); setError(''); setReadmeFile(null) }}
-                                    className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold transition-all ${activeTab === tab
-                                            ? 'bg-white text-violet-700 shadow'
-                                            : 'text-white/70 hover:text-white'
+                                    className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === tab
+                                            ? 'bg-white text-violet-700 shadow-sm border border-slate-200'
+                                            : 'text-slate-500 hover:text-slate-700'
                                         }`}
                                 >
                                     {tab === 'upload' ? <Upload size={14} /> : <FileText size={14} />}
@@ -320,11 +320,11 @@ export default function Projects() {
                                 onDragLeave={handleDragLeave}
                                 onDrop={handleDrop}
                                 onClick={() => fileInputRef.current?.click()}
-                                className={`relative border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition-all ${isDragging
-                                        ? 'border-white bg-white/20'
+                                className={`relative border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition-all duration-200 ${isDragging
+                                        ? 'border-violet-400 bg-violet-50'
                                         : readmeFile
-                                            ? 'border-emerald-300 bg-white/10'
-                                            : 'border-white/30 hover:border-white/60 bg-white/5'
+                                            ? 'border-emerald-300 bg-emerald-50/40'
+                                            : 'border-slate-300 hover:border-violet-400 hover:bg-slate-50'
                                     }`}
                             >
                                 <input
@@ -336,21 +336,21 @@ export default function Projects() {
                                 />
                                 {readmeFile ? (
                                     <div>
-                                        <CheckCircle size={24} className="mx-auto mb-2 text-emerald-300" />
-                                        <p className="font-bold text-sm">{readmeFile.name}</p>
-                                        <p className="text-white/60 text-xs mt-1">{(readmeFile.size / 1024).toFixed(1)} KB</p>
+                                        <CheckCircle size={24} className="mx-auto mb-2 text-emerald-500" />
+                                        <p className="font-medium text-sm text-slate-900">{readmeFile.name}</p>
+                                        <p className="text-slate-400 text-xs mt-1">{(readmeFile.size / 1024).toFixed(1)} KB</p>
                                         <button
                                             onClick={e => { e.stopPropagation(); setReadmeFile(null) }}
-                                            className="mt-2 text-xs text-white/60 hover:text-white underline"
+                                            className="mt-2 text-xs text-slate-400 hover:text-slate-700 underline"
                                         >
                                             Remove
                                         </button>
                                     </div>
                                 ) : (
                                     <div>
-                                        <Upload size={24} className="mx-auto mb-2 text-white/60" />
-                                        <p className="text-sm font-semibold">Drop your README here</p>
-                                        <p className="text-white/60 text-xs mt-1">or click to browse · .md and .txt</p>
+                                        <Upload size={24} className="mx-auto mb-2 text-slate-400" />
+                                        <p className="text-sm font-medium text-slate-700">Drop your README here</p>
+                                        <p className="text-slate-400 text-xs mt-1">or click to browse · .md and .txt</p>
                                     </div>
                                 )}
                             </div>
@@ -362,15 +362,15 @@ export default function Projects() {
                                 value={readmeText}
                                 onChange={e => setReadmeText(e.target.value)}
                                 placeholder="Paste your README content here..."
-                                className="w-full bg-white/10 border border-white/20 rounded-2xl p-4 text-white placeholder-white/40 text-sm resize-none outline-none focus:border-white/50 transition-colors"
+                                className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-slate-900 placeholder-slate-400 text-sm resize-none outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all"
                                 style={{ minHeight: '200px' }}
                             />
                         )}
 
                         {/* Error */}
                         {error && (
-                            <div className="flex items-start gap-2 mt-4 bg-red-500/20 border border-red-400/30 rounded-xl px-3 py-2.5 text-red-100 text-sm">
-                                <AlertCircle size={15} className="shrink-0 mt-0.5" />
+                            <div className="flex items-start gap-2 mt-4 bg-red-50 border border-red-200 rounded-xl px-3 py-2.5 text-red-700 text-sm">
+                                <AlertCircle size={15} className="shrink-0 mt-0.5 text-red-500" />
                                 {error}
                             </div>
                         )}
@@ -379,7 +379,7 @@ export default function Projects() {
                         <button
                             onClick={handleAnalyze}
                             disabled={isAnalyzing}
-                            className="w-full mt-5 flex items-center justify-center gap-2 bg-white text-violet-700 font-bold py-3 rounded-2xl hover:bg-violet-50 transition-all disabled:opacity-60 disabled:cursor-not-allowed shadow-lg"
+                            className="w-full mt-5 flex items-center justify-center gap-2 bg-white text-violet-700 font-medium py-3 rounded-xl hover:bg-violet-50 transition-all disabled:opacity-60 disabled:cursor-not-allowed shadow-sm"
                         >
                             {isAnalyzing ? (
                                 <>
@@ -397,7 +397,7 @@ export default function Projects() {
                 </div>
 
                 {/* ── RIGHT PANEL ── */}
-                <div className="flex-1 min-w-0">
+                <div className="col-span-8 min-w-0">
 
                     {/* Success message */}
                     {successMsg && (
@@ -414,14 +414,14 @@ export default function Projects() {
                             <div className="flex gap-3 mt-3">
                                 <button
                                     onClick={handleSave}
-                                    className="flex items-center gap-2 bg-violet-600 hover:bg-violet-700 text-white font-bold px-5 py-2.5 rounded-xl transition-colors shadow-md"
+                                    className="flex items-center gap-2 bg-violet-600 hover:bg-violet-700 text-white font-medium px-5 py-2.5 rounded-xl transition-all duration-200 shadow-sm"
                                 >
                                     <Save size={16} />
                                     Save Project
                                 </button>
                                 <button
                                     onClick={handleDiscard}
-                                    className="flex items-center gap-2 text-slate-500 hover:text-slate-800 font-semibold px-4 py-2.5 rounded-xl hover:bg-slate-100 transition-colors"
+                                    className="flex items-center gap-2 bg-white border border-slate-200 text-slate-700 font-medium px-4 py-2.5 rounded-xl hover:bg-slate-50 transition-all duration-200"
                                 >
                                     <X size={16} />
                                     Discard
@@ -434,9 +434,9 @@ export default function Projects() {
                     {isAnalyzing && !currentAnalysis && <SkeletonCard />}
 
                     {!isLoading && !isAnalyzing && projects.length === 0 && !currentAnalysis && (
-                        <div className="flex flex-col items-center justify-center text-center py-24 text-slate-400">
+                        <div className="flex flex-col items-center justify-center text-center py-32 text-slate-400">
                             <FolderGit2 size={48} className="mb-4 text-slate-300" />
-                            <p className="font-bold text-lg text-slate-500">No projects analyzed yet</p>
+                            <p className="font-semibold text-lg text-slate-600">No projects analyzed yet</p>
                             <p className="text-sm mt-1">Upload a README to get started.</p>
                         </div>
                     )}

@@ -25,19 +25,13 @@ router.get('/', authMiddleware, async (req, res) => {
     console.log('User profile data:', JSON.stringify(user.profile, null, 2))
     console.log('User careerInfo:', JSON.stringify(user.careerInfo, null, 2))
 
-    // 2. Check cache
-    if (!refresh && user.careerInfo && user.careerInfo.visualRoadmap) {
-      console.log('Returning cached visual roadmap');
-      const cachedData = user.careerInfo.visualRoadmap.toObject ? user.careerInfo.visualRoadmap.toObject() : user.careerInfo.visualRoadmap;
-      
-      // Determine targetJob for the response (Dashboard parity)
-      const targetJob = user.careerInfo?.targetJobRole || user.profile?.targetJob || 'Software Engineer';
-      
-      return res.json({ 
-        ...cachedData, 
-        targetJob: targetJob
-      });
-    }
+    // 2. Check cache (TEMPORARILY DISABLED for debugging)
+    // if (!refresh && user.careerInfo && user.careerInfo.visualRoadmap) {
+    //   console.log('Returning cached visual roadmap');
+    //   const cachedData = user.careerInfo.visualRoadmap.toObject ? user.careerInfo.visualRoadmap.toObject() : user.careerInfo.visualRoadmap;
+    //   const targetJob = user.careerInfo?.targetJobRole || user.profile?.targetJob || 'Software Engineer';
+    //   return res.json({ ...cachedData, targetJob: targetJob });
+    // }
 
     // 3. Prepare profile object for the service
     const profile = {
@@ -57,6 +51,8 @@ router.get('/', authMiddleware, async (req, res) => {
       user.careerInfo = {};
     }
     user.careerInfo.visualRoadmap = visualRoadmap;
+    console.log("SAVING VISUAL ROADMAP - SAMPLE RESOURCE:",
+      JSON.stringify(visualRoadmap.tiers?.[1]?.skills?.[0]?.resources?.[0], null, 2));
     await user.save();
 
     res.json({ ...visualRoadmap, targetJob: profile.targetJob });

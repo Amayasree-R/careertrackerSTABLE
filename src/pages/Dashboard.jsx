@@ -7,6 +7,7 @@ import {
 } from 'recharts'
 import SkillTooltip from '../components/SkillTooltip'
 import { StatsCardSkeleton, SkillCardSkeleton } from '../components/Skeleton'
+import { Rocket, BookOpen, FileText, Star, Search, Activity } from 'lucide-react'
 
 function SkillRadar({ roadmap, profile }) {
   const chartData = useMemo(() => {
@@ -254,9 +255,9 @@ function Dashboard() {
     <div className="space-y-8">
       {/* Target Job Header */}
       {!isProfileComplete ? (
-        <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/50 p-12 border border-slate-100 text-center space-y-6">
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg transition-all duration-300 ease-out p-8 text-center space-y-6">
           <div className="w-20 h-20 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <span className="text-4xl text-blue-600">🚀</span>
+            <Rocket size={40} className="text-blue-600" />
           </div>
           <h2 className="text-3xl font-black text-slate-900">Let's build your roadmap!</h2>
           <p className="text-slate-500 max-w-lg mx-auto leading-relaxed">
@@ -264,7 +265,7 @@ function Dashboard() {
           </p>
           <Link
             to="/profile"
-            className="inline-block px-10 py-4 bg-blue-600 text-white font-bold rounded-2xl hover:bg-blue-700 transition shadow-xl shadow-blue-200 transform hover:-translate-y-0.5"
+            className="inline-block px-8 py-3 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 transition shadow-sm"
           >
             Get Started
           </Link>
@@ -272,24 +273,24 @@ function Dashboard() {
       ) : (
         <>
           {/* Header with Target Job */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white p-6 sm:p-10 rounded-3xl border border-slate-100 shadow-xl shadow-slate-200/40">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg transition-all duration-300 ease-out">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
-                <h2 className="text-xs font-black text-blue-600 uppercase tracking-[0.2em]">Target Career Path</h2>
+                <h2 className="text-xs font-semibold text-blue-600 uppercase tracking-[0.2em]">Target Career Path</h2>
               </div>
               <h3 className="text-4xl sm:text-5xl font-black text-slate-900 tracking-tight">{profile.targetJob}</h3>
             </div>
             <div className="flex flex-wrap gap-4">
               <Link
                 to="/roadmap"
-                className="px-8 py-3 bg-slate-900 text-white rounded-2xl font-bold hover:bg-slate-800 transition shadow-lg shadow-slate-200"
+                className="px-6 py-2.5 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition shadow-sm"
               >
                 Full Roadmap
               </Link>
               <Link
                 to="/profile"
-                className="px-8 py-3 bg-white text-slate-700 rounded-2xl font-bold hover:bg-slate-50 transition border border-slate-200 shadow-sm"
+                className="px-6 py-2.5 bg-white text-slate-700 rounded-xl font-medium hover:bg-slate-50 transition border border-slate-200"
               >
                 Edit Profile
               </Link>
@@ -308,39 +309,23 @@ function Dashboard() {
                 </>
               ) : (
                 <>
-                  <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm relative overflow-hidden group">
+                  <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg transition-all duration-300 ease-out relative overflow-hidden group">
                     <div className="absolute top-0 right-0 w-24 h-24 bg-green-50 rounded-full -mr-12 -mt-12 transition-transform group-hover:scale-110" />
-                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest relative">Mastered</p>
+                    <p className="text-xs font-medium text-slate-400 uppercase tracking-widest relative">Mastered</p>
                     <p className="text-4xl font-black text-slate-900 relative mt-1">{masteredCount} <span className="text-lg font-bold text-slate-300">/ {requiredCount}</span></p>
                   </div>
-                  <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm relative overflow-hidden group">
+                  <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg transition-all duration-300 ease-out relative overflow-hidden group">
                     <div className="absolute top-0 right-0 w-24 h-24 bg-blue-50 rounded-full -mr-12 -mt-12 transition-transform group-hover:scale-110" />
-                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest relative">Learning</p>
+                    <p className="text-xs font-medium text-slate-400 uppercase tracking-widest relative">Learning</p>
                     <p className="text-4xl font-black text-blue-600 relative mt-1">{learningCount}</p>
-                  </div>
-                  <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm relative overflow-hidden group border-indigo-100 bg-indigo-50/10">
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-100 rounded-full -mr-12 -mt-12 transition-transform group-hover:scale-110" />
-                    <p className="text-xs font-bold text-indigo-400 uppercase tracking-widest relative flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse" />
-                      AI Resume
-                    </p>
-                    <div className="mt-4 flex flex-col gap-3 relative">
-                      <h5 className="text-sm font-bold text-slate-700">Level up your profile</h5>
-                      <Link
-                        to="/dashboard/resume-builder"
-                        className="w-full py-2 bg-indigo-600 text-white rounded-xl text-xs font-black text-center hover:bg-indigo-700 transition shadow-lg shadow-indigo-200"
-                      >
-                        Launch Generator 🚀
-                      </Link>
-                    </div>
                   </div>
                 </>
               )}
 
-              <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm sm:col-span-2 lg:col-span-1">
+              <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg transition-all duration-300 ease-out sm:col-span-2 lg:col-span-1">
                 <div className="flex justify-between items-end mb-3">
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Overall Match</p>
-                  <span className="text-sm font-black text-indigo-600 uppercase">{progressPercentage}% Ready</span>
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest">Overall Match</p>
+                  <span className="text-sm font-semibold text-indigo-600 uppercase">{progressPercentage}% Ready</span>
                 </div>
                 <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
                   <div
@@ -352,15 +337,15 @@ function Dashboard() {
             </div>
 
             {/* Right: Radar Chart Visualization */}
-            <div className="lg:col-span-2 bg-white p-8 rounded-3xl border border-slate-100 shadow-xl shadow-slate-200/20 flex flex-col min-h-[400px]">
+            <div className="lg:col-span-2 bg-white p-8 rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg transition-all duration-300 ease-out flex flex-col min-h-[400px]">
               <div className="flex justify-between items-start mb-6">
                 <div>
-                  <h4 className="font-black text-slate-900 text-xl">Skill Fingerprint 🧬</h4>
+                  <h4 className="font-bold text-slate-900 text-xl flex items-center gap-2">Skill Fingerprint <Activity size={18} className="text-slate-400" /></h4>
                   <p className="text-sm text-slate-400">Your core competency across target skills.</p>
                 </div>
                 <div className="flex gap-2">
-                  <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-blue-500" /> <span className="text-[10px] font-bold text-slate-400 uppercase">Mastered</span></div>
-                  <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-blue-300" /> <span className="text-[10px] font-bold text-slate-400 uppercase">Learning</span></div>
+                  <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-blue-500" /> <span className="text-xs font-semibold text-slate-400 uppercase">Mastered</span></div>
+                  <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-blue-300" /> <span className="text-xs font-semibold text-slate-400 uppercase">Learning</span></div>
                 </div>
               </div>
               <div className="flex-1 flex items-center justify-center">
@@ -369,42 +354,22 @@ function Dashboard() {
             </div>
           </div>
 
-          {/* Certificate Call to Action */}
-          <Link to="/dashboard/certificates" className="block group">
-            <div className="bg-gradient-to-r from-slate-900 to-slate-800 p-8 sm:p-10 rounded-[2.5rem] shadow-xl shadow-slate-200/40 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-32 -mt-32 blur-3xl transition-transform group-hover:scale-110" />
-              <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
-                <div>
-                  <h4 className="font-black text-white text-2xl mb-2 flex items-center gap-3">
-                    Verify Your Skills 🏆
-                  </h4>
-                  <p className="text-slate-300 mb-0">
-                    Upload certificates to your <span className="text-white font-bold decoration-blue-400 underline decoration-2">Credential Wallet</span> to verify achievements.
-                  </p>
-                </div>
-                <div className="px-6 py-3 bg-white text-slate-900 font-bold rounded-xl shadow-lg transform group-hover:-translate-y-1 transition text-sm">
-                  Manage Certificates &rarr;
-                </div>
-              </div>
-            </div>
-          </Link>
-
           {/* Interactive Skill Section */}
-          <div className="bg-white p-8 sm:p-10 rounded-[2.5rem] border border-slate-100 shadow-2xl shadow-slate-200/50 space-y-8">
+          <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg transition-all duration-300 ease-out space-y-8">
             <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
               <div>
-                <h4 className="font-black text-slate-900 text-2xl flex items-center gap-3">
-                  Your Skills to Acquire 📚
+                <h4 className="font-bold text-slate-900 text-2xl flex items-center gap-3">
+                  Your Skills to Acquire <BookOpen size={20} className="text-slate-400" />
                 </h4>
                 <p className="text-slate-400 font-medium">Build your expertise one step at a time.</p>
                 <div className="flex gap-4 mt-3">
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-blue-500 shadow-sm shadow-blue-200"></div>
-                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Learning</span>
+                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Learning</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-green-500 shadow-sm shadow-green-200"></div>
-                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Completed</span>
+                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Completed</span>
                   </div>
                 </div>
               </div>
@@ -412,19 +377,19 @@ function Dashboard() {
               {/* Filter Bar */}
               <div className="flex flex-wrap items-center gap-3">
                 <div className="relative flex-1 min-w-[200px]">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">🔍</span>
+                  <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                   <input
                     type="text"
                     placeholder="Search skills..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                    className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 ease-out"
                   />
                 </div>
                 <select
                   value={filterPriority}
                   onChange={(e) => setFilterPriority(e.target.value)}
-                  className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-600 focus:outline-none"
+                  className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                 >
                   <option value="All">All Priority</option>
                   <option value="High">High Only</option>
@@ -434,7 +399,7 @@ function Dashboard() {
                 <select
                   value={filterStatus}
                   onChange={(e) => setFilterStatus(e.target.value)}
-                  className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-600 focus:outline-none"
+                  className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                 >
                   <option value="All">All Status</option>
                   <option value="To Learn">To Learn</option>
@@ -443,7 +408,7 @@ function Dashboard() {
                 </select>
                 <button
                   onClick={() => setHideMastered(!hideMastered)}
-                  className={`px-4 py-2 rounded-xl text-sm font-bold border transition ${hideMastered ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-600 border-slate-200'}`}
+                  className={`px-4 py-2 rounded-xl text-sm font-medium border transition ${hideMastered ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}
                 >
                   {hideMastered ? 'Showing New' : 'Hide Mastered'}
                 </button>
@@ -451,20 +416,20 @@ function Dashboard() {
             </div>
 
             {profile.focusSkill && (
-              <div className="p-6 bg-gradient-to-r from-blue-600 to-indigo-700 rounded-3xl text-white shadow-xl shadow-blue-200 relative overflow-hidden">
+              <div className="p-6 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl text-white shadow-sm relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl pointer-events-none" />
                 <div className="relative flex flex-col sm:flex-row items-center justify-between gap-6">
                   <div className="flex items-center gap-5">
-                    <div className="w-16 h-16 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center text-3xl">⭐</div>
+                    <div className="w-16 h-16 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center"><Star size={28} className="text-white fill-white" /></div>
                     <div>
-                      <p className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-100">Current Focus</p>
-                      <h5 className="text-2xl font-black">{profile.focusSkill}</h5>
+                      <p className="text-xs font-semibold uppercase tracking-[0.3em] text-blue-100">Current Focus</p>
+                      <h5 className="text-2xl font-bold">{profile.focusSkill}</h5>
                       <p className="text-sm text-blue-100 font-medium">You're making great progress! Stay focused.</p>
                     </div>
                   </div>
                   <button
                     onClick={() => setActiveSkillDetails(profile.focusSkill)}
-                    className="px-8 py-3 bg-white text-blue-700 font-black rounded-2xl hover:bg-blue-50 transition"
+                    className="px-6 py-2.5 bg-white text-blue-700 font-medium rounded-xl hover:bg-blue-50 transition border border-white/30"
                   >
                     Continue Learning
                   </button>
@@ -478,8 +443,8 @@ function Dashboard() {
               </div>
             ) : filteredPath.length === 0 ? (
               <div className="py-20 text-center space-y-3">
-                <div className="text-5xl">🔭</div>
-                <h5 className="font-bold text-slate-900 text-xl">No skills found</h5>
+                <Search size={48} className="text-slate-300 mx-auto" />
+                <h5 className="font-semibold text-slate-900 text-xl">No skills found</h5>
                 <p className="text-slate-400">Try adjusting your filters or search term.</p>
               </div>
             ) : (
@@ -494,12 +459,12 @@ function Dashboard() {
                     <div
                       key={item.skill}
                       ref={el => skillRefs.current[item.skill] = el}
-                      className={`group relative p-6 rounded-[2rem] border-2 transition-all duration-500 cursor-pointer ${isMastered
-                        ? 'border-green-200 bg-white shadow-lg shadow-green-100/50'
+                      className={`group relative p-6 rounded-2xl border transition-all duration-300 ease-out cursor-pointer ${isMastered
+                        ? 'border-slate-200 bg-green-50 shadow-sm hover:shadow-lg hover:-translate-y-0.5'
                         : isLearning
-                          ? 'border-blue-200 bg-white shadow-lg shadow-blue-100/50'
-                          : 'border-slate-100 bg-white hover:border-blue-300 hover:shadow-2xl hover:shadow-slate-300/40'
-                        } ${isFocused ? 'ring-4 ring-blue-500/20' : ''}`}
+                          ? 'border-slate-200 bg-blue-50 shadow-sm hover:shadow-lg hover:-translate-y-0.5'
+                          : 'border-slate-200 bg-white hover:border-blue-200 hover:shadow-lg hover:-translate-y-0.5'
+                        } ${isFocused ? 'ring-2 ring-blue-500/20' : ''}`}
                       onClick={() => setActiveSkillDetails(item.skill)}
                     >
                       <div className="flex items-start justify-between mb-6">
@@ -517,20 +482,20 @@ function Dashboard() {
                                 }
                               }
                             }}
-                            className={`w-10 h-10 rounded-2xl flex items-center justify-center border-2 transition-all transform hover:scale-110 active:scale-90 ${isMastered
-                              ? 'bg-green-500 border-green-500 text-white shadow-xl shadow-green-200'
+                            className={`w-10 h-10 rounded-xl flex items-center justify-center border-2 transition-all transform hover:scale-110 active:scale-90 ${isMastered
+                              ? 'bg-green-500 border-green-500 text-white shadow-sm'
                               : isLearning
-                                ? 'bg-blue-600 border-blue-600 text-white shadow-xl shadow-blue-200'
+                                ? 'bg-blue-600 border-blue-600 text-white shadow-sm'
                                 : 'bg-slate-50 border-slate-200 text-transparent'
                               }`}
                           >
-                            {isMastered ? <span className="text-lg">✓</span> : isLearning ? <span className="text-lg">📝</span> : ''}
+                            {isMastered ? <span className="text-lg">✓</span> : isLearning ? <FileText className="w-4 h-4 text-white" /> : ''}
                           </button>
                           <div>
-                            <h6 className={`text-lg font-black tracking-tight leading-tight ${isMastered ? 'text-slate-400 line-through' : 'text-slate-900'}`}>
+                            <h6 className={`text-base font-semibold leading-tight ${isMastered ? 'text-slate-400 line-through' : 'text-slate-900'}`}>
                               {item.skill}
                             </h6>
-                            <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${item.priority === 'High' ? 'text-red-600 bg-red-50' :
+                            <span className={`text-xs font-semibold uppercase px-2 py-0.5 rounded-full ${item.priority === 'High' ? 'text-red-600 bg-red-50' :
                               item.priority === 'Medium' ? 'text-amber-600 bg-amber-50' :
                                 'text-blue-600 bg-blue-50'
                               }`}>
@@ -540,9 +505,9 @@ function Dashboard() {
                         </div>
                         <button
                           onClick={(e) => { e.stopPropagation(); toggleFocus(item.skill); }}
-                          className={`text-2xl transition transform hover:scale-125 ${isFocused ? 'text-amber-400 scale-110' : 'text-slate-400 hover:text-amber-300'}`}
+                          className={`transition transform hover:scale-125 ${isFocused ? 'text-amber-400 scale-110' : 'text-slate-400 hover:text-amber-300'}`}
                         >
-                          {isFocused ? '★' : '☆'}
+                          <Star size={18} className={isFocused ? 'fill-amber-400' : ''} />
                         </button>
                       </div>
 

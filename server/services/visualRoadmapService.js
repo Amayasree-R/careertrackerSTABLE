@@ -1,20 +1,49 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { generateRoadmap } from './roadmapGenerator.js';
 
-/**
- * Generates a tiered visual roadmap using Gemini AI.
- * Falls back to a priority-based structure if Gemini fails.
- * 
- * @param {Object} profile - User profile containing targetJob, experienceLevel, etc.
- * @returns {Promise<Object>} The tiered roadmap object.
- */
+function buildResources(skillName) {
+  const encoded = encodeURIComponent(skillName);
+  return [
+    {
+      name: `${skillName} - Full Course`,
+      platform: 'YouTube',
+      url: `https://www.youtube.com/results?search_query=${encoded}+full+course`,
+      free: true
+    },
+    {
+      name: `${skillName} - The Complete Guide`,
+      platform: 'Udemy',
+      url: `https://www.udemy.com/courses/search/?q=${encoded}`,
+      free: false
+    },
+    {
+      name: `${skillName} - Official Documentation`,
+      platform: 'Official Docs',
+      url: `https://www.google.com/search?q=${encoded}+official+documentation`,
+      free: true
+    }
+  ];
+}
+
+function enrichTiers(tiers) {
+  return tiers.map(tier => ({
+    ...tier,
+    skills: tier.skills.map(skill => ({
+      ...skill,
+      resources: skill.status === 'Mastered'
+        ? []
+        : (!skill.resources || skill.resources.length === 0)
+          ? buildResources(skill.skill)
+          : skill.resources
+    }))
+  }));
+}
+
 export async function generateVisualRoadmap(profile) {
   try {
-    // 1. Get raw learning path data from the existing service
     const roadmapData = await generateRoadmap(profile);
     const learningPath = roadmapData.learningPath || [];
 
-    // 2. Prepare Gemini AI
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
       console.warn('GEMINI_API_KEY missing. Using fallback tiered roadmap.');
@@ -24,31 +53,47 @@ export async function generateVisualRoadmap(profile) {
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
-    const systemPrompt = "You are an expert career learning path architect. Your job is to take a list of technical skills and organize them into a structured, visual learning roadmap. You must analyze dependencies between skills, group skills into ordered TIERS (Tier 0 = Mastered, Tier 1 = learn first, etc.), assign each skill a category (Language, Framework, Tool, Database, DevOps), and for each non-mastered skill return 3 real course resources with working URLs from Udemy, Coursera, YouTube, or official docs. Return ONLY valid JSON, no markdown.";
+    const systemPrompt = "You are an expert career learning path architect. Organize the given skills into a tiered visual learning roadmap. Group skills into ordered TIERS (Tier 0 = Mastered, Tier 1 = learn first, etc.), assign each skill a category (Language, Framework, Tool, Database, DevOps), estimate time to learn, list dependencies, set priority (High/Medium/Low), and set status (Mastered or To Learn). Do NOT include any resources or course links — only structural organization. Return ONLY valid raw JSON, no markdown fences.";
 
     const userPrompt = `
       Target Job: ${profile.targetJob}
       Experience Level: ${profile.experienceLevel}
-      
+
       Learning Path Data:
       ${JSON.stringify(learningPath, null, 2)}
-      
-      Organize these skills into the requested JSON structure.
+
+      Return a JSON object with this exact shape (no resources field):
+      {
+        "tiers": [
+          {
+            "tier": 0,
+            "label": "Mastered",
+            "skills": [
+              {
+                "skill": "JavaScript",
+                "status": "Mastered",
+                "category": "Language",
+                "estimatedTime": "Completed",
+                "dependencies": [],
+                "priority": "High"
+              }
+            ]
+          }
+        ]
+      }
     `;
 
-    // 3. Call Gemini
     const result = await model.generateContent([
       { text: systemPrompt },
       { text: userPrompt }
     ]);
 
     const responseText = result.response.text();
-    
-    // Clean potential markdown if Gemini ignores "no markdown" instruction
     const jsonString = responseText.replace(/```json|```/g, '').trim();
-    
+
     try {
       const tieredRoadmap = JSON.parse(jsonString);
+      tieredRoadmap.tiers = enrichTiers(tieredRoadmap.tiers);
       return tieredRoadmap;
     } catch (parseError) {
       console.error('Failed to parse Gemini JSON response:', parseError);
@@ -57,7 +102,6 @@ export async function generateVisualRoadmap(profile) {
 
   } catch (error) {
     console.error('generateVisualRoadmap error:', error);
-    // Fallback logic
     try {
       const roadmapData = await generateRoadmap(profile);
       return generateFallbackRoadmap(roadmapData.learningPath || []);
@@ -68,9 +112,6 @@ export async function generateVisualRoadmap(profile) {
   }
 }
 
-/**
- * Fallback function to structure roadmap into tiers based on priority.
- */
 function generateFallbackRoadmap(learningPath) {
   const tiers = [
     { tier: 0, label: "Mastered", skills: [] },
@@ -80,23 +121,24 @@ function generateFallbackRoadmap(learningPath) {
   ];
 
   learningPath.forEach(item => {
+    const isMastered = item.status === 'Mastered' || item.estimatedTime === 'Completed';
     const skillData = {
       skill: item.skill,
-      status: item.status || (item.priority ? "To Learn" : "Unknown"),
-      category: "General", // Best guess
-      estimatedTime: item.estimatedTime || "TBD",
+      status: isMastered ? 'Mastered' : (item.status || 'To Learn'),
+      category: 'General',
+      estimatedTime: item.estimatedTime || 'TBD',
       dependencies: [],
-      resources: item.resources || []
+      resources: isMastered ? [] : buildResources(item.skill)
     };
 
-    if (item.status === "Mastered" || item.estimatedTime === "Completed") {
-      tiers[0].skills.push({ ...skillData, status: "Mastered", estimatedTime: "Completed" });
-    } else if (item.priority === "High") {
-      tiers[1].skills.push({ ...skillData, priority: "High" });
-    } else if (item.priority === "Medium") {
-      tiers[2].skills.push({ ...skillData, priority: "Medium" });
+    if (isMastered) {
+      tiers[0].skills.push({ ...skillData, estimatedTime: 'Completed' });
+    } else if (item.priority === 'High') {
+      tiers[1].skills.push({ ...skillData, priority: 'High' });
+    } else if (item.priority === 'Medium') {
+      tiers[2].skills.push({ ...skillData, priority: 'Medium' });
     } else {
-      tiers[3].skills.push({ ...skillData, priority: "Low" });
+      tiers[3].skills.push({ ...skillData, priority: 'Low' });
     }
   });
 
