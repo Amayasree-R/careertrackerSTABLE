@@ -24,7 +24,7 @@ function ProjectCard({ project, onDelete, isPreview = false }) {
     }
 
     return (
-        <div className={`bg-white rounded-2xl border shadow-sm p-6 relative transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-lg ${isPreview ? 'border-slate-200 ring-2 ring-violet-200' : 'border-slate-200'
+        <div className={`bg-[#13131a] rounded-2xl border shadow-sm p-6 relative transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-lg ${isPreview ? 'border-[#1e1e2e] ring-2 ring-violet-500/40' : 'border-[#1e1e2e] hover:border-violet-500/30'
             }`}>
             {/* Preview badge */}
             {isPreview && (
@@ -46,13 +46,13 @@ function ProjectCard({ project, onDelete, isPreview = false }) {
             )}
 
             {/* Title */}
-            <h3 className={`font-semibold text-slate-900 text-lg mb-2 ${isPreview ? 'mt-5' : 'pr-8'}`}>
+            <h3 className={`font-semibold text-slate-100 text-lg mb-2 ${isPreview ? 'mt-5' : 'pr-8'}`}>
                 {project.projectName || 'Untitled Project'}
             </h3>
 
             {/* Summary */}
             {project.summary && (
-                <p className="text-slate-600 text-sm leading-relaxed mb-4">{project.summary}</p>
+                <p className="text-slate-300 text-sm leading-relaxed mb-4">{project.summary}</p>
             )}
 
             {/* Tech Stack */}
@@ -75,7 +75,7 @@ function ProjectCard({ project, onDelete, isPreview = false }) {
                     <p className="text-[11px] font-medium text-slate-400 uppercase tracking-wider mb-2">Key Features</p>
                     <ul className="space-y-1">
                         {project.keyFeatures.map((f, i) => (
-                            <li key={i} className="flex items-start gap-2 text-sm text-slate-700">
+                            <li key={i} className="flex items-start gap-2 text-sm text-slate-300">
                                 <ChevronRight size={14} className="text-slate-300 mt-0.5 shrink-0" />
                                 {f}
                             </li>
@@ -104,7 +104,7 @@ function ProjectCard({ project, onDelete, isPreview = false }) {
 
             {/* Created date */}
             {!isPreview && project.createdAt && (
-                <p className="text-xs text-slate-400 mt-4 pt-3 border-t border-slate-100">
+                <p className="text-xs text-slate-500 mt-4 pt-3 border-t border-[#1e1e2e]">
                     Analyzed {new Date(project.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                 </p>
             )}
@@ -115,14 +115,14 @@ function ProjectCard({ project, onDelete, isPreview = false }) {
 // ─── Skeleton Card ───────────────────────────────────────────────────────────
 function SkeletonCard() {
     return (
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 animate-pulse">
-            <div className="h-5 bg-slate-200 rounded w-2/5 mb-3" />
-            <div className="h-3 bg-slate-100 rounded w-full mb-2" />
-            <div className="h-3 bg-slate-100 rounded w-4/5 mb-5" />
+        <div className="bg-[#13131a] rounded-2xl border border-[#1e1e2e] shadow-sm p-6 animate-pulse">
+            <div className="h-5 bg-[#2a2a3d] rounded w-2/5 mb-3" />
+            <div className="h-3 bg-[#1e1e2e] rounded w-full mb-2" />
+            <div className="h-3 bg-[#1e1e2e] rounded w-4/5 mb-5" />
             <div className="flex gap-2 mb-4">
                 {[1, 2, 3].map(i => <div key={i} className="h-6 w-16 bg-indigo-50 rounded-full" />)}
             </div>
-            <div className="h-3 bg-slate-100 rounded w-3/5" />
+            <div className="h-3 bg-[#1e1e2e] rounded w-3/5" />
         </div>
     )
 }
@@ -270,14 +270,14 @@ export default function Projects() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
+        <div className="min-h-screen bg-[#0a0a0f]">
             {/* Sticky Header */}
-            <div className="sticky top-0 z-10 bg-white border-b border-slate-200 px-8 py-4 flex items-center gap-3">
+            <div className="sticky top-0 z-10 bg-[#13131a] border-b border-[#1e1e2e] px-8 py-4 flex items-center gap-3">
                 <div className="p-2 bg-violet-100 rounded-xl">
                     <FolderGit2 size={20} className="text-violet-600" />
                 </div>
                 <div>
-                    <h1 className="text-lg font-semibold text-slate-900">Project Dashboard</h1>
+                    <h1 className="text-lg font-semibold text-slate-100">Project Dashboard</h1>
                     <p className="text-xs text-slate-500">Analyze READMEs, extract skills, track your builds</p>
                 </div>
             </div>
@@ -287,24 +287,24 @@ export default function Projects() {
 
                 {/* ── LEFT PANEL ── */}
                 <div className="col-span-4 shrink-0">
-                    <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-6 sticky top-24">
+                    <div className="bg-[#13131a] border border-[#1e1e2e] rounded-2xl shadow-sm p-6 sticky top-24">
                         <div className="flex items-center gap-2 mb-1">
                             <FolderGit2 size={22} className="text-violet-600" />
-                            <h2 className="text-lg font-semibold text-slate-900">README Analyzer</h2>
+                            <h2 className="text-lg font-semibold text-slate-100">README Analyzer</h2>
                         </div>
                         <p className="text-slate-500 text-sm mb-6 leading-relaxed">
                             Upload or paste your project README to extract skills and generate a project summary.
                         </p>
 
                         {/* Tab Toggle */}
-                        <div className="flex bg-slate-100 rounded-xl p-1 mb-5">
+                        <div className="flex bg-[#1e1e2e] rounded-xl p-1 mb-5">
                             {['upload', 'paste'].map(tab => (
                                 <button
                                     key={tab}
                                     onClick={() => { setActiveTab(tab); setError(''); setReadmeFile(null) }}
                                     className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === tab
-                                            ? 'bg-white text-violet-700 shadow-sm border border-slate-200'
-                                            : 'text-slate-500 hover:text-slate-700'
+                                            ? 'bg-[#13131a] text-violet-400 shadow-sm border border-[#2a2a3d]'
+                                            : 'text-slate-400 hover:text-slate-200'
                                         }`}
                                 >
                                     {tab === 'upload' ? <Upload size={14} /> : <FileText size={14} />}
@@ -321,10 +321,10 @@ export default function Projects() {
                                 onDrop={handleDrop}
                                 onClick={() => fileInputRef.current?.click()}
                                 className={`relative border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition-all duration-200 ${isDragging
-                                        ? 'border-violet-400 bg-violet-50'
+                                        ? 'border-violet-400 bg-violet-950/50'
                                         : readmeFile
-                                            ? 'border-emerald-300 bg-emerald-50/40'
-                                            : 'border-slate-300 hover:border-violet-400 hover:bg-slate-50'
+                                            ? 'border-emerald-600 bg-emerald-950/30'
+                                            : 'border-[#2a2a3d] hover:border-violet-500/60 hover:bg-[#1e1e2e]'
                                     }`}
                             >
                                 <input
@@ -337,7 +337,7 @@ export default function Projects() {
                                 {readmeFile ? (
                                     <div>
                                         <CheckCircle size={24} className="mx-auto mb-2 text-emerald-500" />
-                                        <p className="font-medium text-sm text-slate-900">{readmeFile.name}</p>
+                                        <p className="font-medium text-sm text-slate-100">{readmeFile.name}</p>
                                         <p className="text-slate-400 text-xs mt-1">{(readmeFile.size / 1024).toFixed(1)} KB</p>
                                         <button
                                             onClick={e => { e.stopPropagation(); setReadmeFile(null) }}
@@ -349,7 +349,7 @@ export default function Projects() {
                                 ) : (
                                     <div>
                                         <Upload size={24} className="mx-auto mb-2 text-slate-400" />
-                                        <p className="text-sm font-medium text-slate-700">Drop your README here</p>
+                                        <p className="text-sm font-medium text-slate-300">Drop your README here</p>
                                         <p className="text-slate-400 text-xs mt-1">or click to browse · .md and .txt</p>
                                     </div>
                                 )}
@@ -362,7 +362,7 @@ export default function Projects() {
                                 value={readmeText}
                                 onChange={e => setReadmeText(e.target.value)}
                                 placeholder="Paste your README content here..."
-                                className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-slate-900 placeholder-slate-400 text-sm resize-none outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all"
+                                className="w-full bg-[#1e1e2e] border border-[#2a2a3d] rounded-xl p-4 text-slate-200 placeholder-slate-500 text-sm resize-none outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all"
                                 style={{ minHeight: '200px' }}
                             />
                         )}
@@ -379,7 +379,7 @@ export default function Projects() {
                         <button
                             onClick={handleAnalyze}
                             disabled={isAnalyzing}
-                            className="w-full mt-5 flex items-center justify-center gap-2 bg-white text-violet-700 font-medium py-3 rounded-xl hover:bg-violet-50 transition-all disabled:opacity-60 disabled:cursor-not-allowed shadow-sm"
+                            className="w-full mt-5 flex items-center justify-center gap-2 bg-[#1e1e2e] text-violet-400 font-medium py-3 rounded-xl hover:bg-[#2a2a3d] transition-all disabled:opacity-60 disabled:cursor-not-allowed shadow-sm"
                         >
                             {isAnalyzing ? (
                                 <>
@@ -421,7 +421,7 @@ export default function Projects() {
                                 </button>
                                 <button
                                     onClick={handleDiscard}
-                                    className="flex items-center gap-2 bg-white border border-slate-200 text-slate-700 font-medium px-4 py-2.5 rounded-xl hover:bg-slate-50 transition-all duration-200"
+                                    className="flex items-center gap-2 bg-[#1e1e2e] border border-[#2a2a3d] text-slate-300 font-medium px-4 py-2.5 rounded-xl hover:bg-[#2a2a3d] transition-all duration-200"
                                 >
                                     <X size={16} />
                                     Discard
@@ -436,7 +436,7 @@ export default function Projects() {
                     {!isLoading && !isAnalyzing && projects.length === 0 && !currentAnalysis && (
                         <div className="flex flex-col items-center justify-center text-center py-32 text-slate-400">
                             <FolderGit2 size={48} className="mb-4 text-slate-300" />
-                            <p className="font-semibold text-lg text-slate-600">No projects analyzed yet</p>
+                            <p className="font-semibold text-lg text-slate-300">No projects analyzed yet</p>
                             <p className="text-sm mt-1">Upload a README to get started.</p>
                         </div>
                     )}

@@ -88,7 +88,7 @@ export default function Certificates() {
     if (isInitialLoad) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[60vh]">
-                <Loader2 className="w-10 h-10 text-blue-600 animate-spin mb-4" />
+                <Loader2 className="w-10 h-10 text-violet-500 animate-spin mb-4" />
                 <p className="text-slate-500 font-medium">Loading certificates...</p>
             </div>
         )
@@ -98,14 +98,14 @@ export default function Certificates() {
         <div className="max-w-7xl mx-auto space-y-8 pb-12">
             {/* Header Section */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 px-4">
-                <h1 className="flex items-center gap-3 text-3xl font-semibold text-slate-900">
-                    <Briefcase className="w-6 h-6 text-blue-600" />
+                <h1 className="flex items-center gap-3 text-3xl font-semibold text-slate-100">
+                    <Briefcase className="w-6 h-6 text-violet-400" />
                     Certificates
                 </h1>
 
-                <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-4 flex items-center gap-6">
+                <div className="bg-[#13131a] border border-[#1e1e2e] rounded-2xl shadow-sm p-4 flex items-center gap-6">
                     <div className="pl-2">
-                        <div className="text-2xl font-semibold text-slate-900 leading-none mb-1">
+                        <div className="text-2xl font-semibold text-slate-100 leading-none mb-1">
                             {certificates.length}
                         </div>
                         <div className="text-xs text-slate-400 uppercase tracking-wide">
@@ -123,10 +123,10 @@ export default function Certificates() {
                 <div className="lg:col-span-4 space-y-6">
                     <div className="sticky top-10">
                         <div className="flex items-center gap-3 mb-6">
-                            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white">
+                            <div className="w-8 h-8 bg-violet-600 rounded-lg flex items-center justify-center text-white">
                                 <Plus className="w-5 h-5" />
                             </div>
-                            <h2 className="text-base font-semibold text-slate-900">Add Certificate</h2>
+                            <h2 className="text-base font-semibold text-slate-100">Add Certificate</h2>
                         </div>
                         <CertificateUpload onUploadSuccess={() => {
                             fetchCertificates();
@@ -140,9 +140,9 @@ export default function Certificates() {
                 {/* Right Column: List */}
                 <div className="lg:col-span-8 space-y-8">
                     <div className="flex items-center justify-between">
-                        <h3 className="text-lg font-semibold text-slate-900 flex items-center gap-3">
+                        <h3 className="text-lg font-semibold text-slate-100 flex items-center gap-3">
                             Your Certificates
-                            <span className="text-xs font-medium text-slate-400 bg-slate-100 px-2.5 py-1 rounded-full">
+                            <span className="text-xs font-medium text-slate-400 bg-[#1e1e2e] px-2.5 py-1 rounded-full">
                                 {certificates.length}
                             </span>
                         </h3>
@@ -160,11 +160,11 @@ export default function Certificates() {
                             ))}
                         </div>
                     ) : (
-                        <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl border border-slate-200 px-6 text-center">
-                            <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-300 mb-4">
+                        <div className="flex flex-col items-center justify-center py-20 bg-[#13131a] rounded-2xl border border-[#1e1e2e] px-6 text-center">
+                            <div className="w-16 h-16 bg-[#1e1e2e] rounded-2xl flex items-center justify-center text-slate-500 mb-4">
                                 <FolderOpen className="w-8 h-8" />
                             </div>
-                            <h4 className="text-lg font-semibold text-slate-700 mb-2">No certificates yet</h4>
+                            <h4 className="text-lg font-semibold text-slate-300 mb-2">No certificates yet</h4>
                             <p className="text-sm text-slate-400 max-w-md">
                                 Upload your certificates to showcase your expertise and automatically update your skill profile.
                             </p>

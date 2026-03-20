@@ -31,8 +31,8 @@ export default function Sidebar() {
         to={path}
         className={`group relative flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
           isActive
-            ? 'bg-blue-600 text-white shadow-sm'
-            : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 hover:translate-x-0.5'
+            ? 'bg-violet-600 text-white shadow-lg shadow-violet-900/40'
+            : 'text-slate-400 hover:bg-[#1e1e2e] hover:text-violet-400'
         }`}
       >
         {isActive && (
@@ -41,7 +41,7 @@ export default function Sidebar() {
         <Icon
           size={18}
           className={`flex-shrink-0 transition-colors duration-200 ${
-            isActive ? 'text-white' : 'text-slate-400 group-hover:text-slate-600'
+            isActive ? 'text-white' : 'text-slate-400 group-hover:text-violet-400'
           }`}
         />
         <span className="truncate">{name}</span>
@@ -50,16 +50,13 @@ export default function Sidebar() {
   }
 
   return (
-    <aside className="fixed left-0 top-0 bottom-0 w-64 bg-white border-r border-slate-200 shadow-sm z-50 flex flex-col">
+    <aside className="fixed left-0 top-0 bottom-0 w-64 bg-[#13131a] border-r border-[#1e1e2e] z-50 flex flex-col">
 
       {/* Logo */}
-      <div className="flex items-center gap-2.5 px-6 py-6 border-b border-slate-200">
-        <span className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center text-sm font-semibold select-none">
-          CP
-        </span>
-        <h1 className="text-lg font-semibold tracking-tight text-slate-900">
-          CareerPath
-        </h1>
+      <div className="flex items-center gap-1 px-4 py-5">
+        <span className="text-xl font-black text-white tracking-tight">Career</span>
+        <span className="text-xl font-black text-violet-400 tracking-tight">Path</span>
+        <div className="ml-1 w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse" />
       </div>
 
       {/* Main Nav */}
@@ -68,7 +65,7 @@ export default function Sidebar() {
       </nav>
 
       {/* Bottom: Profile */}
-      <div className="px-3 pb-5 pt-4 border-t border-slate-200">
+      <div className="px-3 pb-5 pt-4 border-t border-[#1e1e2e]">
         {renderLink(profileItem)}
       </div>
 

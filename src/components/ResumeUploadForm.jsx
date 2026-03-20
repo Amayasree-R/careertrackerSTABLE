@@ -100,10 +100,10 @@ export default function ResumeUploadForm({ userId, apiBaseUrl, onResumeUploaded 
   }
 
   return (
-    <div className="bg-white p-8 sm:p-12 rounded-[2.5rem] border border-slate-100 shadow-xl shadow-slate-200/40">
+    <div className="bg-[#13131a] p-8 sm:p-12 rounded-[2.5rem] border border-[#1e1e2e] shadow-xl shadow-black/40">
       <div className="max-w-2xl mx-auto space-y-8">
         <div className="text-center space-y-2">
-          <h4 className="text-2xl font-black text-slate-900">Resume Upload</h4>
+          <h4 className="text-2xl font-black text-slate-100">Resume Upload</h4>
           <p className="text-slate-400 font-medium">Our AI will extract your skills, experience, and education to build your profile.</p>
         </div>
 
@@ -114,16 +114,16 @@ export default function ResumeUploadForm({ userId, apiBaseUrl, onResumeUploaded 
           onDragOver={handleDrag}
           onDrop={handleDrop}
           className={`relative border-2 border-dashed rounded-[2rem] p-12 text-center transition-all duration-300 ${dragActive
-              ? 'border-blue-500 bg-blue-50/50 scale-[1.02]'
-              : 'border-slate-200 bg-slate-50/50 hover:border-blue-300 hover:bg-white'
+              ? 'border-violet-500 bg-violet-950/50 scale-[1.02]'
+              : 'border-[#2a2a3d] bg-[#1e1e2e]/50 hover:border-violet-500/50 hover:bg-[#1e1e2e]'
             }`}
         >
           <div className="flex flex-col items-center gap-4">
-            <div className={`w-20 h-20 rounded-3xl flex items-center justify-center text-4xl shadow-lg transition-transform duration-500 ${dragActive ? 'bg-blue-600 text-white' : 'bg-white text-blue-600'}`}>
+            <div className={`w-20 h-20 rounded-3xl flex items-center justify-center text-4xl shadow-lg transition-transform duration-500 ${dragActive ? 'bg-violet-600 text-white' : 'bg-[#1e1e2e] text-violet-400'}`}>
               📄
             </div>
             <div>
-              <h3 className="text-xl font-black text-slate-900 mb-1">
+              <h3 className="text-xl font-black text-slate-100 mb-1">
                 {dragActive ? 'Release to upload' : 'Drop your resume here'}
               </h3>
               <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">
@@ -141,7 +141,7 @@ export default function ResumeUploadForm({ userId, apiBaseUrl, onResumeUploaded 
             />
             <label
               htmlFor="file-input"
-              className={`mt-4 px-10 py-4 bg-slate-900 text-white font-bold rounded-2xl hover:bg-slate-800 transition shadow-xl shadow-slate-200 cursor-pointer inline-block ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`mt-4 px-10 py-4 bg-violet-600 text-white font-bold rounded-2xl hover:bg-violet-700 transition shadow-xl shadow-violet-900/40 cursor-pointer inline-block ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               {loading ? 'Processing...' : 'Select File'}
             </label>
@@ -150,15 +150,15 @@ export default function ResumeUploadForm({ userId, apiBaseUrl, onResumeUploaded 
 
         {/* Selected file info */}
         {file && !loading && (
-          <div className="p-6 bg-blue-50 border border-blue-100 rounded-3xl animate-in fade-in slide-in-from-bottom-4">
+          <div className="p-6 bg-violet-950/50 border border-violet-900 rounded-3xl animate-in fade-in slide-in-from-bottom-4">
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-2xl shadow-sm">
+                <div className="w-12 h-12 bg-[#1e1e2e] rounded-2xl flex items-center justify-center text-2xl shadow-sm">
                   📁
                 </div>
                 <div>
-                  <p className="text-slate-900 font-black">{file.name}</p>
-                  <p className="text-blue-600 font-bold text-xs uppercase tracking-widest">
+                  <p className="text-slate-100 font-black">{file.name}</p>
+                  <p className="text-violet-400 font-bold text-xs uppercase tracking-widest">
                     Ready to parse • {(file.size / 1024 / 1024).toFixed(2)} MB
                   </p>
                 </div>
@@ -173,7 +173,7 @@ export default function ResumeUploadForm({ userId, apiBaseUrl, onResumeUploaded 
 
             <button
               onClick={handleUpload}
-              className="w-full mt-6 py-4 bg-blue-600 text-white font-black rounded-2xl hover:bg-blue-700 transition shadow-xl shadow-blue-200"
+              className="w-full mt-6 py-4 bg-violet-600 text-white font-black rounded-2xl hover:bg-violet-700 transition shadow-xl shadow-violet-900/40"
             >
               GENERATE PROFILE 🚀
             </button>

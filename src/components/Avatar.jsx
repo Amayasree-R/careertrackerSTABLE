@@ -25,10 +25,10 @@ const Avatar = ({ name, size = 'md', className = '' }) => {
         <div
             className={`
         relative flex items-center justify-center rounded-full 
-        bg-gradient-to-br from-blue-500 via-indigo-600 to-purple-600 
-        text-white font-black shadow-xl border-white
+        bg-gradient-to-br from-violet-500 via-indigo-600 to-purple-600 
+        text-white font-black shadow-xl border-[#1e1e2e]
         transition-all duration-500 hover:scale-105 
-        hover:shadow-blue-200/50 hover:shadow-2xl hover:rotate-3
+        hover:shadow-violet-900/50 hover:shadow-2xl hover:rotate-3
         cursor-default select-none
         ${sizeClasses[size] || sizeClasses.md}
         ${className}

@@ -13,18 +13,18 @@ function authHeaders() {
 
 function SkeletonCard() {
   return (
-    <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm animate-pulse flex flex-col min-h-[280px]">
+    <div className="bg-[#13131a] rounded-2xl p-6 border border-[#1e1e2e] shadow-sm animate-pulse flex flex-col min-h-[280px]">
       <div className="space-y-2 mb-4">
-        <div className="h-5 bg-slate-200 rounded w-2/3" />
-        <div className="h-4 bg-slate-200 rounded w-1/2" />
+        <div className="h-5 bg-[#2a2a3d] rounded w-2/3" />
+        <div className="h-4 bg-[#2a2a3d] rounded w-1/2" />
       </div>
       <div className="flex gap-2 flex-wrap mb-4">
         {[...Array(4)].map((_, i) => (
-          <div key={i} className="h-6 w-16 bg-slate-100 rounded-full" />
+          <div key={i} className="h-6 w-16 bg-[#1e1e2e] rounded-full" />
         ))}
       </div>
       <div className="mt-auto">
-        <div className="h-9 w-full bg-slate-200 rounded-xl" />
+        <div className="h-9 w-full bg-[#2a2a3d] rounded-xl" />
       </div>
     </div>
   )
@@ -36,9 +36,9 @@ function JobCard({ job }) {
   const extraMissing   = job.missingSkills.length - MAX_MISSING
 
   return (
-    <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex flex-col min-h-[280px]">
+    <div className="bg-[#13131a] rounded-2xl p-6 border border-[#1e1e2e] hover:border-violet-500/30 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex flex-col min-h-[280px]">
       {/* Title */}
-      <h3 className="text-slate-900 font-semibold text-lg leading-snug mb-1">
+      <h3 className="text-slate-100 font-semibold text-lg leading-snug mb-1">
         {job.title || '—'}
       </h3>
 
@@ -59,7 +59,7 @@ function JobCard({ job }) {
             {job.matchedSkills.map((s) => (
               <span
                 key={s}
-                className="text-xs bg-green-50 text-green-700 border border-green-200 px-2 py-0.5 rounded-full"
+                className="text-xs bg-emerald-950/30 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full"
               >
                 {s}
               </span>
@@ -76,13 +76,13 @@ function JobCard({ job }) {
             {visibleMissing.map((s) => (
               <span
                 key={s}
-                className="text-xs bg-slate-100 text-slate-500 border border-slate-200 px-2 py-0.5 rounded-full"
+                className="text-xs bg-[#1e1e2e] text-slate-400 border border-[#2a2a3d] px-2 py-0.5 rounded-full"
               >
                 {s}
               </span>
             ))}
             {extraMissing > 0 && (
-              <span className="text-xs bg-slate-100 text-slate-400 border border-slate-200 px-2 py-0.5 rounded-full">
+              <span className="text-xs bg-[#1e1e2e] text-slate-400 border border-[#2a2a3d] px-2 py-0.5 rounded-full">
                 +{extraMissing} more
               </span>
             )}
@@ -98,7 +98,7 @@ function JobCard({ job }) {
             href={job.redirect_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="block w-full text-center text-sm px-4 py-2.5 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition font-medium"
+            className="block w-full text-center text-sm px-4 py-2.5 rounded-xl bg-violet-600 text-white hover:bg-violet-700 transition font-medium"
           >
             View Job
           </a>
@@ -153,11 +153,11 @@ export default function JobMatches() {
   )
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white px-4 py-10">
+    <div className="min-h-screen bg-[#0a0a0f] px-4 py-10">
       <div className="max-w-7xl mx-auto">
         {/* Page header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-semibold text-slate-900">Job Matches</h1>
+          <h1 className="text-3xl font-semibold text-slate-100">Job Matches</h1>
           {!loading && !error && (
             <p className="text-sm text-slate-500 mt-1">
               {visibleJobs.length} job{visibleJobs.length !== 1 ? 's' : ''} found
@@ -177,13 +177,13 @@ export default function JobMatches() {
             placeholder="Search by title or company…"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="text-sm border border-slate-200 rounded-xl px-4 py-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent flex-1 min-w-[200px]"
+            className="text-sm border border-[#2a2a3d] rounded-xl px-4 py-2 bg-[#1e1e2e] text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent flex-1 min-w-[200px]"
           />
 
           <button
             onClick={() => fetchJobs(true)}
             disabled={loading}
-            className="text-sm px-4 py-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            className="text-sm px-4 py-2 rounded-xl bg-violet-600 text-white hover:bg-violet-700 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Refreshing…' : 'Refresh'}
           </button>
@@ -197,15 +197,15 @@ export default function JobMatches() {
         )}
 
         {!loading && error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 rounded-2xl px-6 py-5 text-sm">
-            <p className="font-semibold mb-1">Something went wrong</p>
-            <p>{error}</p>
+          <div className="bg-rose-950/30 border border-rose-500/30 text-rose-400 rounded-2xl px-6 py-5 text-sm animate-in fade-in slide-in-from-top-2">
+            <p className="font-bold uppercase tracking-wider text-[10px] mb-1">Something went wrong</p>
+            <p className="text-sm opacity-90">{error}</p>
           </div>
         )}
 
         {!loading && !error && visibleJobs.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl border border-slate-200 text-center">
-            <p className="text-lg font-semibold text-slate-700">No jobs found.</p>
+          <div className="flex flex-col items-center justify-center py-20 bg-[#13131a] rounded-2xl border border-[#1e1e2e] text-center">
+            <p className="text-lg font-semibold text-slate-300">No jobs found.</p>
             <p className="text-sm text-slate-400 mt-1">Try adjusting your search query.</p>
           </div>
         )}

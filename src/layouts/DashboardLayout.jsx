@@ -38,25 +38,25 @@ export default function DashboardLayout() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
+        <div className="min-h-screen bg-[#0a0a0f]">
             <Sidebar />
 
             <div className="ml-64">
                 {/* Persistent Top Nav inside layout */}
-                <nav className="sticky top-0 z-40 backdrop-blur-md bg-white/80 border-b border-slate-200">
+                <nav className="sticky top-0 z-40 bg-[#13131a] border-b border-[#1e1e2e]">
                     <div className="max-w-7xl mx-auto px-6">
                         <div className="flex justify-between items-center h-16">
                             <div /> {/* Spacer for flex-justify-between */}
 
                             <div className="flex items-center gap-4">
                                 <div className="flex flex-col items-end text-right hidden sm:block">
-                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Logged in as</p>
-                                    <p className="text-sm font-bold text-slate-700">{profile?.fullName}</p>
+                                    <p className="text-slate-400 text-xs uppercase tracking-widest font-bold">Logged in as</p>
+                                    <p className="text-sm font-semibold text-slate-100">{profile?.fullName}</p>
                                 </div>
                                 <Avatar name={profile?.fullName} size="sm" />
                                 <button
                                     onClick={handleLogout}
-                                    className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition"
+                                    className="px-3 py-1.5 text-sm font-medium text-slate-400 hover:text-violet-400 transition rounded-lg"
                                 >
                                     Logout
                                 </button>

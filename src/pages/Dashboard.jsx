@@ -7,7 +7,7 @@ import {
 } from 'recharts'
 import SkillTooltip from '../components/SkillTooltip'
 import { StatsCardSkeleton, SkillCardSkeleton } from '../components/Skeleton'
-import { Rocket, BookOpen, FileText, Star, Search, Activity } from 'lucide-react'
+import { Rocket, BookOpen, FileText, Star, Search, Activity, Briefcase } from 'lucide-react'
 
 function SkillRadar({ roadmap, profile }) {
   const chartData = useMemo(() => {
@@ -33,10 +33,10 @@ function SkillRadar({ roadmap, profile }) {
   if (chartData.length < 3) return null
 
   return (
-    <div className="h-[450px] w-full bg-white rounded-3xl p-4">
+    <div className="h-[420px] w-full bg-[#13131a] rounded-3xl p-4">
       <ResponsiveContainer width="100%" height="100%">
-        <RadarChart cx="50%" cy="50%" outerRadius="80%" data={chartData}>
-          <PolarGrid stroke="#f1f5f9" strokeWidth={2} />
+        <RadarChart cx="50%" cy="50%" outerRadius="62%" data={chartData}>
+          <PolarGrid stroke="#1e1e2e" strokeWidth={2} />
           <PolarAngleAxis
             dataKey="subject"
             tick={({ x, y, payload }) => (
@@ -47,11 +47,11 @@ function SkillRadar({ roadmap, profile }) {
                   dy={4}
                   textAnchor="middle"
                   fill="#94a3b8"
-                  fontSize={10}
+                  fontSize={9}
                   fontWeight={700}
                   className="uppercase tracking-tighter"
                 >
-                  {payload.value.length > 12 ? `${payload.value.substring(0, 10)}...` : payload.value}
+                  {payload.value.length > 16 ? `${payload.value.substring(0, 14)}...` : payload.value}
                 </text>
               </g>
             )}
@@ -68,7 +68,7 @@ function SkillRadar({ roadmap, profile }) {
             stroke="#1d4ed8"
             strokeWidth={3}
             fill="#3b82f6"
-            fillOpacity={0.2}
+            fillOpacity={0.3}
           />
         </RadarChart>
       </ResponsiveContainer>
@@ -252,287 +252,220 @@ function Dashboard() {
     : 0
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4">
       {/* Target Job Header */}
       {!isProfileComplete ? (
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg transition-all duration-300 ease-out p-8 text-center space-y-6">
-          <div className="w-20 h-20 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+        <div className="bg-[#13131a] rounded-2xl border border-[#1e1e2e] hover:border-violet-500/30 shadow-sm hover:shadow-lg transition-all duration-300 ease-out p-8 text-center space-y-6">
+          <div className="w-20 h-20 bg-[#1e1e2e] rounded-2xl flex items-center justify-center mx-auto mb-4">
             <Rocket size={40} className="text-blue-600" />
           </div>
-          <h2 className="text-3xl font-black text-slate-900">Let's build your roadmap!</h2>
+          <h2 className="text-3xl font-black text-slate-100">Let's build your roadmap!</h2>
           <p className="text-slate-500 max-w-lg mx-auto leading-relaxed">
             Complete your profile with your target job and skills. We'll generate an AI-powered path to your dream career.
           </p>
           <Link
             to="/profile"
-            className="inline-block px-8 py-3 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 transition shadow-sm"
+            className="inline-block px-8 py-3 bg-violet-600 text-white font-medium rounded-xl hover:bg-violet-700 transition shadow-sm"
           >
             Get Started
           </Link>
         </div>
       ) : (
         <>
-          {/* Header with Target Job */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg transition-all duration-300 ease-out">
+          {/* ROW 1: Target Career Header */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-[#13131a] p-6 sm:p-7 rounded-2xl border border-[#1e1e2e] hover:border-violet-500/30 shadow-sm hover:shadow-lg transition-all duration-300 ease-out">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
-                <h2 className="text-xs font-semibold text-blue-600 uppercase tracking-[0.2em]">Target Career Path</h2>
+                <span className="w-2 h-2 rounded-full bg-violet-500 animate-pulse" />
+                <h2 className="text-[10px] font-semibold text-violet-400 uppercase tracking-[0.2em]">Target Career Path</h2>
               </div>
-              <h3 className="text-4xl sm:text-5xl font-black text-slate-900 tracking-tight">{profile.targetJob}</h3>
+              <h3 className="text-3xl sm:text-4xl font-black text-slate-100 tracking-tight">{profile.targetJob}</h3>
             </div>
             <div className="flex flex-wrap gap-4">
               <Link
                 to="/roadmap"
-                className="px-6 py-2.5 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition shadow-sm"
+                className="px-6 py-2.5 bg-violet-600 text-white rounded-xl font-medium hover:bg-violet-700 transition shadow-sm"
               >
                 Full Roadmap
               </Link>
               <Link
                 to="/profile"
-                className="px-6 py-2.5 bg-white text-slate-700 rounded-xl font-medium hover:bg-slate-50 transition border border-slate-200"
+                className="px-6 py-2.5 bg-[#1e1e2e] text-slate-300 rounded-xl font-medium hover:bg-[#2a2a3d] transition border border-[#2a2a3d]"
               >
                 Edit Profile
               </Link>
             </div>
           </div>
 
-          {/* Middle Section: Stats & Radar Chart */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Left: Stats Containers */}
-            <div className="lg:col-span-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
-              {loading ? (
-                <>
-                  <StatsCardSkeleton />
-                  <StatsCardSkeleton />
-                  <StatsCardSkeleton />
-                </>
-              ) : (
-                <>
-                  <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg transition-all duration-300 ease-out relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-green-50 rounded-full -mr-12 -mt-12 transition-transform group-hover:scale-110" />
-                    <p className="text-xs font-medium text-slate-400 uppercase tracking-widest relative">Mastered</p>
-                    <p className="text-4xl font-black text-slate-900 relative mt-1">{masteredCount} <span className="text-lg font-bold text-slate-300">/ {requiredCount}</span></p>
-                  </div>
-                  <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg transition-all duration-300 ease-out relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-blue-50 rounded-full -mr-12 -mt-12 transition-transform group-hover:scale-110" />
-                    <p className="text-xs font-medium text-slate-400 uppercase tracking-widest relative">Learning</p>
-                    <p className="text-4xl font-black text-blue-600 relative mt-1">{learningCount}</p>
-                  </div>
-                </>
-              )}
+          {/* ROW 2: 4-Column Stats Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-stretch">
+            {/* Mastered Card */}
+            <div className="bg-[#13131a] border border-[#1e1e2e] rounded-2xl p-4 hover:border-violet-500/30 transition h-[110px] flex flex-col justify-between">
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Mastered</p>
+              <p className="text-3xl font-black text-slate-100">{masteredCount} <span className="text-sm font-bold text-slate-500">/ {requiredCount}</span></p>
+            </div>
 
-              <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg transition-all duration-300 ease-out sm:col-span-2 lg:col-span-1">
-                <div className="flex justify-between items-end mb-3">
-                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest">Overall Match</p>
-                  <span className="text-sm font-semibold text-indigo-600 uppercase">{progressPercentage}% Ready</span>
-                </div>
-                <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-blue-500 to-indigo-600 transition-all duration-700 ease-out rounded-full"
-                    style={{ width: `${progressPercentage}%` }}
-                  />
+            {/* Learning Card */}
+            <div className="bg-[#13131a] border border-[#1e1e2e] rounded-2xl p-4 hover:border-violet-500/30 transition h-[110px] flex flex-col justify-between">
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Learning</p>
+              <p className="text-3xl font-black text-blue-500">{learningCount}</p>
+            </div>
+
+            {/* Overall Match Card */}
+            <div className="bg-[#13131a] border border-[#1e1e2e] rounded-2xl p-4 hover:border-violet-500/30 transition h-[110px] flex flex-col justify-between">
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Overall Match</p>
+              <div className="space-y-2">
+                <span className="text-3xl font-black text-violet-400">{progressPercentage}%</span>
+                <div className="w-full h-1.5 bg-[#1e1e2e] rounded-full overflow-hidden">
+                  <div className="h-full bg-gradient-to-r from-blue-500 to-indigo-600 transition-all duration-700 ease-out rounded-full" style={{ width: `${progressPercentage}%` }} />
                 </div>
               </div>
             </div>
 
-            {/* Right: Radar Chart Visualization */}
-            <div className="lg:col-span-2 bg-white p-8 rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg transition-all duration-300 ease-out flex flex-col min-h-[400px]">
-              <div className="flex justify-between items-start mb-6">
+            {/* Job Matches Card */}
+            <Link 
+              to="/dashboard/jobs" 
+              className="bg-[#13131a] border border-[#1e1e2e] rounded-2xl p-4 hover:border-violet-500/60 hover:bg-[#1a1a2e] transition h-[110px] flex flex-col justify-between group"
+            >
+              <div className="flex justify-between items-start">
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Job Matches</p>
+                <Briefcase size={22} className="text-violet-400 group-hover:scale-110 transition-transform" />
+              </div>
+              <p className="text-sm text-violet-400 font-medium">View matches →</p>
+            </Link>
+          </div>
+
+          {/* ROW 3: Skills & Radar Split Layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 items-start">
+            
+            {/* LEFT (Col 2): Radar Chart Panel */}
+            <div className="lg:col-span-2 bg-[#13131a] p-5 rounded-2xl border border-[#1e1e2e] hover:border-violet-500/30 shadow-sm transition-all duration-300">
+              <div className="flex justify-between items-start mb-4">
                 <div>
-                  <h4 className="font-bold text-slate-900 text-xl flex items-center gap-2">Skill Fingerprint <Activity size={18} className="text-slate-400" /></h4>
-                  <p className="text-sm text-slate-400">Your core competency across target skills.</p>
+                  <h4 className="font-bold text-slate-100 text-lg flex items-center gap-2">Skill Fingerprint <Activity size={18} className="text-slate-500" /></h4>
+                  <p className="text-xs text-slate-400">Your core competency across target skills.</p>
                 </div>
-                <div className="flex gap-2">
-                  <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-blue-500" /> <span className="text-xs font-semibold text-slate-400 uppercase">Mastered</span></div>
-                  <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-blue-300" /> <span className="text-xs font-semibold text-slate-400 uppercase">Learning</span></div>
+                <div className="flex flex-col items-end gap-1">
+                  <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-blue-500" /> <span className="text-[10px] font-semibold text-slate-400 uppercase">Mastered</span></div>
+                  <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-blue-300" /> <span className="text-[10px] font-semibold text-slate-400 uppercase">Learning</span></div>
                 </div>
               </div>
-              <div className="flex-1 flex items-center justify-center">
+              <div className="flex justify-center">
                 <SkillRadar roadmap={roadmap} profile={profile} />
               </div>
             </div>
-          </div>
 
-          {/* Interactive Skill Section */}
-          <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg transition-all duration-300 ease-out space-y-8">
-            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
-              <div>
-                <h4 className="font-bold text-slate-900 text-2xl flex items-center gap-3">
-                  Your Skills to Acquire <BookOpen size={20} className="text-slate-400" />
-                </h4>
-                <p className="text-slate-400 font-medium">Build your expertise one step at a time.</p>
-                <div className="flex gap-4 mt-3">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-blue-500 shadow-sm shadow-blue-200"></div>
-                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Learning</span>
+            {/* RIGHT (Col 3): Skills Panel */}
+            <div className="lg:col-span-3 bg-[#13131a] p-5 rounded-2xl border border-[#1e1e2e] hover:border-violet-500/30 shadow-sm transition-all duration-300 space-y-4">
+              <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+                <h4 className="font-bold text-slate-100 text-lg flex items-center gap-2">Skills to Acquire <BookOpen size={18} className="text-slate-400" /></h4>
+                <div className="flex flex-wrap items-center gap-2">
+                  <div className="relative flex-1 min-w-[150px]">
+                    <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                    <input type="text" placeholder="Search skills..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
+                           className="w-full pl-9 pr-3 py-1.5 bg-[#1e1e2e] border border-[#2a2a3d] rounded-xl text-xs text-slate-300 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500 transition" />
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-green-500 shadow-sm shadow-green-200"></div>
-                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Completed</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Filter Bar */}
-              <div className="flex flex-wrap items-center gap-3">
-                <div className="relative flex-1 min-w-[200px]">
-                  <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-                  <input
-                    type="text"
-                    placeholder="Search skills..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 ease-out"
-                  />
-                </div>
-                <select
-                  value={filterPriority}
-                  onChange={(e) => setFilterPriority(e.target.value)}
-                  className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                >
-                  <option value="All">All Priority</option>
-                  <option value="High">High Only</option>
-                  <option value="Medium">Medium Only</option>
-                  <option value="Low">Low Only</option>
-                </select>
-                <select
-                  value={filterStatus}
-                  onChange={(e) => setFilterStatus(e.target.value)}
-                  className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                >
-                  <option value="All">All Status</option>
-                  <option value="To Learn">To Learn</option>
-                  <option value="Learning">Learning</option>
-                  <option value="Mastered">Mastered</option>
-                </select>
-                <button
-                  onClick={() => setHideMastered(!hideMastered)}
-                  className={`px-4 py-2 rounded-xl text-sm font-medium border transition ${hideMastered ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}
-                >
-                  {hideMastered ? 'Showing New' : 'Hide Mastered'}
-                </button>
-              </div>
-            </div>
-
-            {profile.focusSkill && (
-              <div className="p-6 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl text-white shadow-sm relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl pointer-events-none" />
-                <div className="relative flex flex-col sm:flex-row items-center justify-between gap-6">
-                  <div className="flex items-center gap-5">
-                    <div className="w-16 h-16 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center"><Star size={28} className="text-white fill-white" /></div>
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-[0.3em] text-blue-100">Current Focus</p>
-                      <h5 className="text-2xl font-bold">{profile.focusSkill}</h5>
-                      <p className="text-sm text-blue-100 font-medium">You're making great progress! Stay focused.</p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => setActiveSkillDetails(profile.focusSkill)}
-                    className="px-6 py-2.5 bg-white text-blue-700 font-medium rounded-xl hover:bg-blue-50 transition border border-white/30"
+                  <select value={filterPriority} onChange={(e) => setFilterPriority(e.target.value)}
+                          className="px-3 py-1.5 bg-[#1e1e2e] border border-[#2a2a3d] rounded-xl text-[11px] font-medium text-slate-300 focus:outline-none focus:ring-2 focus:ring-violet-500 transition">
+                    <option value="All">All Priority</option>
+                    <option value="High">High</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Low">Low</option>
+                  </select>
+                  <select
+                    value={filterStatus}
+                    onChange={(e) => setFilterStatus(e.target.value)}
+                    className="px-3 py-1.5 bg-[#1e1e2e] border border-[#2a2a3d] rounded-xl text-[11px] font-medium text-slate-300 focus:outline-none focus:ring-2 focus:ring-violet-500 transition"
                   >
-                    Continue Learning
+                    <option value="All">All Status</option>
+                    <option value="To Learn">To Learn</option>
+                    <option value="Learning">Learning</option>
+                    <option value="Mastered">Mastered</option>
+                  </select>
+                  <button onClick={() => setHideMastered(!hideMastered)}
+                          className={`px-3 py-1.5 rounded-xl text-[11px] font-medium border transition ${hideMastered ? 'bg-violet-600 text-white border-violet-600' : 'bg-[#1e1e2e] text-slate-300 border-[#2a2a3d] hover:bg-[#2a2a3d]'}`}>
+                    {hideMastered ? 'New Only' : 'Hide Mastered'}
                   </button>
                 </div>
               </div>
-            )}
 
-            {(!roadmap && loading) ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {[1, 2, 3, 4, 5, 6].map(i => <SkillCardSkeleton key={i} />)}
-              </div>
-            ) : filteredPath.length === 0 ? (
-              <div className="py-20 text-center space-y-3">
-                <Search size={48} className="text-slate-300 mx-auto" />
-                <h5 className="font-semibold text-slate-900 text-xl">No skills found</h5>
-                <p className="text-slate-400">Try adjusting your filters or search term.</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredPath.map((item, idx) => {
-                  const isMastered = profile?.completedSkills?.some(s => (typeof s === 'object' ? s.skill === item.skill : s === item.skill))
-                  const isLearning = profile?.learningSkills?.includes(item.skill)
-                  const isUpdating = updatingSkill === item.skill
-                  const isFocused = profile?.focusSkill === item.skill
-
-                  return (
-                    <div
-                      key={item.skill}
-                      ref={el => skillRefs.current[item.skill] = el}
-                      className={`group relative p-6 rounded-2xl border transition-all duration-300 ease-out cursor-pointer ${isMastered
-                        ? 'border-slate-200 bg-green-50 shadow-sm hover:shadow-lg hover:-translate-y-0.5'
-                        : isLearning
-                          ? 'border-slate-200 bg-blue-50 shadow-sm hover:shadow-lg hover:-translate-y-0.5'
-                          : 'border-slate-200 bg-white hover:border-blue-200 hover:shadow-lg hover:-translate-y-0.5'
-                        } ${isFocused ? 'ring-2 ring-blue-500/20' : ''}`}
-                      onClick={() => setActiveSkillDetails(item.skill)}
-                    >
-                      <div className="flex items-start justify-between mb-6">
-                        <div className="flex items-center gap-4">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (!isUpdating) {
-                                if (isLearning) {
-                                  // If learning, go to quiz to master it
-                                  navigate(`/quiz/${encodeURIComponent(item.skill)}`)
-                                } else {
-                                  // Otherwise toggle as usual (To Learn -> Learning, or Mastered -> To Learn)
-                                  toggleSkill(item.skill);
-                                }
-                              }
-                            }}
-                            className={`w-10 h-10 rounded-xl flex items-center justify-center border-2 transition-all transform hover:scale-110 active:scale-90 ${isMastered
-                              ? 'bg-green-500 border-green-500 text-white shadow-sm'
-                              : isLearning
-                                ? 'bg-blue-600 border-blue-600 text-white shadow-sm'
-                                : 'bg-slate-50 border-slate-200 text-transparent'
-                              }`}
-                          >
-                            {isMastered ? <span className="text-lg">✓</span> : isLearning ? <FileText className="w-4 h-4 text-white" /> : ''}
-                          </button>
-                          <div>
-                            <h6 className={`text-base font-semibold leading-tight ${isMastered ? 'text-slate-400 line-through' : 'text-slate-900'}`}>
-                              {item.skill}
-                            </h6>
-                            <span className={`text-xs font-semibold uppercase px-2 py-0.5 rounded-full ${item.priority === 'High' ? 'text-red-600 bg-red-50' :
-                              item.priority === 'Medium' ? 'text-amber-600 bg-amber-50' :
-                                'text-blue-600 bg-blue-50'
-                              }`}>
-                              {item.priority}
-                            </span>
-                          </div>
-                        </div>
-                        <button
-                          onClick={(e) => { e.stopPropagation(); toggleFocus(item.skill); }}
-                          className={`transition transform hover:scale-125 ${isFocused ? 'text-amber-400 scale-110' : 'text-slate-400 hover:text-amber-300'}`}
-                        >
-                          <Star size={18} className={isFocused ? 'fill-amber-400' : ''} />
-                        </button>
+              {profile.focusSkill && (
+                <div className="p-4 bg-gradient-to-r from-violet-600 to-indigo-600 rounded-xl text-white shadow-sm relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full -mr-24 -mt-24 blur-3xl pointer-events-none" />
+                  <div className="relative flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center"><Star size={20} className="text-white fill-white" /></div>
+                      <div>
+                        <p className="text-[10px] font-semibold uppercase tracking-widest text-violet-200">Current Focus</p>
+                        <h5 className="text-lg font-bold">{profile.focusSkill}</h5>
                       </div>
-
-                      {
-                        isUpdating && (
-                          <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] rounded-2xl flex items-center justify-center">
-                            <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                          </div>
-                        )
-                      }
                     </div>
-                  )
-                })}
-              </div>
-            )}
+                    <button onClick={() => setActiveSkillDetails(profile.focusSkill)} className="px-4 py-1.5 bg-white/10 text-white text-xs font-semibold rounded-lg hover:bg-white/20 transition border border-white/20">Resume</button>
+                  </div>
+                </div>
+              )}
 
-            {activeSkillDetails && (
-              <SkillTooltip
-                skill={activeSkillDetails}
-                targetJob={profile?.targetJob}
-                anchorRef={{ current: skillRefs.current[activeSkillDetails] }}
-                onClose={() => setActiveSkillDetails(null)}
-              />
-            )}
+              {(!roadmap && loading) ? (
+                <div className="grid grid-cols-2 gap-3">
+                  {[1, 2, 3, 4].map(i => <SkillCardSkeleton key={i} />)}
+                </div>
+              ) : filteredPath.length === 0 ? (
+                <div className="py-10 text-center space-y-2">
+                  <Search size={32} className="text-slate-300 mx-auto opacity-50" />
+                  <h5 className="font-semibold text-slate-400 text-sm">No skills found</h5>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {filteredPath.map((item) => {
+                    const isMastered = profile?.completedSkills?.some(s => (typeof s === 'object' ? s.skill === item.skill : s === item.skill))
+                    const isLearning = profile?.learningSkills?.includes(item.skill)
+                    const isUpdating = updatingSkill === item.skill
+                    const isFocused = profile?.focusSkill === item.skill
+
+                    return (
+                      <div key={item.skill} ref={el => skillRefs.current[item.skill] = el}
+                           className={`group relative p-4 rounded-xl border transition-all cursor-pointer ${isMastered ? 'border-emerald-700 bg-emerald-950' : isLearning ? 'border-[#2a2050] bg-[#12102a]' : 'border-[#1e1e2e] bg-[#13131a]'} hover:border-violet-500/30 ${isFocused ? 'ring-2 ring-violet-500/30' : ''}`}
+                           onClick={() => setActiveSkillDetails(item.skill)}>
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex items-center gap-3">
+                            <button onClick={(e) => { e.stopPropagation(); if (!isUpdating) { if (isLearning) navigate(`/quiz/${encodeURIComponent(item.skill)}`); else toggleSkill(item.skill); } }}
+                                    className={`w-8 h-8 rounded-lg flex items-center justify-center border-2 transition-all ${isMastered ? 'bg-emerald-500 border-emerald-500 text-white' : isLearning ? 'bg-violet-600 border-violet-600 text-white' : 'bg-[#1e1e2e] border-[#2a2a3d] text-transparent'}`}>
+                              {isMastered ? <span className="text-sm">✓</span> : isLearning ? <FileText className="w-3.5 h-3.5 text-white" /> : ''}
+                            </button>
+                            <div className="min-w-0">
+                              <h6 className={`text-sm font-semibold truncate ${isMastered ? 'text-slate-500 line-through' : 'text-slate-100'}`}>{item.skill}</h6>
+                              <span className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-md ${
+                                isMastered 
+                                  ? 'text-slate-600 bg-[#1e1e2e]' 
+                                  : item.priority === 'High' ? 'text-red-400 bg-red-950' : 
+                                    item.priority === 'Medium' ? 'text-amber-400 bg-amber-950' : 
+                                    'text-violet-400 bg-violet-950'
+                              }`}>{item.priority}</span>
+                            </div>
+                          </div>
+                          <button onClick={(e) => { e.stopPropagation(); toggleFocus(item.skill); }} className={`transition ${isFocused ? 'text-amber-400' : 'text-slate-500 hover:text-amber-300'}`}>
+                            <Star size={14} className={isFocused ? 'fill-amber-400' : ''} />
+                          </button>
+                        </div>
+                        {isUpdating && <div className="absolute inset-0 bg-[#13131a]/70 backdrop-blur-[1px] rounded-xl flex items-center justify-center">
+                          <div className="w-4 h-4 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" />
+                        </div>}
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
           </div>
+
+          {activeSkillDetails && (
+            <SkillTooltip
+              skill={activeSkillDetails}
+              targetJob={profile?.targetJob}
+              anchorRef={{ current: skillRefs.current[activeSkillDetails] }}
+              onClose={() => setActiveSkillDetails(null)}
+            />
+          )}
         </>
       )}
     </div>

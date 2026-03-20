@@ -59,7 +59,7 @@ export default function ResumePreview({
 
   if (!data || Object.keys(data).length <= 1) {
     return (
-      <div className="w-full flex justify-center items-center min-h-[400px] border-2 border-dashed border-slate-200 rounded-lg">
+      <div className="w-full flex justify-center items-center min-h-[400px] border-2 border-dashed border-[#1e1e2e] rounded-lg">
         <p className="text-[#94a3b8] font-bold">Generate a resume to see the preview</p>
       </div>
     )

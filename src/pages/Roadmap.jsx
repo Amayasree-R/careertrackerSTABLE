@@ -114,36 +114,36 @@ function Roadmap() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 text-center">
+      <div className="min-h-screen bg-[#0a0a0f] flex flex-col items-center justify-center p-6 text-center">
         <div className="relative mb-8">
-          <div className="w-24 h-24 border-4 border-blue-600/20 border-t-blue-600 rounded-full animate-spin"></div>
+          <div className="w-24 h-24 border-4 border-violet-600/20 border-t-violet-600 rounded-full animate-spin"></div>
           <div className="absolute inset-0 flex items-center justify-center text-3xl animate-pulse">
             🗺️
           </div>
         </div>
-        <h2 className="text-3xl font-black text-slate-900 mb-2">Analyzing Your Career Profile</h2>
+        <h2 className="text-3xl font-black text-slate-100 mb-2">Analyzing Your Career Profile</h2>
         <p className="text-slate-500 max-w-md mx-auto leading-relaxed">
-          We're fetching real-time data from GitHub and using AI to build your personalized learning path for <span className="text-blue-600 font-bold">{profile?.targetJob}</span>.
+          We're fetching real-time data from GitHub and using AI to build your personalized learning path for <span className="text-violet-400 font-bold">{profile?.targetJob}</span>.
         </p>
         <div className="mt-10 flex gap-2">
-          <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-          <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-          <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce"></div>
+          <div className="w-2 h-2 bg-violet-500 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+          <div className="w-2 h-2 bg-violet-500 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+          <div className="w-2 h-2 bg-violet-500 rounded-full animate-bounce"></div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#0a0a0f]">
       {/* Navigation */}
-      <nav className="bg-white shadow-sm">
+      <nav className="bg-[#13131a] border-b border-[#1e1e2e] shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <h1 className="text-2xl font-bold text-blue-600">CareerPath</h1>
+            <h1 className="text-2xl font-bold text-violet-400">CareerPath</h1>
             <button
               onClick={() => navigate('/dashboard')}
-              className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg"
+              className="px-4 py-2 text-sm font-medium text-slate-300 hover:bg-[#1e1e2e] rounded-lg"
             >
               Back to Dashboard
             </button>
@@ -156,7 +156,7 @@ function Roadmap() {
       < div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8" >
         {/* Header */}
         < div className="mb-8" >
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">
+          <h2 className="text-3xl font-bold text-slate-100 mb-2">
             Your Personalized Learning Roadmap
           </h2>
           <p className="text-gray-600">
@@ -166,30 +166,30 @@ function Roadmap() {
 
         {/* Skill Gap Analysis */}
         < div className="bg-white rounded-lg shadow-lg p-6 mb-8" >
-          <h3 className="text-xl font-bold text-gray-900 mb-4">Skill Gap Analysis</h3>
+          <h3 className="text-xl font-bold text-slate-100 mb-4">Skill Gap Analysis</h3>
 
           <div className="grid md:grid-cols-3 gap-6 mb-6">
             <div className="text-center">
-              <div className="text-3xl font-bold text-blue-600">{roadmapData?.skillGap.current}</div>
-              <div className="text-sm text-gray-600">Current Skills</div>
+              <div className="text-3xl font-bold text-violet-400">{roadmapData?.skillGap.current}</div>
+              <div className="text-sm text-slate-400">Current Skills</div>
             </div>
             <div className="text-center">
               <div className="text-3xl font-bold text-green-600">{roadmapData?.skillGap.required}</div>
-              <div className="text-sm text-gray-600">Required Skills</div>
+              <div className="text-sm text-slate-400">Required Skills</div>
             </div>
             <div className="text-center">
               <div className="text-3xl font-bold text-purple-600">{roadmapData?.skillGap.percentage}%</div>
-              <div className="text-sm text-gray-600">Match Percentage</div>
+              <div className="text-sm text-slate-400">Match Percentage</div>
             </div>
           </div>
 
           {/* Progress Bar */}
           <div className="mb-4">
             <div className="flex justify-between mb-2">
-              <span className="text-sm font-medium text-gray-700">Progress to Target Role</span>
-              <span className="text-sm font-medium text-gray-700">{roadmapData?.skillGap.percentage}%</span>
+              <span className="text-sm font-medium text-slate-300">Progress to Target Role</span>
+              <span className="text-sm font-medium text-slate-300">{roadmapData?.skillGap.percentage}%</span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-3">
+            <div className="w-full bg-[#1e1e2e] rounded-full h-3">
               <div
                 className="bg-gradient-to-r from-blue-600 to-purple-600 h-3 rounded-full transition-all"
                 style={{ width: `${roadmapData?.skillGap.percentage}%` }}
@@ -199,7 +199,7 @@ function Roadmap() {
 
           {/* Missing Skills */}
           <div>
-            <h4 className="font-semibold text-gray-900 mb-3">Skills You Need to Learn:</h4>
+            <h4 className="font-semibold text-slate-100 mb-3">Skills You Need to Learn:</h4>
             <div className="flex flex-wrap gap-2">
               {roadmapData?.missingSkills.map(skill => (
                 <span
@@ -215,21 +215,21 @@ function Roadmap() {
 
         {/* Learning Path */}
         < div className="bg-white rounded-lg shadow-lg p-6 mb-8" >
-          <h3 className="text-xl font-bold text-gray-900 mb-2">Recommended Learning Path</h3>
+          <h3 className="text-xl font-bold text-slate-100 mb-2">Recommended Learning Path</h3>
 
           <div className="space-y-4">
             {roadmapData?.learningPath.map((item, index) => (
-              <div key={item.id || index} className={`border rounded-3xl p-6 transition-all duration-300 ${isSkillMastered(item.skill) ? 'bg-emerald-50/30 border-emerald-100 shadow-sm' : 'bg-white border-slate-100'}`}>
+              <div key={item.id || index} className={`border rounded-3xl p-6 transition-all duration-300 ${isSkillMastered(item.skill) ? 'bg-emerald-950/30 border-emerald-900 shadow-sm' : 'bg-[#13131a] border-[#1e1e2e]'}`}>
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-start gap-4">
-                    <div className={`rounded-2xl w-12 h-12 flex items-center justify-center font-bold text-lg flex-shrink-0 transition-colors ${isSkillMastered(item.skill) ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-200' : 'bg-blue-50 text-blue-600'}`}>
+                    <div className={`rounded-2xl w-12 h-12 flex items-center justify-center font-bold text-lg flex-shrink-0 transition-colors ${isSkillMastered(item.skill) ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-900/40' : 'bg-violet-950 text-violet-400'}`}>
                       {isSkillMastered(item.skill) ? <CheckCircle className="w-6 h-6" /> : index + 1}
                     </div>
                     <div className="relative">
                       <div className="flex flex-col">
                         <span
                           ref={el => skillRefs.current[index] = el}
-                          className={`skill-tooltip-anchor inline-block font-black text-xl cursor-pointer transition-colors duration-150 select-none ${isSkillMastered(item.skill) ? 'text-slate-400 line-through' : 'text-slate-900 hover:text-blue-600'}`}
+                          className={`skill-tooltip-anchor inline-block font-black text-xl cursor-pointer transition-colors duration-150 select-none ${isSkillMastered(item.skill) ? 'text-slate-500 line-through' : 'text-slate-100 hover:text-violet-400'}`}
                           onMouseEnter={() => handleSkillHover(item.skill, index)}
                           onMouseLeave={handleSkillLeave}
                           onClick={() => handleSkillHover(item.skill, index)}
@@ -282,13 +282,13 @@ function Roadmap() {
         </div >
 
         {/* Recommended Projects */}
-        < div className="bg-white rounded-lg shadow-lg p-6" >
-          <h3 className="text-xl font-bold text-gray-900 mb-4">Practice Projects from GitHub</h3>
+          <div className="bg-[#13131a] rounded-lg shadow-lg p-6 border border-[#1e1e2e]">
+          <h3 className="text-xl font-bold text-slate-100 mb-4">Practice Projects from GitHub</h3>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
             {roadmapData?.projects.map(project => (
-              <div key={project.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
-                <h4 className="font-semibold text-gray-900 mb-2">{project.name}</h4>
+               <div key={project.id} className="border border-[#1e1e2e] bg-[#13131a] rounded-lg p-4 hover:shadow-md hover:border-violet-500/30 transition">
+                <h4 className="font-semibold text-slate-100 mb-2">{project.name}</h4>
 
                 <div className="flex gap-2 mb-3">
                   <span className={`text-xs px-2 py-1 rounded ${project.difficulty === 'Beginner' ? 'bg-green-100 text-green-700' :
@@ -297,14 +297,14 @@ function Roadmap() {
                     }`}>
                     {project.difficulty}
                   </span>
-                  <span className="text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded flex items-center gap-1">
+                  <span className="text-xs px-2 py-1 bg-[#1e1e2e] text-slate-300 rounded flex items-center gap-1">
                     ⭐ {project.stars}
                   </span>
                 </div>
 
                 <div className="flex flex-wrap gap-1 mb-3">
                   {project.skills.map(skill => (
-                    <span key={skill} className="text-xs px-2 py-0.5 bg-blue-50 text-blue-700 rounded">
+                    <span key={skill} className="text-xs px-2 py-0.5 bg-violet-950 text-violet-400 rounded">
                       {skill}
                     </span>
                   ))}
@@ -314,7 +314,7 @@ function Roadmap() {
                   href={project.githubUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                  className="text-sm text-violet-400 hover:text-violet-300 font-medium"
                 >
                   View on GitHub →
                 </a>
