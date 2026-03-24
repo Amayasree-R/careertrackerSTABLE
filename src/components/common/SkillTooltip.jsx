@@ -72,25 +72,25 @@ export default function SkillTooltip({ skill, targetJob, anchorRef, onClose }) {
 
     return (
         <div
-            className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
+            className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm"
             onClick={onClose}
         >
             <div
                 ref={tooltipRef}
                 onClick={(e) => e.stopPropagation()}
-                className="bg-[#13131a] border border-[#1e1e2e] rounded-xl shadow-2xl w-full max-w-2xl max-h-[85vh] overflow-y-auto skill-tooltip-popup animate-in fade-in zoom-in duration-200"
+                className="bg-[#111111] border border-[#242424] rounded-xl shadow-2xl w-full max-w-2xl max-h-[85vh] overflow-y-auto skill-tooltip-popup animate-in fade-in zoom-in duration-200"
             >
                 {/* Header */}
-                <div className="flex items-center justify-between p-4 border-b border-[#1e1e2e] sticky top-0 bg-[#13131a] rounded-t-xl z-10">
+                <div className="flex items-center justify-between p-4 border-b border-[#242424] sticky top-0 bg-[#111111] rounded-t-xl z-10">
                     <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-                            <span className="text-white text-sm font-bold">{skill.charAt(0)}</span>
+                        <div className="w-8 h-8 rounded-lg bg-[#2a1500] flex items-center justify-center">
+                            <span className="text-[#ff5500] text-sm font-bold">{skill.charAt(0)}</span>
                         </div>
-                        <h5 className="font-bold text-slate-100 text-base">{skill}</h5>
+                        <h5 className="font-bold text-[#ffffff] text-base">{skill}</h5>
                     </div>
                     <button
                         onClick={onClose}
-                        className="text-slate-400 hover:text-slate-200 transition p-1.5 rounded-lg hover:bg-[#1e1e2e]"
+                        className="text-[#a0a0a0] hover:text-[#ffffff] transition p-1.5 rounded-lg hover:bg-[#1a1a1a]"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -108,7 +108,7 @@ export default function SkillTooltip({ skill, targetJob, anchorRef, onClose }) {
                                 <div className="w-2.5 h-2.5 bg-violet-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
                                 <div className="w-2.5 h-2.5 bg-violet-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
                             </div>
-                            <p className="text-sm font-medium text-gray-500">AI is analyzing {skill}...</p>
+                            <p className="text-sm font-medium text-[#606060]">AI is analyzing {skill}...</p>
                         </div>
                     )}
 
@@ -119,7 +119,7 @@ export default function SkillTooltip({ skill, targetJob, anchorRef, onClose }) {
                             <p className="text-xs text-gray-400">Please check your connection and try again.</p>
                             <button
                                 onClick={onClose}
-                                className="mt-4 px-4 py-2 bg-[#1e1e2e] text-slate-300 text-xs font-bold rounded-lg hover:bg-[#2a2a3d] transition"
+                                className="mt-4 px-4 py-2 bg-[#1a1a1a] text-[#a0a0a0] text-xs font-bold rounded-lg hover:bg-[#242424] transition"
                             >
                                 Close
                             </button>
@@ -131,18 +131,18 @@ export default function SkillTooltip({ skill, targetJob, anchorRef, onClose }) {
                             {/* AI Description */}
                             <div className="mb-6">
                                 <div className="flex items-center gap-2 mb-2">
-                                    <span className="px-2 py-0.5 rounded text-[10px] font-black bg-violet-950 text-violet-400 uppercase tracking-wider flex items-center gap-1">
+                                    <span className="px-2 py-0.5 rounded text-[10px] font-black bg-[#2a1500] text-[#ff5500] uppercase tracking-wider flex items-center gap-1">
                                         ✨ AI Insight
                                     </span>
                                 </div>
-                                <p className="text-slate-300 leading-7">{detail.description}</p>
+                                <p className="text-[#a0a0a0] leading-7">{detail.description}</p>
                             </div>
 
                             {/* Why It Matters */}
                             {detail.whyItMatters && (
-                                <div className="mb-6 bg-violet-950/50 border border-violet-900 rounded-xl p-4">
-                                    <p className="text-xs font-bold text-violet-400 uppercase tracking-wider mb-2">💡 Why It Matters</p>
-                                    <p className="text-sm text-slate-300 leading-relaxed">{detail.whyItMatters}</p>
+                                <div className="mb-6 bg-[#2a1500]/30 border border-[#2a1500]/50 rounded-xl p-4">
+                                    <p className="text-xs font-bold text-[#ff5500] uppercase tracking-wider mb-2">💡 Why It Matters</p>
+                                    <p className="text-sm text-[#a0a0a0] leading-relaxed">{detail.whyItMatters}</p>
                                 </div>
                             )}
 
@@ -161,18 +161,18 @@ export default function SkillTooltip({ skill, targetJob, anchorRef, onClose }) {
                                                     href={resource.url}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    className="flex items-center gap-3 p-3 rounded-xl border border-[#1e1e2e] hover:border-violet-500/50 hover:shadow-md hover:shadow-violet-900/20 bg-[#1e1e2e] transition group"
+                                                    className="flex items-center gap-3 p-3 rounded-xl border border-[#242424] hover:border-[#ff5500]/50 hover:bg-[#1a1a1a] transition group"
                                                 >
                                                     <span className="text-2xl">{getResourceIcon(resource.type)}</span>
                                                     <div className="flex-1 min-w-0">
                                                         <div className="flex items-center gap-2 mb-0.5">
-                                                            <p className="text-sm font-bold text-slate-100 group-hover:text-violet-400 truncate">
+                                                            <p className="text-sm font-bold text-[#ffffff] group-hover:text-[#ff5500] truncate">
                                                                 {resource.name}
                                                             </p>
-                                                            <span className="text-slate-500 text-xs opacity-0 group-hover:opacity-100 transition">↗</span>
+                                                            <span className="text-[#606060] text-xs opacity-0 group-hover:opacity-100 transition">↗</span>
                                                         </div>
                                                         <div className="flex items-center gap-2">
-                                                            <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider ${badge.bg} ${badge.text}`}>
+                                                            <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider bg-[#2a1500] text-[#ff5500]`}>
                                                                 {resource.type}
                                                             </span>
                                                             {resource.difficulty && (

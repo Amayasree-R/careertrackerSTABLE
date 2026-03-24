@@ -215,92 +215,92 @@ function Signup() {
   const passwordStrength = getPasswordStrength()
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl w-full space-y-8 bg-white p-10 rounded-2xl shadow-xl">
+    <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-4xl w-full space-y-8 bg-[#111111] border border-[#242424] p-10 rounded-2xl shadow-xl">
         <div className="text-center">
-          <h2 className="text-3xl font-extrabold text-gray-900">Join Career Tracker</h2>
-          <p className="mt-2 text-sm text-gray-600">Tell us about yourself to personalize your roadmap</p>
+          <h2 className="text-3xl font-extrabold text-[#ffffff]">Join Career Tracker</h2>
+          <p className="mt-2 text-sm text-[#a0a0a0]">Tell us about yourself to personalize your roadmap</p>
         </div>
 
         <form className="mt-8 space-y-8" onSubmit={handleSubmit}>
           {/* Section 1: Basic Information */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-purple-700 border-b pb-2">1. Basic Information</h3>
+            <h3 className="text-lg font-semibold text-[#ffffff] border-b border-[#242424] pb-2">1. Basic Information</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
+                <label className="block text-sm font-medium text-[#a0a0a0] mb-1">Full Name *</label>
                 <input
                   name="fullName"
                   type="text"
                   value={formData.fullName}
                   onChange={handleChange}
-                  className={`w-full px-3 py-2 border ${errors.fullName ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-purple-500 outline-none`}
+                  className={`w-full px-3 py-2 bg-[#1a1a1a] border ${errors.fullName ? 'border-red-500' : 'border-[#242424]'} text-[#ffffff] placeholder-[#606060] rounded-lg focus:ring-2 focus:ring-[#ff5500] outline-none`}
                 />
                 {errors.fullName && <p className="text-xs text-red-600 mt-1">{errors.fullName}</p>}
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Username *</label>
+                <label className="block text-sm font-medium text-[#a0a0a0] mb-1">Username *</label>
                 <input
                   name="username"
                   type="text"
                   value={formData.username}
                   onChange={handleChange}
-                  className={`w-full px-3 py-2 border ${errors.username ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-purple-500 outline-none`}
+                  className={`w-full px-3 py-2 bg-[#1a1a1a] border ${errors.username ? 'border-red-500' : 'border-[#242424]'} text-[#ffffff] placeholder-[#606060] rounded-lg focus:ring-2 focus:ring-[#ff5500] outline-none`}
                 />
                 {errors.username && <p className="text-xs text-red-600 mt-1">{errors.username}</p>}
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email ID *</label>
+                <label className="block text-sm font-medium text-[#a0a0a0] mb-1">Email ID *</label>
                 <input
                   name="email"
                   type="email"
                   value={formData.email}
                   onChange={handleChange}
-                  className={`w-full px-3 py-2 border ${errors.email ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-purple-500 outline-none`}
+                  className={`w-full px-3 py-2 bg-[#1a1a1a] border ${errors.email ? 'border-red-500' : 'border-[#242424]'} text-[#ffffff] placeholder-[#606060] rounded-lg focus:ring-2 focus:ring-[#ff5500] outline-none`}
                 />
                 {errors.email && <p className="text-xs text-red-600 mt-1">{errors.email}</p>}
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number *</label>
+                <label className="block text-sm font-medium text-[#a0a0a0] mb-1">Phone Number *</label>
                 <input
                   name="phoneNumber"
                   type="text"
                   value={formData.phoneNumber}
                   onChange={handleChange}
-                  className={`w-full px-3 py-2 border ${errors.phoneNumber ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-purple-500 outline-none`}
+                  className={`w-full px-3 py-2 bg-[#1a1a1a] border ${errors.phoneNumber ? 'border-red-500' : 'border-[#242424]'} text-[#ffffff] placeholder-[#606060] rounded-lg focus:ring-2 focus:ring-[#ff5500] outline-none`}
                   placeholder="Only numbers"
                 />
                 {errors.phoneNumber && <p className="text-xs text-red-600 mt-1">{errors.phoneNumber}</p>}
               </div>
               <div className="relative">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Password *</label>
+                <label className="block text-sm font-medium text-[#a0a0a0] mb-1">Password *</label>
                 <input
                   name="password"
                   type="password"
                   value={formData.password}
                   onChange={handleChange}
-                  className={`w-full px-3 py-2 border ${errors.password ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-purple-500 outline-none`}
+                  className={`w-full px-3 py-2 bg-[#1a1a1a] border ${errors.password ? 'border-red-500' : 'border-[#242424]'} text-[#ffffff] placeholder-[#606060] rounded-lg focus:ring-2 focus:ring-[#ff5500] outline-none`}
                 />
                 {errors.password && <p className="text-xs text-red-600 mt-1">{errors.password}</p>}
                 {formData.password && !errors.password && (
                   <div className="mt-2">
                     <div className="flex justify-between items-center mb-1">
-                      <span className="text-xs text-gray-500">Strength: {passwordStrength.text}</span>
+                      <span className="text-xs text-[#606060]">Strength: {passwordStrength.text}</span>
                     </div>
-                    <div className="w-full bg-gray-200 h-1 rounded-full">
+                    <div className="w-full bg-[#242424] h-1 rounded-full">
                       <div className={`h-1 rounded-full transition-all ${passwordStrength.color}`} style={{ width: `${(passwordStrength.strength / 5) * 100}%` }}></div>
                     </div>
                   </div>
                 )}
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password *</label>
+                <label className="block text-sm font-medium text-[#a0a0a0] mb-1">Confirm Password *</label>
                 <input
                   name="confirmPassword"
                   type="password"
                   value={formData.confirmPassword}
                   onChange={handleChange}
-                  className={`w-full px-3 py-2 border ${errors.confirmPassword ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-purple-500 outline-none`}
+                  className={`w-full px-3 py-2 bg-[#1a1a1a] border ${errors.confirmPassword ? 'border-red-500' : 'border-[#242424]'} text-[#ffffff] placeholder-[#606060] rounded-lg focus:ring-2 focus:ring-[#ff5500] outline-none`}
                 />
                 {errors.confirmPassword && <p className="text-xs text-red-600 mt-1">{errors.confirmPassword}</p>}
               </div>
@@ -309,25 +309,25 @@ function Signup() {
 
           {/* Section 2: Personal Details */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-purple-700 border-b pb-2">2. Personal Details</h3>
+            <h3 className="text-lg font-semibold text-[#ffffff] border-b border-[#242424] pb-2">2. Personal Details</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
+                <label className="block text-sm font-medium text-[#a0a0a0] mb-1">Date of Birth</label>
                 <input
                   name="personalDetails.dob"
                   type="date"
                   value={formData.personalDetails.dob}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none"
+                  className="w-full px-3 py-2 bg-[#1a1a1a] border border-[#242424] text-[#ffffff] placeholder-[#606060] rounded-lg focus:ring-2 focus:ring-[#ff5500] outline-none"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Gender</label>
+                <label className="block text-sm font-medium text-[#a0a0a0] mb-1">Gender</label>
                 <select
                   name="personalDetails.gender"
                   value={formData.personalDetails.gender}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none"
+                  className="w-full px-3 py-2 bg-[#1a1a1a] border border-[#242424] text-[#ffffff] placeholder-[#606060] rounded-lg focus:ring-2 focus:ring-[#ff5500] outline-none"
                 >
                   <option value="">Select</option>
                   <option value="Male">Male</option>
@@ -337,45 +337,45 @@ function Signup() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Nationality</label>
+                <label className="block text-sm font-medium text-[#a0a0a0] mb-1">Nationality</label>
                 <input
                   name="personalDetails.nationality"
                   type="text"
                   value={formData.personalDetails.nationality}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none"
+                  className="w-full px-3 py-2 bg-[#1a1a1a] border border-[#242424] text-[#ffffff] placeholder-[#606060] rounded-lg focus:ring-2 focus:ring-[#ff5500] outline-none"
                 />
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
+                <label className="block text-sm font-medium text-[#a0a0a0] mb-1">City</label>
                 <input
                   name="personalDetails.location.city"
                   type="text"
                   value={formData.personalDetails.location.city}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none"
+                  className="w-full px-3 py-2 bg-[#1a1a1a] border border-[#242424] text-[#ffffff] placeholder-[#606060] rounded-lg focus:ring-2 focus:ring-[#ff5500] outline-none"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">State</label>
+                <label className="block text-sm font-medium text-[#a0a0a0] mb-1">State</label>
                 <input
                   name="personalDetails.location.state"
                   type="text"
                   value={formData.personalDetails.location.state}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none"
+                  className="w-full px-3 py-2 bg-[#1a1a1a] border border-[#242424] text-[#ffffff] placeholder-[#606060] rounded-lg focus:ring-2 focus:ring-[#ff5500] outline-none"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Country</label>
+                <label className="block text-sm font-medium text-[#a0a0a0] mb-1">Country</label>
                 <input
                   name="personalDetails.location.country"
                   type="text"
                   value={formData.personalDetails.location.country}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none"
+                  className="w-full px-3 py-2 bg-[#1a1a1a] border border-[#242424] text-[#ffffff] placeholder-[#606060] rounded-lg focus:ring-2 focus:ring-[#ff5500] outline-none"
                 />
               </div>
             </div>
@@ -383,7 +383,7 @@ function Signup() {
 
           {/* Section 3: Current Status */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-purple-700 border-b pb-2">3. Current Status *</h3>
+            <h3 className="text-lg font-semibold text-[#ffffff] border-b border-[#242424] pb-2">3. Current Status *</h3>
             <div className="flex flex-wrap gap-6">
               {['Student', 'Working Professional'].map(status => (
                 <label key={status} className="flex items-center space-x-2 cursor-pointer">
@@ -393,9 +393,9 @@ function Signup() {
                     value={status}
                     checked={formData.currentStatus === status}
                     onChange={handleChange}
-                    className="w-4 h-4 text-purple-600 focus:ring-purple-500"
+                    className="w-4 h-4 text-[#ff5500] focus:ring-[#ff5500] bg-[#1a1a1a] border-[#242424]"
                   />
-                  <span className="text-gray-700 font-medium">{status}</span>
+                  <span className="text-[#a0a0a0] font-medium">{status}</span>
                 </label>
               ))}
             </div>
@@ -405,15 +405,15 @@ function Signup() {
           {/* Section 4: Education Details (Mandatory once status is selected) */}
           {formData.currentStatus && (
             <div className="space-y-4 animate-fadeIn">
-              <h3 className="text-lg font-semibold text-purple-700 border-b pb-2">4. Education Details *</h3>
+              <h3 className="text-lg font-semibold text-[#ffffff] border-b border-[#242424] pb-2">4. Education Details *</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Degree *</label>
+                  <label className="block text-sm font-medium text-[#a0a0a0] mb-1">Degree *</label>
                   <select
                     name="education.degree"
                     value={formData.education.degree}
                     onChange={handleChange}
-                    className={`w-full px-3 py-2 border ${errors['education.degree'] ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-purple-500 outline-none`}
+                    className={`w-full px-3 py-2 bg-[#1a1a1a] border ${errors['education.degree'] ? 'border-red-500' : 'border-[#242424]'} text-[#ffffff] placeholder-[#606060] rounded-lg focus:ring-2 focus:ring-[#ff5500] outline-none`}
                   >
                     <option value="">Select</option>
                     <option value="B.Tech">B.Tech</option>
@@ -425,36 +425,36 @@ function Signup() {
                   {errors['education.degree'] && <p className="text-xs text-red-600 mt-1">{errors['education.degree']}</p>}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Specialization *</label>
+                  <label className="block text-sm font-medium text-[#a0a0a0] mb-1">Specialization *</label>
                   <input
                     name="education.specialization"
                     type="text"
                     value={formData.education.specialization}
                     onChange={handleChange}
-                    className={`w-full px-3 py-2 border ${errors['education.specialization'] ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-purple-500 outline-none`}
+                    className={`w-full px-3 py-2 bg-[#1a1a1a] border ${errors['education.specialization'] ? 'border-red-500' : 'border-[#242424]'} text-[#ffffff] placeholder-[#606060] rounded-lg focus:ring-2 focus:ring-[#ff5500] outline-none`}
                     placeholder="e.g. Computer Science"
                   />
                   {errors['education.specialization'] && <p className="text-xs text-red-600 mt-1">{errors['education.specialization']}</p>}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">College / University *</label>
+                  <label className="block text-sm font-medium text-[#a0a0a0] mb-1">College / University *</label>
                   <input
                     name="education.college"
                     type="text"
                     value={formData.education.college}
                     onChange={handleChange}
-                    className={`w-full px-3 py-2 border ${errors['education.college'] ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-purple-500 outline-none`}
+                    className={`w-full px-3 py-2 bg-[#1a1a1a] border ${errors['education.college'] ? 'border-red-500' : 'border-[#242424]'} text-[#ffffff] placeholder-[#606060] rounded-lg focus:ring-2 focus:ring-[#ff5500] outline-none`}
                   />
                   {errors['education.college'] && <p className="text-xs text-red-600 mt-1">{errors['education.college']}</p>}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Duration (e.g. 2020 - 2024) *</label>
+                  <label className="block text-sm font-medium text-[#a0a0a0] mb-1">Duration (e.g. 2020 - 2024) *</label>
                   <input
                     name="education.years"
                     type="text"
                     value={formData.education.years}
                     onChange={handleChange}
-                    className={`w-full px-3 py-2 border ${errors['education.years'] ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-purple-500 outline-none`}
+                    className={`w-full px-3 py-2 bg-[#1a1a1a] border ${errors['education.years'] ? 'border-red-500' : 'border-[#242424]'} text-[#ffffff] placeholder-[#606060] rounded-lg focus:ring-2 focus:ring-[#ff5500] outline-none`}
                     placeholder="e.g. 2020 - 2024"
                   />
                   {errors['education.years'] && <p className="text-xs text-red-600 mt-1">{errors['education.years']}</p>}
@@ -466,50 +466,50 @@ function Signup() {
           {/* Section 5: Professional Details (Working Professional only) */}
           {formData.currentStatus === 'Working Professional' && (
             <div className="space-y-4 animate-fadeIn">
-              <h3 className="text-lg font-semibold text-purple-700 border-b pb-2">5. Professional Details *</h3>
+              <h3 className="text-lg font-semibold text-[#ffffff] border-b border-[#242424] pb-2">5. Professional Details *</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Company Name *</label>
+                  <label className="block text-sm font-medium text-[#a0a0a0] mb-1">Company Name *</label>
                   <input
                     name="experience.company"
                     type="text"
                     value={formData.experience.company}
                     onChange={handleChange}
-                    className={`w-full px-3 py-2 border ${errors['experience.company'] ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-purple-500 outline-none`}
+                    className={`w-full px-3 py-2 bg-[#1a1a1a] border ${errors['experience.company'] ? 'border-red-500' : 'border-[#242424]'} text-[#ffffff] placeholder-[#606060] rounded-lg focus:ring-2 focus:ring-[#ff5500] outline-none`}
                   />
                   {errors['experience.company'] && <p className="text-xs text-red-600 mt-1">{errors['experience.company']}</p>}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Role / Designation *</label>
+                  <label className="block text-sm font-medium text-[#a0a0a0] mb-1">Role / Designation *</label>
                   <input
                     name="experience.role"
                     type="text"
                     value={formData.experience.role}
                     onChange={handleChange}
-                    className={`w-full px-3 py-2 border ${errors['experience.role'] ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-purple-500 outline-none`}
+                    className={`w-full px-3 py-2 bg-[#1a1a1a] border ${errors['experience.role'] ? 'border-red-500' : 'border-[#242424]'} text-[#ffffff] placeholder-[#606060] rounded-lg focus:ring-2 focus:ring-[#ff5500] outline-none`}
                   />
                   {errors['experience.role'] && <p className="text-xs text-red-600 mt-1">{errors['experience.role']}</p>}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Duration (e.g. 2024 - Present) *</label>
+                  <label className="block text-sm font-medium text-[#a0a0a0] mb-1">Duration (e.g. 2024 - Present) *</label>
                   <input
                     name="experience.dates"
                     type="text"
                     value={formData.experience.dates}
                     onChange={handleChange}
-                    className={`w-full px-3 py-2 border ${errors['experience.dates'] ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-purple-500 outline-none`}
+                    className={`w-full px-3 py-2 bg-[#1a1a1a] border ${errors['experience.dates'] ? 'border-red-500' : 'border-[#242424]'} text-[#ffffff] placeholder-[#606060] rounded-lg focus:ring-2 focus:ring-[#ff5500] outline-none`}
                     placeholder="e.g. 2024 - Present"
                   />
                   {errors['experience.dates'] && <p className="text-xs text-red-600 mt-1">{errors['experience.dates']}</p>}
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Responsibilities</label>
+                  <label className="block text-sm font-medium text-[#a0a0a0] mb-1">Responsibilities</label>
                   <textarea
                     name="experience.responsibilities"
                     value={formData.experience.responsibilities}
                     onChange={handleChange}
                     rows="3"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none"
+                    className="w-full px-3 py-2 bg-[#1a1a1a] border border-[#242424] text-[#ffffff] placeholder-[#606060] rounded-lg focus:ring-2 focus:ring-[#ff5500] outline-none"
                   ></textarea>
                 </div>
               </div>
@@ -518,40 +518,40 @@ function Signup() {
 
           {/* Section 6: Social & Portfolio Links */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-purple-700 border-b pb-2">6. Social & Portfolio Links</h3>
+            <h3 className="text-lg font-semibold text-[#ffffff] border-b border-[#242424] pb-2">6. Social & Portfolio Links</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">GitHub Profile URL</label>
+                <label className="block text-sm font-medium text-[#a0a0a0] mb-1">GitHub Profile URL</label>
                 <input
                   name="socialLinks.github"
                   type="text"
                   value={formData.socialLinks.github}
                   onChange={handleChange}
-                  className={`w-full px-3 py-2 border ${errors['socialLinks.github'] ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-purple-500 outline-none`}
+                  className={`w-full px-3 py-2 bg-[#1a1a1a] border ${errors['socialLinks.github'] ? 'border-red-500' : 'border-[#242424]'} text-[#ffffff] placeholder-[#606060] rounded-lg focus:ring-2 focus:ring-[#ff5500] outline-none`}
                   placeholder="https://github.com/username"
                 />
                 {errors['socialLinks.github'] && <p className="text-xs text-red-600 mt-1">{errors['socialLinks.github']}</p>}
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">LinkedIn Profile URL</label>
+                <label className="block text-sm font-medium text-[#a0a0a0] mb-1">LinkedIn Profile URL</label>
                 <input
                   name="socialLinks.linkedin"
                   type="text"
                   value={formData.socialLinks.linkedin}
                   onChange={handleChange}
-                  className={`w-full px-3 py-2 border ${errors['socialLinks.linkedin'] ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-purple-500 outline-none`}
+                  className={`w-full px-3 py-2 bg-[#1a1a1a] border ${errors['socialLinks.linkedin'] ? 'border-red-500' : 'border-[#242424]'} text-[#ffffff] placeholder-[#606060] rounded-lg focus:ring-2 focus:ring-[#ff5500] outline-none`}
                   placeholder="https://linkedin.com/in/username"
                 />
                 {errors['socialLinks.linkedin'] && <p className="text-xs text-red-600 mt-1">{errors['socialLinks.linkedin']}</p>}
               </div>
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Other Portfolio Link</label>
+                <label className="block text-sm font-medium text-[#a0a0a0] mb-1">Other Portfolio Link</label>
                 <input
                   name="socialLinks.portfolio"
                   type="text"
                   value={formData.socialLinks.portfolio}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none"
+                  className="w-full px-3 py-2 bg-[#1a1a1a] border border-[#242424] text-[#ffffff] placeholder-[#606060] rounded-lg focus:ring-2 focus:ring-[#ff5500] outline-none"
                   placeholder="Website or Portfolio URL"
                 />
               </div>
@@ -568,7 +568,7 @@ function Signup() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-3 bg-purple-600 text-white font-bold rounded-lg hover:bg-purple-700 transition-all shadow-lg hover:shadow-purple-200 disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center"
+              className="w-full py-3 bg-[#ff5500] text-white font-bold rounded-lg hover:bg-[#e64d00] transition-all shadow-lg hover:shadow-orange-900/20 disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center"
             >
               {isLoading ? (
                 <>
@@ -580,8 +580,8 @@ function Signup() {
                 </>
               ) : 'Complete Registration'}
             </button>
-            <p className="mt-4 text-center text-sm text-gray-600">
-              Already have an account? <Link to="/login" className="text-purple-600 font-semibold hover:underline">Log In</Link>
+            <p className="mt-4 text-center text-sm text-[#a0a0a0]">
+              Already have an account? <Link to="/login" className="text-[#ff5500] font-semibold hover:underline">Log In</Link>
             </p>
           </div>
         </form>

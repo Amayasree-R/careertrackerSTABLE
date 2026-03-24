@@ -33,15 +33,15 @@ export default function AIEnhancementModal({ type, text, onAccept, onClose }) {
     }
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-950/80 backdrop-blur-sm">
-            <div className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[80vh]">
-                <div className="p-6 border-b border-slate-800 flex justify-between items-center bg-indigo-600">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/80 backdrop-blur-sm">
+            <div className="bg-[#111111] border border-[#242424] rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[80vh]">
+                <div className="p-6 border-b border-[#242424] flex justify-between items-center bg-[#111111]">
                     <div className="flex items-center gap-3">
-                        <Sparkles className="text-white animate-pulse" />
-                        <h2 className="text-xl font-black text-white uppercase tracking-tighter">AI Success Enhancer</h2>
+                        <Sparkles className="text-[#ff5500] animate-pulse" />
+                        <h2 className="text-xl font-black text-[#ffffff] uppercase tracking-tighter">AI Success Enhancer</h2>
                     </div>
-                    <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition">
-                        <X className="text-white" />
+                    <button onClick={onClose} className="p-2 hover:bg-[#1a1a1a] rounded-full transition">
+                        <X className="text-[#a0a0a0] hover:text-[#ffffff]" />
                     </button>
                 </div>
 
@@ -49,17 +49,17 @@ export default function AIEnhancementModal({ type, text, onAccept, onClose }) {
                     {/* Comparison Section */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-3">
-                            <h3 className="text-xs font-black text-slate-500 uppercase tracking-widest">Original Input</h3>
-                            <div className="p-4 bg-slate-950 rounded-2xl border border-slate-800 text-sm text-slate-400 italic">
+                            <h3 className="text-xs font-black text-[#606060] uppercase tracking-widest">Original Input</h3>
+                            <div className="p-4 bg-black rounded-2xl border border-[#242424] text-sm text-[#a0a0a0] italic">
                                 {text || 'No text provided'}
                             </div>
                         </div>
                         <div className="space-y-3">
-                            <h3 className="text-xs font-black text-indigo-400 uppercase tracking-widest flex justify-between">
+                            <h3 className="text-xs font-black text-[#ff5500] uppercase tracking-widest flex justify-between">
                                 AI Enhanced Version
                                 {loading && <RefreshCw size={14} className="animate-spin" />}
                             </h3>
-                            <div className="p-4 bg-indigo-500/5 rounded-2xl border border-indigo-500/20 text-sm text-indigo-100 font-medium min-h-[100px] flex items-center justify-center">
+                            <div className="p-4 bg-[#ff5500]/5 rounded-2xl border border-[#ff5500]/20 text-sm text-[#ffffff] font-medium min-h-[100px] flex items-center justify-center">
                                 {loading ? (
                                     <p className="animate-pulse">Analyzing impact...</p>
                                 ) : (
@@ -72,19 +72,19 @@ export default function AIEnhancementModal({ type, text, onAccept, onClose }) {
                     {/* Suggestions List */}
                     {suggestions.length > 1 && (
                         <div className="space-y-4">
-                            <h3 className="text-xs font-black text-slate-500 uppercase tracking-widest">Variations</h3>
+                            <h3 className="text-xs font-black text-[#606060] uppercase tracking-widest">Variations</h3>
                             <div className="space-y-2">
                                 {suggestions.map((s, i) => (
                                     <button
                                         key={i}
                                         onClick={() => setSelectedIndex(i)}
                                         className={`w-full p-4 rounded-xl text-left text-sm transition-all flex items-center justify-between group ${selectedIndex === i
-                                                ? 'bg-slate-800 border-indigo-600 ring-1 ring-indigo-600'
-                                                : 'bg-slate-950 border-slate-800 hover:bg-slate-800'
+                                                ? 'bg-[#2a1500] border-[#ff5500] ring-1 ring-[#ff5500]'
+                                                : 'bg-black border-[#242424] hover:bg-[#1a1a1a]'
                                             } border`}
                                     >
-                                        <span className={selectedIndex === i ? 'text-white' : 'text-slate-500'}>{s}</span>
-                                        {selectedIndex === i && <ArrowRight size={16} className="text-indigo-400" />}
+                                        <span className={selectedIndex === i ? 'text-[#ffffff]' : 'text-[#a0a0a0]'}>{s}</span>
+                                        {selectedIndex === i && <ArrowRight size={16} className="text-[#ff5500]" />}
                                     </button>
                                 ))}
                             </div>
@@ -92,17 +92,17 @@ export default function AIEnhancementModal({ type, text, onAccept, onClose }) {
                     )}
                 </div>
 
-                <div className="p-6 border-t border-slate-800 bg-slate-950/50 flex justify-end gap-3">
+                <div className="p-6 border-t border-[#242424] bg-[#111111] flex justify-end gap-3">
                     <button
                         onClick={onClose}
-                        className="px-6 py-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-sm font-bold transition"
+                        className="px-6 py-2.5 bg-[#1a1a1a] hover:bg-[#242424] border border-[#242424] rounded-xl text-sm font-bold transition text-[#a0a0a0] hover:text-[#ffffff]"
                     >
                         Cancel
                     </button>
                     <button
                         onClick={() => onAccept(suggestions[selectedIndex])}
                         disabled={loading || !suggestions.length}
-                        className="px-8 py-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl text-sm font-bold transition shadow-lg shadow-indigo-500/20"
+                        className="px-8 py-2.5 bg-[#ff5500] hover:bg-[#e64d00] disabled:opacity-50 disabled:cursor-not-allowed rounded-xl text-sm font-bold transition shadow-lg shadow-[#ff5500]/20 text-white"
                     >
                         Use This Version
                     </button>

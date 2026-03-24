@@ -46,15 +46,8 @@ export async function generateRoadmap(profile) {
     // Normalize skills for comparison
     const requiredSkillsLower = new Set(requiredSkills.map(s => s.toLowerCase()))
 
-    const additionalUserSkills = masteredSkills.filter(userSkill =>
-      userSkill && !requiredSkillsLower.has(userSkill.toLowerCase())
-    )
-
-    // Capitalize properly before adding
-    const formattedUserSkills = additionalUserSkills.map(s => capitalizeSkill(s))
-
-    // Final list includes standard top 15 + any extra skills the user has mastered
-    const finalRequiredSkills = [...requiredSkills, ...formattedUserSkills]
+    // Final list includes standard top 15
+    const finalRequiredSkills = [...requiredSkills]
 
     console.log(`Required skills (${finalRequiredSkills.length}):`, finalRequiredSkills)
 
@@ -74,19 +67,26 @@ export async function generateRoadmap(profile) {
     const learningPath = await getAILearningPath(missingSkills, targetJob, experienceLevel)
 
     // 8. Create objects for mastered skills so they appear in the graph
-    const masteredSkillsObjects = masteredSkills.map(skill => ({
-      skill: capitalizeSkill(skill),
-      priority: 'High', // Default value
-      estimatedTime: 'Completed',
-      resources: [],
-      status: 'Mastered' // Helper field if needed
-    }))
+    // ONLY include skills that are actually required for this job
+    const finalRequiredSkillsLower = new Set(finalRequiredSkills.map(s => s.toLowerCase()))
+    const masteredSkillsObjects = masteredSkills
+      .filter(skill => finalRequiredSkillsLower.has(skill.toLowerCase()))
+      .map(skill => ({
+        skill: capitalizeSkill(skill),
+        priority: 'High', // Default value
+        estimatedTime: 'Completed',
+        resources: [],
+        status: 'Mastered' // Helper field if needed
+      }))
 
     // Combine both for the full roadmap visualization
     const fullLearningPath = [...masteredSkillsObjects, ...learningPath]
 
     return {
-      skillGap: calculateSkillGap(masteredSkills, finalRequiredSkills),
+      skillGap: calculateSkillGap(
+        masteredSkills.filter(s => finalRequiredSkillsLower.has(s.toLowerCase())),
+        finalRequiredSkills
+      ),
       missingSkills: missingSkills,
       learningPath: fullLearningPath, // Return all skills (mastered + to-learn)
       projects: githubProjects

@@ -1,8 +1,0 @@
-Connecting to MongoDB...
-Connected.
-Collections in database:
- - jobroles
- - certificates
- - skilldetails
- - users
-Disconnected.

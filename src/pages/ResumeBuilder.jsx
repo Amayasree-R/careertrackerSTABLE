@@ -8,12 +8,12 @@ import {
     Edit3, Sparkles, Globe
 } from 'lucide-react'
 import axios from 'axios'
-import ResumePreview from '../components/ResumePreview'
-import ExperienceForm from '../components/resume/ExperienceForm'
-import AchievementForm from '../components/resume/AchievementForm'
-import EducationForm from '../components/resume/EducationForm'
-import InterestsForm from '../components/resume/InterestsForm'
-import LanguagesForm from '../components/resume/LanguagesForm'
+import ResumePreview from '../components/resume/ResumePreview'
+import ExperienceForm from '../components/resume/forms/ExperienceForm'
+import AchievementForm from '../components/resume/forms/AchievementForm'
+import EducationForm from '../components/resume/forms/EducationForm'
+import InterestsForm from '../components/resume/forms/InterestsForm'
+import LanguagesForm from '../components/resume/forms/LanguagesForm'
 import TemplateSelector from '../components/resume/TemplateSelector'
 import ThemeColorPicker from '../components/resume/ThemeColorPicker'
 
@@ -41,7 +41,7 @@ export default function ResumeBuilder() {
 
     // Template and Theme Customization
     const [selectedTemplate, setSelectedTemplate] = useState('professional')
-    const [themeColor, setThemeColor] = useState('#1e293b')
+    const [themeColor, setThemeColor] = useState('#ff5500')
 
     // Aggregated Raw Data (from /data)
     const [userRawData, setUserRawData] = useState(null)
@@ -435,43 +435,48 @@ export default function ResumeBuilder() {
         console.log(`✅ Updated theme color to: ${color}`)
     }
 
-    // Sidebar Section Items - Filtered to show only Experience and Achievements
+    // Sidebar Section Items
     const sidebarSections = [
+        { id: 'summary', label: 'Summary', icon: FileText, action: () => setActiveSection('summary') },
+        { id: 'contact', label: 'Contact Info', icon: User, action: () => setActiveSection('contact') },
         { id: 'experience', label: 'Experience', icon: Briefcase, action: () => setShowExperienceForm(true) },
         { id: 'education', label: 'Education', icon: GraduationCap, action: () => setShowEducationForm(true) },
         { id: 'achievements', label: 'Achievements', icon: Award, action: () => setShowAchievementForm(true) },
+        { id: 'skills', label: 'Skills & Tech', icon: Code, action: () => setActiveSection('skills') },
+        { id: 'projects', label: 'Projects', icon: FolderGit2, action: () => setActiveSection('projects') },
+        { id: 'certificates', label: 'Certifications', icon: FileCheck, action: () => setActiveSection('certificates') },
         { id: 'interests', label: 'Interests', icon: Sparkles, action: () => setShowInterestsForm(true) },
         { id: 'languages', label: 'Languages', icon: Globe, action: () => setShowLanguagesForm(true) }
     ]
 
     return (
-        <div className="min-h-screen bg-[#0a0a0f] text-slate-100 pb-20">
+        <div className="min-h-screen bg-[#0a0a0a] text-[#a0a0a0] pb-20">
             {/* Top Bar */}
-            <header className="h-18 bg-[#13131a] border-b border-[#1e1e2e] sticky top-0 z-50">
+            <header className="h-18 bg-[#111111] border-b border-[#242424] sticky top-0 z-50">
                 <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <button
                             onClick={() => navigate('/dashboard')}
-                            className="p-2 hover:bg-[#1e1e2e] rounded-xl transition text-slate-400 hover:text-slate-100"
+                            className="p-2 hover:bg-[#1a1a1a] rounded-xl transition text-[#a0a0a0] hover:text-[#ffffff]"
                         >
                             <ChevronLeft size={22} />
                         </button>
                         <div>
-                            <h1 className="font-bold text-xl text-slate-100 tracking-tight">Resume Builder</h1>
-                            <p className="text-sm text-slate-500">Build, edit, and export your professional resume.</p>
+                            <h1 className="font-bold text-xl text-[#ffffff] tracking-tight">Resume Builder</h1>
+                            <p className="text-sm text-[#606060]">Build, edit, and export your professional resume.</p>
                         </div>
                     </div>
 
                     <div className="flex items-center gap-3">
-                        <button
-                            onClick={handleExport}
-                            disabled={isExporting || isGenerating}
-                            className="flex items-center gap-2 px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl transition text-sm font-bold shadow-sm shadow-slate-200 disabled:opacity-50"
-                        >
-                            {isExporting ? <Loader2 size={18} className="animate-spin" /> : <Download size={18} />}
-                            Export PDF
-                        </button>
-                    </div>
+                         <button
+                             onClick={handleExport}
+                             disabled={isExporting || isGenerating}
+                             className="flex items-center gap-2 px-6 py-2.5 bg-[#ff5500] hover:bg-[#e64d00] text-white rounded-xl transition text-sm font-bold shadow-sm shadow-[#ff5500]/20 disabled:opacity-50"
+                         >
+                             {isExporting ? <Loader2 size={18} className="animate-spin" /> : <Download size={18} />}
+                             Export PDF
+                         </button>
+                     </div>
                 </div>
             </header>
 
@@ -481,10 +486,10 @@ export default function ResumeBuilder() {
                     {/* Left Column: Sidebar Navigation & AI Generator */}
                     <div className="space-y-6">
                         {/* Resume Sections Sidebar */}
-                        <div className="bg-[#13131a] rounded-2xl border border-[#1e1e2e] overflow-hidden">
-                            <div className="px-6 py-5 border-b border-[#1e1e2e]">
-                                <h3 className="font-bold text-lg text-slate-100 uppercase tracking-wide">Resume Sections</h3>
-                                <p className="text-xs text-slate-500 mt-1">Edit and manage your resume content</p>
+                        <div className="bg-[#111111] rounded-2xl border border-[#242424] overflow-hidden">
+                            <div className="px-6 py-5 border-b border-[#242424]">
+                                <h3 className="font-bold text-lg text-[#ffffff] uppercase tracking-wide">Resume Sections</h3>
+                                <p className="text-xs text-[#606060] mt-1">Edit and manage your resume content</p>
                             </div>
 
                             <div className="p-2">
@@ -495,12 +500,12 @@ export default function ResumeBuilder() {
                                             key={section.id}
                                             onClick={section.action}
                                             disabled={section.disabled}
-                                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition text-left ${
+                                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition text-left border-l-2 ${
                                                 section.disabled
-                                                    ? 'text-slate-600 cursor-not-allowed'
+                                                    ? 'text-[#404040] cursor-not-allowed border-transparent'
                                                     : activeSection === section.id
-                                                    ? 'bg-violet-950 text-violet-400 font-semibold'
-                                                    : 'text-slate-300 hover:bg-[#1e1e2e]'
+                                                    ? 'bg-[#2a1500] text-[#ff5500] border-[#ff5500] font-semibold'
+                                                    : 'text-[#a0a0a0] hover:bg-[#1a1a1a] border-transparent'
                                             }`}
                                         >
                                             <Icon size={20} />
@@ -513,22 +518,22 @@ export default function ResumeBuilder() {
                         </div>
 
                         {/* AI Resume Generator */}
-                        <div className="bg-[#13131a] border border-[#1e1e2e] rounded-2xl p-8 relative overflow-hidden group">
+                        <div className="bg-[#111111] border border-[#242424] rounded-2xl p-8 relative overflow-hidden group">
                             {/* Subtle background glow */}
-                            <div className="absolute -top-24 -right-24 w-48 h-48 bg-violet-600/10 blur-[80px] rounded-full group-hover:bg-violet-600/20 transition-colors duration-500" />
+                            <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#ff5500]/5 blur-[80px] rounded-full group-hover:bg-[#ff5500]/10 transition-colors duration-500" />
                             
                             <div className="text-center mb-6 relative z-10">
-                                <div className="w-16 h-16 bg-[#1e1e2e] rounded-2xl flex items-center justify-center text-violet-400 mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+                                <div className="w-16 h-16 bg-[#1a1a1a] rounded-2xl flex items-center justify-center text-[#ff5500] mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
                                     <Wand2 size={32} />
                                 </div>
-                                <h3 className="font-bold text-xl text-slate-100 uppercase tracking-wide">AI Generator</h3>
-                                <p className="text-xs text-slate-500 mt-2 leading-relaxed">Auto-fill your resume from profile data</p>
+                                <h3 className="font-bold text-xl text-[#ffffff] uppercase tracking-wide">AI Generator</h3>
+                                <p className="text-xs text-[#a0a0a0] mt-2 leading-relaxed">Auto-fill your resume from profile data</p>
                             </div>
 
                             <button
                                 onClick={handleGenerate}
                                 disabled={isGenerating || isLoadingData}
-                                className="relative z-10 w-full py-4 bg-[#1e1e2e] text-violet-400 border border-[#2a2a3d] rounded-xl font-bold text-base flex items-center justify-center gap-3 transition hover:bg-[#2a2a3d] disabled:opacity-50 disabled:cursor-not-allowed shadow-md mb-3"
+                                className="relative z-10 w-full py-4 bg-[#ff5500] text-white rounded-xl font-bold text-base flex items-center justify-center gap-3 transition hover:bg-[#e64d00] disabled:opacity-50 disabled:cursor-not-allowed shadow-md mb-3"
                             >
                                 {isGenerating ? (
                                     <>
@@ -545,7 +550,7 @@ export default function ResumeBuilder() {
 
                             <button
                                 onClick={handleClearResume}
-                                className="relative z-10 w-full py-2 text-slate-500 hover:text-rose-400 text-xs font-semibold flex items-center justify-center gap-2 transition uppercase tracking-widest"
+                                className="relative z-10 w-full py-2 text-[#606060] hover:text-rose-400 text-xs font-semibold flex items-center justify-center gap-2 transition uppercase tracking-widest"
                             >
                                 <Trash2 size={12} />
                                 Clear & Start Fresh
@@ -567,14 +572,14 @@ export default function ResumeBuilder() {
 
                     {/* Right Column: Live Preview */}
                     <div className="lg:col-span-2">
-                        <div className="bg-[#13131a] rounded-2xl shadow-sm border border-[#1e1e2e] p-8 min-h-[800px]">
+                        <div className="bg-[#111111] rounded-2xl shadow-sm border border-[#242424] p-8 min-h-[800px]">
                             <div className="mb-6 flex items-center justify-between px-2">
-                                <div className="flex items-center gap-2 text-slate-400 text-sm font-medium">
+                                <div className="flex items-center gap-2 text-[#a0a0a0] text-sm font-medium">
                                     <FileText size={18} />
                                     <span>Live Preview</span>
                                 </div>
                                 {(isGenerating || regeneratingSection) && (
-                                    <span className="text-xs text-violet-400 animate-pulse font-bold tracking-widest uppercase flex items-center gap-2">
+                                    <span className="text-xs text-[#ff5500] animate-pulse font-bold tracking-widest uppercase flex items-center gap-2">
                                         <Loader2 size={12} className="animate-spin" />
                                         {regeneratingSection ? `Updating ${regeneratingSection}...` : 'Updating Content...'}
                                     </span>

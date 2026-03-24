@@ -1,7 +1,7 @@
 import { useNavigate, Link, Outlet } from 'react-router-dom'
 import { useState, useEffect } from 'react'
-import Sidebar from '../components/Sidebar'
-import Avatar from '../components/Avatar'
+import Sidebar from '../components/common/Sidebar'
+import Avatar from '../components/common/Avatar'
 
 export default function DashboardLayout() {
     const navigate = useNavigate()
@@ -38,12 +38,12 @@ export default function DashboardLayout() {
     }
 
     return (
-        <div className="min-h-screen bg-[#0a0a0f]">
+        <div className="min-h-screen bg-[#0a0a0a]">
             <Sidebar />
 
             <div className="ml-64">
                 {/* Persistent Top Nav inside layout */}
-                <nav className="sticky top-0 z-40 bg-[#13131a] border-b border-[#1e1e2e]">
+                <nav className="sticky top-0 z-40 bg-[#0a0a0a] border-b border-[#1e1e2e]">
                     <div className="max-w-7xl mx-auto px-6">
                         <div className="flex justify-between items-center h-16">
                             <div /> {/* Spacer for flex-justify-between */}

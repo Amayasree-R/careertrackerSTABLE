@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import Avatar from '../components/Avatar'
+import Avatar from '../components/common/Avatar'
 
 export default function Profile() {
     const [user, setUser] = useState(null)
@@ -66,19 +66,19 @@ export default function Profile() {
     const isWorkingProf = user.currentStatus === 'Working Professional'
 
     return (
-        <div className="space-y-8 max-w-5xl mx-auto pb-12">
+        <div className="space-y-8 max-w-5xl mx-auto pb-12 bg-[#0a0a0a] min-h-screen p-6 sm:p-8">
             {/* 1. Header Section */}
-            <div className="bg-[#13131a] rounded-2xl p-6 sm:p-8 shadow-sm border border-[#1e1e2e] hover:border-violet-500/30 flex flex-col md:flex-row items-center gap-6 hover:shadow-md transition-all duration-200">
+            <div className="bg-[#111111] rounded-2xl p-6 sm:p-8 shadow-sm border border-[#242424] hover:border-[#ff5500]/30 flex flex-col md:flex-row items-center gap-6 hover:shadow-md transition-all duration-200">
                 <Avatar name={user.fullName} size="xl" />
                 <div className="text-center md:text-left flex-1">
-                    <h1 className="text-3xl font-bold text-slate-100">{user.fullName}</h1>
-                    <p className="text-slate-400 font-medium">{user.email}</p>
+                    <h1 className="text-3xl font-bold text-[#ffffff]">{user.fullName}</h1>
+                    <p className="text-[#a0a0a0] font-medium">{user.email}</p>
                     <div className="mt-3 flex flex-wrap justify-center md:justify-start gap-2">
-                        <span className="px-3 py-1 bg-violet-950 text-violet-400 rounded-full text-xs font-semibold uppercase tracking-wider">
+                        <span className="px-3 py-1 bg-[#2a1500] text-[#ff5500] rounded-full text-xs font-semibold uppercase tracking-wider">
                             {user.currentStatus}
                         </span>
                         {user.personalDetails?.location?.city && (
-                            <span className="px-3 py-1 bg-[#1e1e2e] text-slate-300 rounded-full text-xs font-semibold">
+                            <span className="px-3 py-1 bg-[#1a1a1a] text-[#a0a0a0] rounded-full text-xs font-semibold">
                                 {user.personalDetails.location.city}, {user.personalDetails.location.country}
                             </span>
                         )}
@@ -88,8 +88,8 @@ export default function Profile() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* 2. Personal Information Card */}
-                <div className="bg-[#13131a] rounded-2xl p-6 shadow-sm border border-[#1e1e2e] hover:border-violet-500/30 hover:shadow-md transition-all duration-200">
-                    <h2 className="text-lg font-semibold text-slate-100 mb-6">
+                <div className="bg-[#111111] rounded-2xl p-6 shadow-sm border border-[#242424] hover:border-[#ff5500]/30 hover:shadow-md transition-all duration-200">
+                    <h2 className="text-lg font-semibold text-[#ffffff] mb-6">
                         Personal Information
                     </h2>
                     <div className="space-y-4">
@@ -109,8 +109,8 @@ export default function Profile() {
                 </div>
 
                 {/* 5. Social & Portfolio Links Card */}
-                <div className="bg-[#13131a] rounded-2xl p-6 shadow-sm border border-[#1e1e2e] hover:border-violet-500/30 hover:shadow-md transition-all duration-200">
-                    <h2 className="text-lg font-semibold text-slate-100 mb-6">
+                <div className="bg-[#111111] rounded-2xl p-6 shadow-sm border border-[#242424] hover:border-[#ff5500]/30 hover:shadow-md transition-all duration-200">
+                    <h2 className="text-lg font-semibold text-[#ffffff] mb-6">
                         Links &amp; Portfolio
                     </h2>
                     <div className="space-y-4">
@@ -131,55 +131,55 @@ export default function Profile() {
                         />
                     </div>
                     {!user.socialLinks?.github && !user.socialLinks?.linkedin && !user.socialLinks?.portfolio && (
-                        <p className="text-slate-400 italic text-sm">No social links provided.</p>
+                        <p className="text-[#a0a0a0] italic text-sm">No social links provided.</p>
                     )}
                 </div>
             </div>
 
             {/* 3. Education Details Card */}
-            <div className="bg-[#13131a] rounded-2xl p-6 shadow-sm border border-[#1e1e2e] hover:border-violet-500/30 hover:shadow-md transition-all duration-200">
-                <h2 className="text-lg font-semibold text-slate-100 mb-6">
+            <div className="bg-[#111111] rounded-2xl p-6 shadow-sm border border-[#242424] hover:border-[#ff5500]/30 hover:shadow-md transition-all duration-200">
+                <h2 className="text-lg font-semibold text-[#ffffff] mb-6">
                     Education Details
                 </h2>
                 <div className="space-y-6">
                     {user.education && user.education.length > 0 ? (
                         user.education.map((edu, idx) => (
-                            <div key={idx} className="border-l-2 border-blue-500 pl-4 py-1">
-                                <h3 className="font-semibold text-base text-slate-100">{edu.degree} in {edu.specialization}</h3>
-                                <p className="text-slate-300">{edu.college}</p>
-                                <p className="text-violet-400 text-sm font-medium mt-1">{edu.startYear} – {edu.endYear}</p>
+                            <div key={idx} className="border-l-2 border-[#ff5500] pl-4 py-1">
+                                <h3 className="font-semibold text-base text-[#ffffff]">{edu.degree} in {edu.specialization}</h3>
+                                <p className="text-[#a0a0a0]">{edu.college}</p>
+                                <p className="text-[#ff5500] text-sm font-medium mt-1">{edu.startYear} – {edu.endYear}</p>
                             </div>
                         ))
                     ) : (
-                        <p className="text-slate-400 italic">No education details recorded.</p>
+                        <p className="text-[#a0a0a0] italic">No education details recorded.</p>
                     )}
                 </div>
             </div>
 
             {/* 4. Professional Details Card */}
             {isWorkingProf && (
-                <div className="bg-[#13131a] rounded-2xl p-6 shadow-sm border border-[#1e1e2e] hover:border-violet-500/30 hover:shadow-md transition-all duration-200">
-                    <h2 className="text-lg font-semibold text-slate-100 mb-6">
+                <div className="bg-[#111111] rounded-2xl p-6 shadow-sm border border-[#242424] hover:border-[#ff5500]/30 hover:shadow-md transition-all duration-200">
+                    <h2 className="text-lg font-semibold text-[#ffffff] mb-6">
                         Professional Experience
                     </h2>
                     <div className="space-y-6">
                         {user.experience && user.experience.length > 0 ? (
                             user.experience.map((exp, idx) => (
-                            <div key={idx} className="border-l-2 border-indigo-500 pl-4 py-1">
-                                <h3 className="font-semibold text-base text-slate-100">{exp.role}</h3>
-                                <p className="text-slate-300">{exp.company}</p>
-                                <p className="text-violet-400 text-sm font-medium mt-1">
+                            <div key={idx} className="border-l-2 border-[#ff5500] pl-4 py-1">
+                                <h3 className="font-semibold text-base text-[#ffffff]">{exp.role}</h3>
+                                <p className="text-[#a0a0a0]">{exp.company}</p>
+                                <p className="text-[#ff5500] text-sm font-medium mt-1">
                                         {exp.startDate ? new Date(exp.startDate).toLocaleDateString() : 'N/A'} – {exp.endDate ? new Date(exp.endDate).toLocaleDateString() : 'Present'}
                                     </p>
                                     {exp.responsibilities && (
-                                        <div className="mt-3 text-slate-300 text-sm leading-relaxed whitespace-pre-line">
+                                        <div className="mt-3 text-[#a0a0a0] text-sm leading-relaxed whitespace-pre-line">
                                             {exp.responsibilities}
                                         </div>
                                     )}
                                 </div>
                             ))
                         ) : (
-                            <p className="text-slate-400 italic">No professional experience recorded.</p>
+                            <p className="text-[#a0a0a0] italic">No professional experience recorded.</p>
                         )}
                     </div>
                 </div>
@@ -191,9 +191,9 @@ export default function Profile() {
 function InfoRow({ label, value }) {
     if (!value || value.trim() === ',' || value === 'Invalid Date') return null
     return (
-        <div className="flex justify-between border-b border-[#1e1e2e] pb-2">
-            <span className="text-xs font-semibold uppercase text-slate-400 tracking-wider">{label}</span>
-            <span className="text-slate-300 font-medium text-right">{value}</span>
+        <div className="flex justify-between border-b border-[#242424] pb-2">
+            <span className="text-xs font-semibold uppercase text-[#a0a0a0] tracking-wider">{label}</span>
+            <span className="text-[#ffffff] font-medium text-right">{value}</span>
         </div>
     )
 }
@@ -205,12 +205,12 @@ function SocialLink({ icon, label, url }) {
             href={url.startsWith('http') ? url : `https://${url}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-between p-3 rounded-xl border border-[#1e1e2e] bg-[#13131a] hover:bg-[#1e1e2e] hover:shadow-sm transition-all duration-200 group"
+            className="flex items-center justify-between p-3 rounded-xl border border-[#242424] bg-[#1a1a1a] hover:bg-[#242424] hover:shadow-sm transition-all duration-200 group"
         >
             <div className="flex items-center gap-3">
-                <span className="text-sm font-semibold text-slate-400">{label}</span>
+                <span className="text-sm font-semibold text-[#ff5500]">{label}</span>
             </div>
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-500 group-hover:text-violet-400 group-hover:translate-x-1 transition-all duration-200"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#a0a0a0] group-hover:text-[#ff5500] group-hover:translate-x-1 transition-all duration-200"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
         </a>
     )
 }

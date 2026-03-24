@@ -25,28 +25,21 @@ const Avatar = ({ name, size = 'md', className = '' }) => {
         <div
             className={`
         relative flex items-center justify-center rounded-full 
-        bg-gradient-to-br from-violet-500 via-indigo-600 to-purple-600 
-        text-white font-black shadow-xl border-[#1e1e2e]
-        transition-all duration-500 hover:scale-105 
-        hover:shadow-violet-900/50 hover:shadow-2xl hover:rotate-3
+        bg-[#2a1500] 
+        text-[#ff5500] font-black border-[#242424]
+        transition-all duration-300 hover:scale-105 
         cursor-default select-none
         ${sizeClasses[size] || sizeClasses.md}
         ${className}
       `}
         >
-            {/* Glossy Overlay */}
-            <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-white/10 to-transparent pointer-events-none"></div>
-
-            {/* Subtle Glow Ring on Hover */}
-            <div className="absolute inset-[-4px] rounded-full bg-blue-400/20 blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
-
-            {/* Initials with Inner Shadow */}
-            <span className="relative z-10 drop-shadow-lg tracking-tight">
+            {/* Initials */}
+            <span className="relative z-10 tracking-tight">
                 {initials}
             </span>
 
-            {/* Modern Soft Border / Ring */}
-            <div className="absolute inset-0 rounded-full border border-white/20 pointer-events-none"></div>
+            {/* Subtle Border */}
+            <div className="absolute inset-0 rounded-full border border-[#242424] pointer-events-none"></div>
         </div>
     );
 };

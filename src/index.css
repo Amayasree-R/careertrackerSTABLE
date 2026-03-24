@@ -3,9 +3,23 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --color-bg-page: #0a0a0a;
+    --color-bg-card: #111111;
+    --color-bg-surface: #1a1a1a;
+    --color-border: #242424;
+    --color-orange: #ff5500;
+    --color-orange-hover: #e64d00;
+    --color-orange-light: #ff7733;
+    --color-orange-tint: #2a1500;
+    --color-text-primary: #ffffff;
+    --color-text-secondary: #a0a0a0;
+    --color-text-subtle: #606060;
+  }
+
   html, body, #root {
-    background-color: #0a0a0f;
+    background: #0a0a0a;
     min-height: 100vh;
-    color: #e2e8f0;
+    color: #ffffff;
   }
 }

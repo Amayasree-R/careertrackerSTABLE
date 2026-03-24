@@ -5,8 +5,8 @@ import {
   Radar, RadarChart, PolarGrid, PolarAngleAxis,
   PolarRadiusAxis, ResponsiveContainer
 } from 'recharts'
-import SkillTooltip from '../components/SkillTooltip'
-import { StatsCardSkeleton, SkillCardSkeleton } from '../components/Skeleton'
+import SkillTooltip from '../components/common/SkillTooltip'
+import { StatsCardSkeleton, SkillCardSkeleton } from '../components/common/Skeleton'
 import { Rocket, BookOpen, FileText, Star, Search, Activity, Briefcase } from 'lucide-react'
 
 function SkillRadar({ roadmap, profile }) {
@@ -33,10 +33,10 @@ function SkillRadar({ roadmap, profile }) {
   if (chartData.length < 3) return null
 
   return (
-    <div className="h-[420px] w-full bg-[#13131a] rounded-3xl p-4">
+    <div className="h-[420px] w-full bg-[#111111] rounded-3xl p-4">
       <ResponsiveContainer width="100%" height="100%">
         <RadarChart cx="50%" cy="50%" outerRadius="62%" data={chartData}>
-          <PolarGrid stroke="#1e1e2e" strokeWidth={2} />
+          <PolarGrid stroke="#242424" strokeWidth={2} />
           <PolarAngleAxis
             dataKey="subject"
             tick={({ x, y, payload }) => (
@@ -46,7 +46,7 @@ function SkillRadar({ roadmap, profile }) {
                   y={0}
                   dy={4}
                   textAnchor="middle"
-                  fill="#94a3b8"
+                  fill="#a0a0a0"
                   fontSize={9}
                   fontWeight={700}
                   className="uppercase tracking-tighter"
@@ -65,9 +65,9 @@ function SkillRadar({ roadmap, profile }) {
           <Radar
             name="Skills"
             dataKey="value"
-            stroke="#1d4ed8"
+            stroke="#ff5500"
             strokeWidth={3}
-            fill="#3b82f6"
+            fill="#ff5500"
             fillOpacity={0.3}
           />
         </RadarChart>
@@ -255,17 +255,17 @@ function Dashboard() {
     <div className="space-y-4">
       {/* Target Job Header */}
       {!isProfileComplete ? (
-        <div className="bg-[#13131a] rounded-2xl border border-[#1e1e2e] hover:border-violet-500/30 shadow-sm hover:shadow-lg transition-all duration-300 ease-out p-8 text-center space-y-6">
-          <div className="w-20 h-20 bg-[#1e1e2e] rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <Rocket size={40} className="text-blue-600" />
+        <div className="bg-[#111111] rounded-2xl border border-[#242424] hover:border-[#ff5500]/30 shadow-sm hover:shadow-lg transition-all duration-300 ease-out p-8 text-center space-y-6">
+          <div className="w-20 h-20 bg-[#1a1a1a] rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <Rocket size={40} className="text-[#ff5500]" />
           </div>
-          <h2 className="text-3xl font-black text-slate-100">Let's build your roadmap!</h2>
-          <p className="text-slate-500 max-w-lg mx-auto leading-relaxed">
+          <h2 className="text-3xl font-black text-[#ffffff]">Let's build your roadmap!</h2>
+          <p className="text-[#a0a0a0] max-w-lg mx-auto leading-relaxed">
             Complete your profile with your target job and skills. We'll generate an AI-powered path to your dream career.
           </p>
           <Link
             to="/profile"
-            className="inline-block px-8 py-3 bg-violet-600 text-white font-medium rounded-xl hover:bg-violet-700 transition shadow-sm"
+            className="inline-block px-8 py-3 bg-[#ff5500] text-white font-medium rounded-xl hover:bg-[#e64d00] transition shadow-sm"
           >
             Get Started
           </Link>
@@ -273,24 +273,24 @@ function Dashboard() {
       ) : (
         <>
           {/* ROW 1: Target Career Header */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-[#13131a] p-6 sm:p-7 rounded-2xl border border-[#1e1e2e] hover:border-violet-500/30 shadow-sm hover:shadow-lg transition-all duration-300 ease-out">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-[#111111] p-6 sm:p-7 rounded-2xl border border-[#242424] hover:border-[#ff5500]/30 shadow-sm hover:shadow-lg transition-all duration-300 ease-out">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-violet-500 animate-pulse" />
-                <h2 className="text-[10px] font-semibold text-violet-400 uppercase tracking-[0.2em]">Target Career Path</h2>
+                <span className="w-2 h-2 rounded-full bg-[#ff5500] animate-pulse" />
+                <h2 className="text-[10px] font-semibold text-[#ff5500] uppercase tracking-[0.2em]">Target Career Path</h2>
               </div>
-              <h3 className="text-3xl sm:text-4xl font-black text-slate-100 tracking-tight">{profile.targetJob}</h3>
+              <h3 className="text-3xl sm:text-4xl font-black text-[#ffffff] tracking-tight">{profile.targetJob}</h3>
             </div>
             <div className="flex flex-wrap gap-4">
               <Link
                 to="/roadmap"
-                className="px-6 py-2.5 bg-violet-600 text-white rounded-xl font-medium hover:bg-violet-700 transition shadow-sm"
+                className="px-6 py-2.5 bg-transparent text-[#ff5500] border border-[#ff5500] rounded-xl font-medium hover:bg-[#2a1500] transition shadow-sm"
               >
                 Full Roadmap
               </Link>
               <Link
                 to="/profile"
-                className="px-6 py-2.5 bg-[#1e1e2e] text-slate-300 rounded-xl font-medium hover:bg-[#2a2a3d] transition border border-[#2a2a3d]"
+                className="px-6 py-2.5 bg-transparent text-[#ff5500] border border-[#ff5500] rounded-xl font-medium hover:bg-[#2a1500] transition"
               >
                 Edit Profile
               </Link>
@@ -300,24 +300,24 @@ function Dashboard() {
           {/* ROW 2: 4-Column Stats Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-stretch">
             {/* Mastered Card */}
-            <div className="bg-[#13131a] border border-[#1e1e2e] rounded-2xl p-4 hover:border-violet-500/30 transition h-[110px] flex flex-col justify-between">
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Mastered</p>
-              <p className="text-3xl font-black text-slate-100">{masteredCount} <span className="text-sm font-bold text-slate-500">/ {requiredCount}</span></p>
+            <div className="bg-[#111111] border border-[#242424] rounded-2xl p-4 hover:border-[#ff5500]/30 transition h-[110px] flex flex-col justify-between">
+              <p className="text-xs font-semibold text-[#a0a0a0] uppercase tracking-widest">Mastered</p>
+              <p className="text-3xl font-black text-[#ffffff]">{masteredCount} <span className="text-sm font-bold text-[#606060]">/ {requiredCount}</span></p>
             </div>
 
             {/* Learning Card */}
-            <div className="bg-[#13131a] border border-[#1e1e2e] rounded-2xl p-4 hover:border-violet-500/30 transition h-[110px] flex flex-col justify-between">
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Learning</p>
-              <p className="text-3xl font-black text-blue-500">{learningCount}</p>
+            <div className="bg-[#111111] border border-[#242424] rounded-2xl p-4 hover:border-[#ff5500]/30 transition h-[110px] flex flex-col justify-between">
+              <p className="text-xs font-semibold text-[#a0a0a0] uppercase tracking-widest">Learning</p>
+              <p className="text-3xl font-black text-[#ff5500]">{learningCount}</p>
             </div>
 
             {/* Overall Match Card */}
-            <div className="bg-[#13131a] border border-[#1e1e2e] rounded-2xl p-4 hover:border-violet-500/30 transition h-[110px] flex flex-col justify-between">
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Overall Match</p>
+            <div className="bg-[#111111] border border-[#242424] rounded-2xl p-4 hover:border-[#ff5500]/30 transition h-[110px] flex flex-col justify-between">
+              <p className="text-xs font-semibold text-[#a0a0a0] uppercase tracking-widest">Overall Match</p>
               <div className="space-y-2">
-                <span className="text-3xl font-black text-violet-400">{progressPercentage}%</span>
-                <div className="w-full h-1.5 bg-[#1e1e2e] rounded-full overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-blue-500 to-indigo-600 transition-all duration-700 ease-out rounded-full" style={{ width: `${progressPercentage}%` }} />
+                <span className="text-3xl font-black text-[#ff5500]">{progressPercentage}%</span>
+                <div className="w-full h-1.5 bg-[#242424] rounded-full overflow-hidden">
+                  <div className="h-full bg-[#ff5500] transition-all duration-700 ease-out rounded-full" style={{ width: `${progressPercentage}%` }} />
                 </div>
               </div>
             </div>
@@ -325,13 +325,13 @@ function Dashboard() {
             {/* Job Matches Card */}
             <Link 
               to="/dashboard/jobs" 
-              className="bg-[#13131a] border border-[#1e1e2e] rounded-2xl p-4 hover:border-violet-500/60 hover:bg-[#1a1a2e] transition h-[110px] flex flex-col justify-between group"
+              className="bg-[#111111] border border-[#242424] rounded-2xl p-4 hover:border-[#ff5500]/60 hover:bg-[#1a1100] transition h-[110px] flex flex-col justify-between group"
             >
               <div className="flex justify-between items-start">
-                <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Job Matches</p>
-                <Briefcase size={22} className="text-violet-400 group-hover:scale-110 transition-transform" />
+                <p className="text-xs font-semibold text-[#a0a0a0] uppercase tracking-widest">Job Matches</p>
+                <Briefcase size={22} className="text-[#ff5500] group-hover:scale-110 transition-transform" />
               </div>
-              <p className="text-sm text-violet-400 font-medium">View matches →</p>
+              <p className="text-sm text-[#ff5500] font-medium">View matches →</p>
             </Link>
           </div>
 
@@ -339,15 +339,15 @@ function Dashboard() {
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 items-start">
             
             {/* LEFT (Col 2): Radar Chart Panel */}
-            <div className="lg:col-span-2 bg-[#13131a] p-5 rounded-2xl border border-[#1e1e2e] hover:border-violet-500/30 shadow-sm transition-all duration-300">
+            <div className="lg:col-span-2 bg-[#111111] p-5 rounded-2xl border border-[#242424] hover:border-[#ff5500]/30 shadow-sm transition-all duration-300">
               <div className="flex justify-between items-start mb-4">
                 <div>
-                  <h4 className="font-bold text-slate-100 text-lg flex items-center gap-2">Skill Fingerprint <Activity size={18} className="text-slate-500" /></h4>
-                  <p className="text-xs text-slate-400">Your core competency across target skills.</p>
+                  <h4 className="font-bold text-[#ffffff] text-lg flex items-center gap-2">Skill Fingerprint <Activity size={18} className="text-[#606060]" /></h4>
+                  <p className="text-xs text-[#a0a0a0]">Your core competency across target skills.</p>
                 </div>
                 <div className="flex flex-col items-end gap-1">
-                  <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-blue-500" /> <span className="text-[10px] font-semibold text-slate-400 uppercase">Mastered</span></div>
-                  <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-blue-300" /> <span className="text-[10px] font-semibold text-slate-400 uppercase">Learning</span></div>
+                  <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-[#ff5500]" /> <span className="text-[10px] font-semibold text-[#a0a0a0] uppercase">Mastered</span></div>
+                  <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-[#ff5500]/50" /> <span className="text-[10px] font-semibold text-[#a0a0a0] uppercase">Learning</span></div>
                 </div>
               </div>
               <div className="flex justify-center">
@@ -356,17 +356,17 @@ function Dashboard() {
             </div>
 
             {/* RIGHT (Col 3): Skills Panel */}
-            <div className="lg:col-span-3 bg-[#13131a] p-5 rounded-2xl border border-[#1e1e2e] hover:border-violet-500/30 shadow-sm transition-all duration-300 space-y-4">
+            <div className="lg:col-span-3 bg-[#111111] p-5 rounded-2xl border border-[#242424] hover:border-[#ff5500]/30 shadow-sm transition-all duration-300 space-y-4">
               <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
-                <h4 className="font-bold text-slate-100 text-lg flex items-center gap-2">Skills to Acquire <BookOpen size={18} className="text-slate-400" /></h4>
+                <h4 className="font-bold text-[#ffffff] text-lg flex items-center gap-2">Skills to Acquire <BookOpen size={18} className="text-[#a0a0a0]" /></h4>
                 <div className="flex flex-wrap items-center gap-2">
                   <div className="relative flex-1 min-w-[150px]">
-                    <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                    <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#606060] pointer-events-none" />
                     <input type="text" placeholder="Search skills..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
-                           className="w-full pl-9 pr-3 py-1.5 bg-[#1e1e2e] border border-[#2a2a3d] rounded-xl text-xs text-slate-300 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500 transition" />
+                           className="w-full pl-9 pr-3 py-1.5 bg-[#1a1a1a] border border-[#242424] rounded-xl text-xs text-[#ffffff] placeholder-[#606060] focus:outline-none focus:ring-2 focus:ring-[#ff5500] transition" />
                   </div>
                   <select value={filterPriority} onChange={(e) => setFilterPriority(e.target.value)}
-                          className="px-3 py-1.5 bg-[#1e1e2e] border border-[#2a2a3d] rounded-xl text-[11px] font-medium text-slate-300 focus:outline-none focus:ring-2 focus:ring-violet-500 transition">
+                          className="px-3 py-1.5 bg-[#1a1a1a] border border-[#242424] rounded-xl text-[11px] font-medium text-[#ffffff] focus:outline-none focus:ring-2 focus:ring-[#ff5500] transition">
                     <option value="All">All Priority</option>
                     <option value="High">High</option>
                     <option value="Medium">Medium</option>
@@ -375,7 +375,7 @@ function Dashboard() {
                   <select
                     value={filterStatus}
                     onChange={(e) => setFilterStatus(e.target.value)}
-                    className="px-3 py-1.5 bg-[#1e1e2e] border border-[#2a2a3d] rounded-xl text-[11px] font-medium text-slate-300 focus:outline-none focus:ring-2 focus:ring-violet-500 transition"
+                    className="px-3 py-1.5 bg-[#1a1a1a] border border-[#242424] rounded-xl text-[11px] font-medium text-[#ffffff] focus:outline-none focus:ring-2 focus:ring-[#ff5500] transition"
                   >
                     <option value="All">All Status</option>
                     <option value="To Learn">To Learn</option>
@@ -383,20 +383,20 @@ function Dashboard() {
                     <option value="Mastered">Mastered</option>
                   </select>
                   <button onClick={() => setHideMastered(!hideMastered)}
-                          className={`px-3 py-1.5 rounded-xl text-[11px] font-medium border transition ${hideMastered ? 'bg-violet-600 text-white border-violet-600' : 'bg-[#1e1e2e] text-slate-300 border-[#2a2a3d] hover:bg-[#2a2a3d]'}`}>
+                          className={`px-3 py-1.5 rounded-xl text-[11px] font-medium border transition ${hideMastered ? 'bg-[#ff5500] text-white border-[#ff5500]' : 'bg-[#1a1a1a] text-[#a0a0a0] border-[#242424] hover:bg-[#242424]'}`}>
                     {hideMastered ? 'New Only' : 'Hide Mastered'}
                   </button>
                 </div>
               </div>
 
               {profile.focusSkill && (
-                <div className="p-4 bg-gradient-to-r from-violet-600 to-indigo-600 rounded-xl text-white shadow-sm relative overflow-hidden">
+                <div className="p-4 bg-gradient-to-r from-[#ff5500] to-[#e64d00] rounded-xl text-white shadow-sm relative overflow-hidden">
                   <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full -mr-24 -mt-24 blur-3xl pointer-events-none" />
                   <div className="relative flex items-center justify-between gap-4">
                     <div className="flex items-center gap-4">
                       <div className="w-10 h-10 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center"><Star size={20} className="text-white fill-white" /></div>
                       <div>
-                        <p className="text-[10px] font-semibold uppercase tracking-widest text-violet-200">Current Focus</p>
+                        <p className="text-[10px] font-semibold uppercase tracking-widest text-orange-100">Current Focus</p>
                         <h5 className="text-lg font-bold">{profile.focusSkill}</h5>
                       </div>
                     </div>
@@ -424,31 +424,31 @@ function Dashboard() {
 
                     return (
                       <div key={item.skill} ref={el => skillRefs.current[item.skill] = el}
-                           className={`group relative p-4 rounded-xl border transition-all cursor-pointer ${isMastered ? 'border-emerald-700 bg-emerald-950' : isLearning ? 'border-[#2a2050] bg-[#12102a]' : 'border-[#1e1e2e] bg-[#13131a]'} hover:border-violet-500/30 ${isFocused ? 'ring-2 ring-violet-500/30' : ''}`}
+                           className={`group relative p-4 rounded-xl border transition-all duration-200 cursor-pointer ${isMastered ? 'border-[#22c55e] bg-[#1a2a1a]' : isLearning ? 'border-[#ff5500]/50 bg-[#1a1100]' : 'border-[#242424] bg-[#111111]'} hover:bg-[#1a1a1a] hover:border-[#ff5500] ${isFocused ? 'ring-2 ring-[#ff5500]/30' : ''}`}
                            onClick={() => setActiveSkillDetails(item.skill)}>
                         <div className="flex items-start justify-between mb-3">
                           <div className="flex items-center gap-3">
                             <button onClick={(e) => { e.stopPropagation(); if (!isUpdating) { if (isLearning) navigate(`/quiz/${encodeURIComponent(item.skill)}`); else toggleSkill(item.skill); } }}
-                                    className={`w-8 h-8 rounded-lg flex items-center justify-center border-2 transition-all ${isMastered ? 'bg-emerald-500 border-emerald-500 text-white' : isLearning ? 'bg-violet-600 border-violet-600 text-white' : 'bg-[#1e1e2e] border-[#2a2a3d] text-transparent'}`}>
+                                    className={`w-8 h-8 rounded-lg flex items-center justify-center border-2 transition-all ${isMastered ? 'bg-[#22c55e] border-[#22c55e] text-white' : isLearning ? 'bg-[#ff5500] border-[#ff5500] text-white' : 'bg-[#1a1a1a] border-[#242424] text-transparent'}`}>
                               {isMastered ? <span className="text-sm">✓</span> : isLearning ? <FileText className="w-3.5 h-3.5 text-white" /> : ''}
                             </button>
                             <div className="min-w-0">
-                              <h6 className={`text-sm font-semibold truncate ${isMastered ? 'text-slate-500 line-through' : 'text-slate-100'}`}>{item.skill}</h6>
+                              <h6 className={`text-sm font-semibold truncate ${isMastered ? 'text-[#a0a0a0] line-through' : 'text-[#ffffff]'}`}>{item.skill}</h6>
                               <span className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-md ${
                                 isMastered 
-                                  ? 'text-slate-600 bg-[#1e1e2e]' 
-                                  : item.priority === 'High' ? 'text-red-400 bg-red-950' : 
-                                    item.priority === 'Medium' ? 'text-amber-400 bg-amber-950' : 
-                                    'text-violet-400 bg-violet-950'
+                                  ? 'text-[#606060] bg-[#1a1a1a]' 
+                                  : item.priority === 'High' ? 'text-[#ff5500] bg-[#2a1500]' : 
+                                    item.priority === 'Medium' ? 'text-[#a0a0a0] bg-[#1a1a1a]' : 
+                                    'text-[#606060] bg-[#1a1a1a]'
                               }`}>{item.priority}</span>
                             </div>
                           </div>
-                          <button onClick={(e) => { e.stopPropagation(); toggleFocus(item.skill); }} className={`transition ${isFocused ? 'text-amber-400' : 'text-slate-500 hover:text-amber-300'}`}>
-                            <Star size={14} className={isFocused ? 'fill-amber-400' : ''} />
+                          <button onClick={(e) => { e.stopPropagation(); toggleFocus(item.skill); }} className={`transition ${isFocused ? 'text-[#ff5500]' : 'text-[#606060] hover:text-[#ff5500]'}`}>
+                            <Star size={14} className={isFocused ? 'fill-[#ff5500]' : ''} />
                           </button>
                         </div>
-                        {isUpdating && <div className="absolute inset-0 bg-[#13131a]/70 backdrop-blur-[1px] rounded-xl flex items-center justify-center">
-                          <div className="w-4 h-4 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" />
+                        {isUpdating && <div className="absolute inset-0 bg-[#0a0a0a]/70 backdrop-blur-[1px] rounded-xl flex items-center justify-center">
+                          <div className="w-4 h-4 border-2 border-[#ff5500] border-t-transparent rounded-full animate-spin" />
                         </div>}
                       </div>
                     )

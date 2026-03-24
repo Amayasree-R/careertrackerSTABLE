@@ -105,22 +105,22 @@ function ProfileForm() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#0a0a0a]">
       {/* Navigation */}
-      <nav className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-2xl font-bold text-blue-600">CareerPath</h1>
+      <nav className="bg-[#111111] border-b border-[#242424]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <h1 className="text-2xl font-bold text-[#ff5500]">CareerPath</h1>
         </div>
       </nav>
 
       {/* Main Content */}
       <div className="max-w-3xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        <div className="bg-white rounded-lg shadow-lg p-8">
+        <div className="bg-[#111111] rounded-lg shadow-lg p-8 border border-[#242424]">
           <div className="mb-8">
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">
+            <h2 className="text-3xl font-bold text-[#ffffff] mb-2">
               Complete Your Profile
             </h2>
-            <p className="text-gray-600">
+            <p className="text-[#a0a0a0]">
               Tell us about your skills and career goals to get personalized recommendations
             </p>
           </div>
@@ -128,7 +128,7 @@ function ProfileForm() {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Current Skills */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-[#a0a0a0] mb-2">
                 Current Skills (Optional)
               </label>
               <div className="flex gap-2 mb-3">
@@ -138,13 +138,13 @@ function ProfileForm() {
                   onChange={(e) => setSkillInput(e.target.value)}
                   onKeyPress={handleKeyPress}
                   placeholder="Type a skill and press Enter"
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="flex-1 px-3 py-2 bg-[#1a1a1a] border border-[#242424] text-[#ffffff] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff5500]"
                   list="skills-list"
                 />
                 <button
                   type="button"
                   onClick={addSkill}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                  className="px-4 py-2 bg-[#ff5500] text-white rounded-lg hover:bg-[#e64d00] transition"
                 >
                   Add
                 </button>
@@ -162,13 +162,13 @@ function ProfileForm() {
                   {formData.currentSkills.map(skill => (
                     <span
                       key={skill}
-                      className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800"
+                      className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-[#2a1500] text-[#ff5500]"
                     >
                       {skill}
                       <button
                         type="button"
                         onClick={() => removeSkill(skill)}
-                        className="ml-2 text-blue-600 hover:text-blue-800"
+                        className="ml-2 text-[#ff5500] hover:text-[#e64d00]"
                       >
                         ×
                       </button>
@@ -176,21 +176,21 @@ function ProfileForm() {
                   ))}
                 </div>
               )}
-              <p className="mt-2 text-sm text-gray-500">
+              <p className="mt-2 text-sm text-[#a0a0a0]">
                 Add skills you already know. Leave empty if you're a complete beginner.
               </p>
             </div>
 
             {/* Target Job Position */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-[#a0a0a0] mb-2">
                 Target Job Position *
               </label>
               <select
                 value={formData.targetJob}
                 onChange={(e) => setFormData(prev => ({ ...prev, targetJob: e.target.value }))}
-                className={`w-full px-3 py-2 border ${errors.targetJob ? 'border-red-500' : 'border-gray-300'
-                  } rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                className={`w-full px-3 py-2 bg-[#1a1a1a] text-[#ffffff] border ${errors.targetJob ? 'border-red-500' : 'border-[#242424]'
+                  } rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff5500]`}
               >
                 <option value="">Select a job role</option>
                 {jobRoles.map(role => (
@@ -216,14 +216,14 @@ function ProfileForm() {
               <button
                 type="button"
                 onClick={() => navigate('/dashboard')}
-                className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition"
+                className="px-6 py-3 border border-[#242424] bg-[#1a1a1a] rounded-lg text-[#ffffff] hover:bg-[#242424] transition"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isLoading}
-                className="flex-1 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition font-semibold"
+                className="flex-1 py-3 bg-[#ff5500] text-white rounded-lg hover:bg-[#e64d00] disabled:opacity-50 disabled:cursor-not-allowed transition font-semibold"
               >
                 {isLoading ? 'Saving...' : 'Save & Continue'}
               </button>

@@ -29,19 +29,16 @@ export default function Sidebar() {
       <Link
         key={name}
         to={path}
-        className={`group relative flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
+        className={`group relative flex items-center gap-3 px-4 py-3 text-sm font-medium transition-all duration-200 border-l-2 ${
           isActive
-            ? 'bg-violet-600 text-white shadow-lg shadow-violet-900/40'
-            : 'text-slate-400 hover:bg-[#1e1e2e] hover:text-violet-400'
+            ? 'bg-[#2a1500] text-[#ff5500] border-[#ff5500]'
+            : 'text-[#a0a0a0] hover:bg-[#1a1a1a] hover:text-[#ffffff] border-transparent'
         }`}
       >
-        {isActive && (
-          <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-white/40 rounded-full" />
-        )}
         <Icon
           size={18}
           className={`flex-shrink-0 transition-colors duration-200 ${
-            isActive ? 'text-white' : 'text-slate-400 group-hover:text-violet-400'
+            isActive ? 'text-[#ff5500]' : 'text-[#a0a0a0] group-hover:text-[#ffffff]'
           }`}
         />
         <span className="truncate">{name}</span>
@@ -50,13 +47,13 @@ export default function Sidebar() {
   }
 
   return (
-    <aside className="fixed left-0 top-0 bottom-0 w-64 bg-[#13131a] border-r border-[#1e1e2e] z-50 flex flex-col">
+    <aside className="fixed left-0 top-0 bottom-0 w-64 bg-[#111111] border-r border-[#242424] z-50 flex flex-col">
 
       {/* Logo */}
       <div className="flex items-center gap-1 px-4 py-5">
-        <span className="text-xl font-black text-white tracking-tight">Career</span>
-        <span className="text-xl font-black text-violet-400 tracking-tight">Path</span>
-        <div className="ml-1 w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse" />
+        <span className="text-xl font-black text-[#ffffff] tracking-tight">Career</span>
+        <span className="text-xl font-black text-[#ffffff] tracking-tight">Path</span>
+        <div className="ml-1 w-1.5 h-1.5 rounded-full bg-[#ff5500] animate-pulse" />
       </div>
 
       {/* Main Nav */}
@@ -65,8 +62,13 @@ export default function Sidebar() {
       </nav>
 
       {/* Bottom: Profile */}
-      <div className="px-3 pb-5 pt-4 border-t border-[#1e1e2e]">
+      <div className="px-3 pb-4 pt-4 border-t border-[#242424]">
         {renderLink(profileItem)}
+      </div>
+
+      {/* Version Label */}
+      <div className="px-6 py-4 border-t border-[#242424]">
+        <span className="text-xs text-[#606060]">v1.0.4-stable</span>
       </div>
 
     </aside>
