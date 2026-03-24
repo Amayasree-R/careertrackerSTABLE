@@ -1,0 +1,23 @@
+2026-03-23T17:32:32.143Z - MongoDB connection error: The `uri` parameter to `openUri()` must be a string, got "undefined". Make sure the first parameter to `mongoose.connect()` or `mongoose.createConnection()` is a string.
+2026-03-23T17:33:18.217Z - MongoDB connection error: The `uri` parameter to `openUri()` must be a string, got "undefined". Make sure the first parameter to `mongoose.connect()` or `mongoose.createConnection()` is a string.
+2026-03-23T17:35:39.410Z - MongoDB connection error: options usenewurlparser, useunifiedtopology are not supported
+2026-03-23T17:37:07.712Z - MongoDB connected for migration.
+2026-03-23T17:37:07.719Z - --- Starting User Data Migration ---
+2026-03-23T17:37:17.528Z - Found 15 users to migrate.
+2026-03-23T17:37:17.532Z - Processing user: 698b0100a58b488bafca87c9 (amayasreer@gmail.com)
+2026-03-23T17:37:18.997Z - Processing user: 698b6448cfa7ef7d9c4c91fc (sreestr@gmail.com)
+2026-03-23T17:37:19.916Z - Processing user: 69904718d6f6eec2435f66c0 (cathygeorge2005@gmail.com)
+2026-03-23T17:37:22.169Z - Processing user: 6990577f5163e781594e7246 (ayisha@example.com)
+2026-03-23T17:37:23.336Z - Processing user: 6991f3d8659b2f3da927b328 (amayasr@gmail.com)
+2026-03-23T17:37:25.876Z - Processing user: 699607603d1130354d1b48a9 (bethygeorge2005@gmail.com)
+2026-03-23T17:37:26.988Z - Processing user: 699740ed51382948bcf79d95 (amayasreerni@gmail.com)
+2026-03-23T17:37:31.288Z - Processing user: 699d1f1fe86c40ca9cc852bb (john@gmail.com)
+2026-03-23T17:37:34.478Z - Processing user: 699d22c4e6474c0eecb78d42 (abhinavkrish7373@gmail.com)
+2026-03-23T17:37:35.993Z - Processing user: 699d2cb6ef58eed39b7a41f6 (amal@gmail.com)
+2026-03-23T17:37:41.428Z - Processing user: 699d3028bafcbc5c0edaa797 (amaya23@gmail.com)
+2026-03-23T17:37:44.702Z - Processing user: 699d4fa419df9d7b77005f16 (riya@gmail.com)
+2026-03-23T17:37:46.762Z - Processing user: 699d547119df9d7b77005fe9 (abhinavkrish76@gmail.com)
+2026-03-23T17:37:48.287Z - Processing user: 699d557019df9d7b77006074 (amayasreer123@gmail.com)
+2026-03-23T17:37:50.798Z - Processing user: 69a7030467ea42bd4f613444 (bethy@gmail.com)
+2026-03-23T17:37:55.259Z - Migration Script Completed. Migrated: 15, Errors: 0
+2026-03-23T17:37:55.341Z - MongoDB disconnected.
