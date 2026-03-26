@@ -39,8 +39,57 @@ function enrichTiers(tiers) {
   }));
 }
 
-export async function generateVisualRoadmap(profile) {
+export async function generateVisualRoadmap(profile, existingCache = null) {
   try {
+    // If a cached roadmap exists, only update mastery statuses — never regenerate
+    if (existingCache && existingCache.tiers && existingCache.tiers.length > 0) {
+      const masteredSkills = (Array.isArray(profile.completedSkills)
+        ? profile.completedSkills.map(s => typeof s === 'object' ? s.skill?.toLowerCase() : s?.toLowerCase())
+        : []
+      ).filter(Boolean);
+
+      const updatedTiers = existingCache.tiers.map(tier => ({
+        ...tier,
+        skills: tier.skills.map(skill => {
+          const isMastered = masteredSkills.includes(skill.skill?.toLowerCase());
+          return {
+            ...skill,
+            status: isMastered ? 'Mastered' : 'To Learn',
+            resources: isMastered ? [] : (
+              skill.resources && skill.resources.length > 0
+                ? skill.resources
+                : buildResources(skill.skill)
+            )
+          };
+        })
+      }));
+
+      // Re-sort: move newly mastered skills to tier 0
+      const tier0 = updatedTiers.find(t => t.tier === 0) || { tier: 0, label: 'Mastered', skills: [] };
+      const otherTiers = updatedTiers.filter(t => t.tier !== 0);
+
+      // Pull newly mastered skills from other tiers into tier 0
+      const newlyMastered = [];
+      const remainingTiers = otherTiers.map(tier => ({
+        ...tier,
+        skills: tier.skills.filter(skill => {
+          if (skill.status === 'Mastered') {
+            newlyMastered.push({ ...skill, estimatedTime: 'Completed', resources: [] });
+            return false;
+          }
+          return true;
+        })
+      }));
+
+      tier0.skills = [...tier0.skills, ...newlyMastered];
+
+      return {
+        ...existingCache,
+        tiers: [tier0, ...remainingTiers].filter(t => t.skills.length > 0)
+      };
+    }
+
+    // No cache exists — generate fresh for the first time only
     const roadmapData = await generateRoadmap(profile);
     const learningPath = roadmapData.learningPath || [];
 

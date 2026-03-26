@@ -14,7 +14,6 @@ router.get('/', authMiddleware, async (req, res) => {
   console.log('Visual roadmap route hit, user:', req.user)
   try {
     const userId = req.user._id || req.user.id;
-    const refresh = req.query.refresh === 'true';
 
     // 1. Fetch user profile
     const user = await User.findById(userId);
@@ -25,15 +24,7 @@ router.get('/', authMiddleware, async (req, res) => {
     console.log('User profile data:', JSON.stringify(user.profile, null, 2))
     console.log('User careerInfo:', JSON.stringify(user.careerInfo, null, 2))
 
-    // 2. Check cache (TEMPORARILY DISABLED for debugging)
-    // if (!refresh && user.careerInfo && user.careerInfo.visualRoadmap) {
-    //   console.log('Returning cached visual roadmap');
-    //   const cachedData = user.careerInfo.visualRoadmap.toObject ? user.careerInfo.visualRoadmap.toObject() : user.careerInfo.visualRoadmap;
-    //   const targetJob = user.careerInfo?.targetJobRole || user.profile?.targetJob || 'Software Engineer';
-    //   return res.json({ ...cachedData, targetJob: targetJob });
-    // }
-
-    // 3. Prepare profile object for the service
+    // 2. Prepare profile object for the service
     const profile = {
       completedSkills: user.profile.completedSkills || [],
       currentSkills: user.profile.currentSkills || [],
@@ -41,18 +32,22 @@ router.get('/', authMiddleware, async (req, res) => {
       experienceLevel: user.profile.experienceLevel || 'Entry Level'
     };
 
-    // 4. Generate new visual roadmap
-    console.log('Calling generateVisualRoadmap with profile:', JSON.stringify(profile, null, 2))
-    const visualRoadmap = await generateVisualRoadmap(profile);
-    console.log('Visual roadmap generated successfully, tiers:', visualRoadmap?.tiers?.length)
+    // 3. Pass cached roadmap (if any) — service only updates mastery, never regenerates
+    const existingCache = user.careerInfo?.visualRoadmap
+      ? (user.careerInfo.visualRoadmap.toObject
+          ? user.careerInfo.visualRoadmap.toObject()
+          : user.careerInfo.visualRoadmap)
+      : null;
 
-    // 5. Update cache in MongoDB
+    console.log('Calling generateVisualRoadmap with profile:', JSON.stringify(profile, null, 2))
+    const visualRoadmap = await generateVisualRoadmap(profile, existingCache);
+    console.log('Visual roadmap ready, tiers:', visualRoadmap?.tiers?.length)
+
+    // 4. Persist updated roadmap to MongoDB
     if (!user.careerInfo) {
       user.careerInfo = {};
     }
     user.careerInfo.visualRoadmap = visualRoadmap;
-    console.log("SAVING VISUAL ROADMAP - SAMPLE RESOURCE:",
-      JSON.stringify(visualRoadmap.tiers?.[1]?.skills?.[0]?.resources?.[0], null, 2));
     await user.save();
 
     res.json({ ...visualRoadmap, targetJob: profile.targetJob });

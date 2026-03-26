@@ -3,21 +3,9 @@ import { useNavigate } from 'react-router-dom'
 
 function ProfileForm() {
   const navigate = useNavigate()
-  const [formData, setFormData] = useState({
-    currentSkills: [],
-    targetJob: ''
-  })
-  const [skillInput, setSkillInput] = useState('')
+  const [formData, setFormData] = useState({ targetJob: '' })
   const [errors, setErrors] = useState({})
   const [isLoading, setIsLoading] = useState(false)
-
-  // Common programming skills for suggestions
-  const popularSkills = [
-    'JavaScript', 'Python', 'Java', 'C++', 'React', 'Node.js',
-    'HTML', 'CSS', 'SQL', 'MongoDB', 'Git', 'Docker',
-    'TypeScript', 'Angular', 'Vue.js', 'Django', 'Flask',
-    'Spring Boot', 'AWS', 'Azure', 'Kubernetes'
-  ]
 
   const jobRoles = [
     'Full Stack Developer',
@@ -31,30 +19,6 @@ function ProfileForm() {
     'Cloud Engineer',
     'Cybersecurity Specialist'
   ]
-
-  const addSkill = () => {
-    if (skillInput.trim() && !formData.currentSkills.includes(skillInput.trim())) {
-      setFormData(prev => ({
-        ...prev,
-        currentSkills: [...prev.currentSkills, skillInput.trim()]
-      }))
-      setSkillInput('')
-    }
-  }
-
-  const removeSkill = (skillToRemove) => {
-    setFormData(prev => ({
-      ...prev,
-      currentSkills: prev.currentSkills.filter(skill => skill !== skillToRemove)
-    }))
-  }
-
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault()
-      addSkill()
-    }
-  }
 
   const validateForm = () => {
     const newErrors = {}
@@ -118,69 +82,14 @@ function ProfileForm() {
         <div className="bg-[#111111] rounded-lg shadow-lg p-8 border border-[#242424]">
           <div className="mb-8">
             <h2 className="text-3xl font-bold text-[#ffffff] mb-2">
-              Complete Your Profile
+              Edit Profile
             </h2>
             <p className="text-[#a0a0a0]">
-              Tell us about your skills and career goals to get personalized recommendations
+              Update your target job role to regenerate your roadmap
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Current Skills */}
-            <div>
-              <label className="block text-sm font-medium text-[#a0a0a0] mb-2">
-                Current Skills (Optional)
-              </label>
-              <div className="flex gap-2 mb-3">
-                <input
-                  type="text"
-                  value={skillInput}
-                  onChange={(e) => setSkillInput(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder="Type a skill and press Enter"
-                  className="flex-1 px-3 py-2 bg-[#1a1a1a] border border-[#242424] text-[#ffffff] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff5500]"
-                  list="skills-list"
-                />
-                <button
-                  type="button"
-                  onClick={addSkill}
-                  className="px-4 py-2 bg-[#ff5500] text-white rounded-lg hover:bg-[#e64d00] transition"
-                >
-                  Add
-                </button>
-              </div>
-
-              <datalist id="skills-list">
-                {popularSkills.map(skill => (
-                  <option key={skill} value={skill} />
-                ))}
-              </datalist>
-
-              {/* Display Added Skills */}
-              {formData.currentSkills.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-3">
-                  {formData.currentSkills.map(skill => (
-                    <span
-                      key={skill}
-                      className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-[#2a1500] text-[#ff5500]"
-                    >
-                      {skill}
-                      <button
-                        type="button"
-                        onClick={() => removeSkill(skill)}
-                        className="ml-2 text-[#ff5500] hover:text-[#e64d00]"
-                      >
-                        ×
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              )}
-              <p className="mt-2 text-sm text-[#a0a0a0]">
-                Add skills you already know. Leave empty if you're a complete beginner.
-              </p>
-            </div>
-
             {/* Target Job Position */}
             <div>
               <label className="block text-sm font-medium text-[#a0a0a0] mb-2">
@@ -225,7 +134,7 @@ function ProfileForm() {
                 disabled={isLoading}
                 className="flex-1 py-3 bg-[#ff5500] text-white rounded-lg hover:bg-[#e64d00] disabled:opacity-50 disabled:cursor-not-allowed transition font-semibold"
               >
-                {isLoading ? 'Saving...' : 'Save & Continue'}
+                {isLoading ? 'Saving...' : 'Save Changes'}
               </button>
             </div>
           </form>

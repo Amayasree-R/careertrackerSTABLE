@@ -1,10 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
-    FileText, Download, ChevronLeft,
-    Wand2, Loader2, RotateCw, Trash2,
-    User, Briefcase, Award, GraduationCap,
-    Code, FolderGit2, FileCheck,
+    Download, ChevronLeft, Wand2, Loader2, RotateCw, Trash2,
+    Briefcase, Award, GraduationCap, FolderGit2,
     Edit3, Sparkles, Globe
 } from 'lucide-react'
 import axios from 'axios'
@@ -437,14 +435,10 @@ export default function ResumeBuilder() {
 
     // Sidebar Section Items
     const sidebarSections = [
-        { id: 'summary', label: 'Summary', icon: FileText, action: () => setActiveSection('summary') },
-        { id: 'contact', label: 'Contact Info', icon: User, action: () => setActiveSection('contact') },
         { id: 'experience', label: 'Experience', icon: Briefcase, action: () => setShowExperienceForm(true) },
         { id: 'education', label: 'Education', icon: GraduationCap, action: () => setShowEducationForm(true) },
         { id: 'achievements', label: 'Achievements', icon: Award, action: () => setShowAchievementForm(true) },
-        { id: 'skills', label: 'Skills & Tech', icon: Code, action: () => setActiveSection('skills') },
         { id: 'projects', label: 'Projects', icon: FolderGit2, action: () => setActiveSection('projects') },
-        { id: 'certificates', label: 'Certifications', icon: FileCheck, action: () => setActiveSection('certificates') },
         { id: 'interests', label: 'Interests', icon: Sparkles, action: () => setShowInterestsForm(true) },
         { id: 'languages', label: 'Languages', icon: Globe, action: () => setShowLanguagesForm(true) }
     ]
@@ -575,7 +569,7 @@ export default function ResumeBuilder() {
                         <div className="bg-[#111111] rounded-2xl shadow-sm border border-[#242424] p-8 min-h-[800px]">
                             <div className="mb-6 flex items-center justify-between px-2">
                                 <div className="flex items-center gap-2 text-[#a0a0a0] text-sm font-medium">
-                                    <FileText size={18} />
+                                    <Edit3 size={18} />
                                     <span>Live Preview</span>
                                 </div>
                                 {(isGenerating || regeneratingSection) && (

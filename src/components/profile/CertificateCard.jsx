@@ -22,31 +22,31 @@ function CertificateCard({ cert, onToggle, onDelete }) {
         : cert.issueYear || 'No Date'
 
     return (
-        <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-300 flex flex-col h-full relative group">
+        <div className="bg-[#111111] border border-[#242424] rounded-3xl p-6 hover:border-[#ff5500] hover:shadow-none transition-all duration-300 flex flex-col h-full relative group">
 
             {/* Verification Badge */}
             <div className="absolute top-5 right-5">
-                <span className="bg-emerald-50 text-emerald-600 text-[10px] font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 border border-emerald-100">
+                <span className="bg-[#1a2a1a] text-[#22c55e] text-[10px] font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 border border-[#22c55e]/30">
                     <CheckCircle className="w-3 h-3" />
                     Verified
                 </span>
             </div>
 
             <div className="flex-1">
-                <div className="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 mb-5 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
+                <div className="w-14 h-14 bg-[#2a1500] rounded-2xl flex items-center justify-center text-[#ff5500] mb-5 group-hover:bg-[#ff5500] group-hover:text-white transition-colors duration-300">
                     <Award className="w-7 h-7" />
                 </div>
 
-                <h5 className="font-bold text-slate-900 text-xl leading-snug mb-2 line-clamp-2" title={cert.title}>
+                <h5 className="font-bold text-[#ffffff] text-xl leading-snug mb-2 line-clamp-2" title={cert.title}>
                     {cert.title}
                 </h5>
 
                 <div className="flex flex-col gap-1 mb-5">
-                    <p className="text-sm font-semibold text-slate-600 flex items-center gap-2">
-                        <FileText className="w-4 h-4 text-slate-400" />
+                    <p className="text-sm font-semibold text-[#a0a0a0] flex items-center gap-2">
+                        <FileText className="w-4 h-4 text-[#606060]" />
                         {cert.issuer}
                     </p>
-                    <p className="text-xs text-slate-400 flex items-center gap-2 font-medium">
+                    <p className="text-xs text-[#606060] flex items-center gap-2 font-medium">
                         <Calendar className="w-4 h-4" />
                         {formattedDate}
                     </p>
@@ -63,8 +63,8 @@ function CertificateCard({ cert, onToggle, onDelete }) {
                                 key={i}
                                 className={`px-3 py-1 border text-[11px] font-bold rounded-lg uppercase tracking-wider flex items-center gap-1.5 transition-all
                                     ${isMastered
-                                        ? 'bg-emerald-50 border-emerald-200 text-emerald-700 shadow-sm shadow-emerald-100'
-                                        : 'bg-slate-50 border-slate-100 text-slate-500'}`}
+                                        ? 'bg-[#1a2a1a] border-[#22c55e]/30 text-[#22c55e]'
+                                        : 'bg-[#1a1a1a] border-[#242424] text-[#606060]'}`}
                             >
                                 {isMastered && <CheckCircle className="w-3 h-3" />}
                                 {skillName}
@@ -73,21 +73,21 @@ function CertificateCard({ cert, onToggle, onDelete }) {
                         );
                     })}
                     {cert.skills.length > 6 && (
-                        <span className="px-3 py-1 bg-slate-100 text-slate-400 text-[11px] font-bold rounded-lg">
+                        <span className="px-3 py-1 bg-[#1a1a1a] text-[#606060] text-[11px] font-bold rounded-lg">
                             +{cert.skills.length - 6}
                         </span>
                     )}
                 </div>
             </div>
 
-            <div className="pt-5 border-t border-slate-50 flex items-center justify-between mt-auto">
+            <div className="pt-5 border-t border-[#242424] flex items-center justify-between mt-auto">
                 {/* Use In Resume Toggle */}
                 <button
                     onClick={handleToggle}
                     disabled={isToggling}
                     className={`flex items-center gap-2 text-xs font-bold px-3 py-1.5 rounded-lg transition ${cert.useInResume
-                        ? 'bg-blue-600 text-white hover:bg-blue-700'
-                        : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                        ? 'bg-[#ff5500] text-white hover:bg-[#e64d00]'
+                        : 'bg-[#1a1a1a] text-[#606060] border border-[#242424] hover:bg-[#242424]'
                         }`}
                     title="Include in generated resume"
                 >
@@ -100,7 +100,7 @@ function CertificateCard({ cert, onToggle, onDelete }) {
                             href={cert.fileUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
+                            className="w-10 h-10 flex items-center justify-center text-[#606060] hover:text-[#ff5500] hover:bg-[#2a1500] rounded-xl transition-all"
                             title="View Certificate"
                         >
                             <Eye className="w-5 h-5" />
@@ -108,7 +108,7 @@ function CertificateCard({ cert, onToggle, onDelete }) {
                     )}
                     <button
                         onClick={handleDelete}
-                        className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all"
+                        className="w-10 h-10 flex items-center justify-center text-[#606060] hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all"
                         title="Delete Certificate"
                     >
                         <Trash2 className="w-5 h-5" />

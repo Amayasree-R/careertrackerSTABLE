@@ -283,7 +283,7 @@ function Dashboard() {
             </div>
             <div className="flex flex-wrap gap-4">
               <Link
-                to="/roadmap"
+                to="/dashboard/visual-roadmap"
                 className="px-6 py-2.5 bg-transparent text-[#ff5500] border border-[#ff5500] rounded-xl font-medium hover:bg-[#2a1500] transition shadow-sm"
               >
                 Full Roadmap
@@ -323,8 +323,8 @@ function Dashboard() {
             </div>
 
             {/* Job Matches Card */}
-            <Link 
-              to="/dashboard/jobs" 
+            <Link
+              to="/dashboard/jobs"
               className="bg-[#111111] border border-[#242424] rounded-2xl p-4 hover:border-[#ff5500]/60 hover:bg-[#1a1100] transition h-[110px] flex flex-col justify-between group"
             >
               <div className="flex justify-between items-start">
@@ -337,7 +337,7 @@ function Dashboard() {
 
           {/* ROW 3: Skills & Radar Split Layout */}
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 items-start">
-            
+
             {/* LEFT (Col 2): Radar Chart Panel */}
             <div className="lg:col-span-2 bg-[#111111] p-5 rounded-2xl border border-[#242424] hover:border-[#ff5500]/30 shadow-sm transition-all duration-300">
               <div className="flex justify-between items-start mb-4">
@@ -363,10 +363,10 @@ function Dashboard() {
                   <div className="relative flex-1 min-w-[150px]">
                     <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#606060] pointer-events-none" />
                     <input type="text" placeholder="Search skills..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
-                           className="w-full pl-9 pr-3 py-1.5 bg-[#1a1a1a] border border-[#242424] rounded-xl text-xs text-[#ffffff] placeholder-[#606060] focus:outline-none focus:ring-2 focus:ring-[#ff5500] transition" />
+                      className="w-full pl-9 pr-3 py-1.5 bg-[#1a1a1a] border border-[#242424] rounded-xl text-xs text-[#ffffff] placeholder-[#606060] focus:outline-none focus:ring-2 focus:ring-[#ff5500] transition" />
                   </div>
                   <select value={filterPriority} onChange={(e) => setFilterPriority(e.target.value)}
-                          className="px-3 py-1.5 bg-[#1a1a1a] border border-[#242424] rounded-xl text-[11px] font-medium text-[#ffffff] focus:outline-none focus:ring-2 focus:ring-[#ff5500] transition">
+                    className="px-3 py-1.5 bg-[#1a1a1a] border border-[#242424] rounded-xl text-[11px] font-medium text-[#ffffff] focus:outline-none focus:ring-2 focus:ring-[#ff5500] transition">
                     <option value="All">All Priority</option>
                     <option value="High">High</option>
                     <option value="Medium">Medium</option>
@@ -383,7 +383,7 @@ function Dashboard() {
                     <option value="Mastered">Mastered</option>
                   </select>
                   <button onClick={() => setHideMastered(!hideMastered)}
-                          className={`px-3 py-1.5 rounded-xl text-[11px] font-medium border transition ${hideMastered ? 'bg-[#ff5500] text-white border-[#ff5500]' : 'bg-[#1a1a1a] text-[#a0a0a0] border-[#242424] hover:bg-[#242424]'}`}>
+                    className={`px-3 py-1.5 rounded-xl text-[11px] font-medium border transition ${hideMastered ? 'bg-[#ff5500] text-white border-[#ff5500]' : 'bg-[#1a1a1a] text-[#a0a0a0] border-[#242424] hover:bg-[#242424]'}`}>
                     {hideMastered ? 'New Only' : 'Hide Mastered'}
                   </button>
                 </div>
@@ -424,23 +424,22 @@ function Dashboard() {
 
                     return (
                       <div key={item.skill} ref={el => skillRefs.current[item.skill] = el}
-                           className={`group relative p-4 rounded-xl border transition-all duration-200 cursor-pointer ${isMastered ? 'border-[#22c55e] bg-[#1a2a1a]' : isLearning ? 'border-[#ff5500]/50 bg-[#1a1100]' : 'border-[#242424] bg-[#111111]'} hover:bg-[#1a1a1a] hover:border-[#ff5500] ${isFocused ? 'ring-2 ring-[#ff5500]/30' : ''}`}
-                           onClick={() => setActiveSkillDetails(item.skill)}>
+                        className={`group relative p-4 rounded-xl border transition-all duration-200 cursor-pointer ${isMastered ? 'border-[#22c55e] bg-[#1a2a1a]' : isLearning ? 'border-[#ff5500]/50 bg-[#1a1100]' : 'border-[#242424] bg-[#111111]'} hover:bg-[#1a1a1a] hover:border-[#ff5500] ${isFocused ? 'ring-2 ring-[#ff5500]/30' : ''}`}
+                        onClick={() => setActiveSkillDetails(item.skill)}>
                         <div className="flex items-start justify-between mb-3">
                           <div className="flex items-center gap-3">
                             <button onClick={(e) => { e.stopPropagation(); if (!isUpdating) { if (isLearning) navigate(`/quiz/${encodeURIComponent(item.skill)}`); else toggleSkill(item.skill); } }}
-                                    className={`w-8 h-8 rounded-lg flex items-center justify-center border-2 transition-all ${isMastered ? 'bg-[#22c55e] border-[#22c55e] text-white' : isLearning ? 'bg-[#ff5500] border-[#ff5500] text-white' : 'bg-[#1a1a1a] border-[#242424] text-transparent'}`}>
+                              className={`w-8 h-8 rounded-lg flex items-center justify-center border-2 transition-all ${isMastered ? 'bg-[#22c55e] border-[#22c55e] text-white' : isLearning ? 'bg-[#ff5500] border-[#ff5500] text-white' : 'bg-[#1a1a1a] border-[#242424] text-transparent'}`}>
                               {isMastered ? <span className="text-sm">✓</span> : isLearning ? <FileText className="w-3.5 h-3.5 text-white" /> : ''}
                             </button>
                             <div className="min-w-0">
                               <h6 className={`text-sm font-semibold truncate ${isMastered ? 'text-[#a0a0a0] line-through' : 'text-[#ffffff]'}`}>{item.skill}</h6>
-                              <span className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-md ${
-                                isMastered 
-                                  ? 'text-[#606060] bg-[#1a1a1a]' 
-                                  : item.priority === 'High' ? 'text-[#ff5500] bg-[#2a1500]' : 
-                                    item.priority === 'Medium' ? 'text-[#a0a0a0] bg-[#1a1a1a]' : 
-                                    'text-[#606060] bg-[#1a1a1a]'
-                              }`}>{item.priority}</span>
+                              <span className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-md ${isMastered
+                                  ? 'text-[#606060] bg-[#1a1a1a]'
+                                  : item.priority === 'High' ? 'text-[#ff5500] bg-[#2a1500]' :
+                                    item.priority === 'Medium' ? 'text-[#a0a0a0] bg-[#1a1a1a]' :
+                                      'text-[#606060] bg-[#1a1a1a]'
+                                }`}>{item.priority}</span>
                             </div>
                           </div>
                           <button onClick={(e) => { e.stopPropagation(); toggleFocus(item.skill); }} className={`transition ${isFocused ? 'text-[#ff5500]' : 'text-[#606060] hover:text-[#ff5500]'}`}>

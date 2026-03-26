@@ -5,7 +5,6 @@ import {
   CheckCircle2, 
   ChevronRight, 
   X, 
-  RefreshCw, 
   ExternalLink,
   Youtube,
   GraduationCap,
@@ -29,23 +28,19 @@ const VisualRoadmap = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedSkill, setSelectedSkill] = useState(null);
-  const [refreshing, setRefreshing] = useState(false);
 
-  const fetchRoadmap = async (refresh = false) => {
+
+  const fetchRoadmap = async () => {
     const token = localStorage.getItem('token');
     if (!token) {
       navigate('/login');
       return;
     }
-
     try {
-      if (refresh) setRefreshing(true);
-      else setLoading(true);
-      
-      const response = await axios.get(`${API_BASE_URL}/visual-roadmap${refresh ? '?refresh=true' : ''}`, {
+      setLoading(true);
+      const response = await axios.get(`${API_BASE_URL}/visual-roadmap`, {
         headers: getAuthHeaders()
       });
-      
       setData(response.data);
       setError(null);
     } catch (err) {
@@ -53,7 +48,6 @@ const VisualRoadmap = () => {
       setError('Failed to load your roadmap. Please try again.');
     } finally {
       setLoading(false);
-      setRefreshing(false);
     }
   };
 
@@ -74,7 +68,7 @@ const VisualRoadmap = () => {
     return total > 0 ? Math.round((mastered / total) * 100) : 0;
   }, [data]);
 
-  if (loading && !refreshing) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-[#0a0a0a] p-8 flex flex-col items-center">
         <div className="w-full max-w-2xl space-y-8 animate-pulse mt-12">
@@ -124,7 +118,7 @@ const VisualRoadmap = () => {
       {/* Header Section */}
       <div className="max-w-4xl mx-auto pt-8 px-6">
         <div className="bg-[#111111] rounded-[2rem] p-8 border border-[#242424] shadow-sm">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
+          <div className="mb-8">
             <div>
               <span className="text-[11px] font-black uppercase tracking-[0.2em] text-[#ff5500] mb-1 block">
                 Learning Roadmap
@@ -133,14 +127,6 @@ const VisualRoadmap = () => {
                 {data?.targetJob || 'Software Engineer'}
               </h1>
             </div>
-            <button 
-              onClick={() => fetchRoadmap(true)}
-              disabled={refreshing}
-              className={`flex items-center gap-2 px-6 py-3 bg-[#ff5500] text-white rounded-xl font-bold hover:bg-[#e64d00] transition shadow-sm ${refreshing ? 'opacity-50' : ''}`}
-            >
-              <RefreshCw size={18} className={refreshing ? 'animate-spin' : ''} />
-              {refreshing ? 'Refreshing...' : 'Regenerate Path'}
-            </button>
           </div>
 
           <div className="space-y-3">

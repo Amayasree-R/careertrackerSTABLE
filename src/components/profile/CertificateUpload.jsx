@@ -83,7 +83,7 @@ function CertificateUpload({ onUploadSuccess }) {
     }
 
     return (
-        <div className="bg-[#13131a] border border-[#1e1e2e] rounded-2xl p-6 transition-all duration-300 hover:border-violet-500/30 shadow-sm relative overflow-hidden group">
+        <div className="bg-[#111111] border border-[#242424] rounded-2xl p-6 transition-all duration-300 hover:border-[#ff5500]/30 shadow-sm relative overflow-hidden group">
             <div className="flex flex-col items-center text-center max-w-sm mx-auto">
                 <div 
                     onDragOver={handleDragOver}
@@ -91,21 +91,21 @@ function CertificateUpload({ onUploadSuccess }) {
                     onDrop={handleDrop}
                     className={`w-full relative border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition-all duration-200 mb-6 ${
                         isDragging
-                            ? 'border-violet-400 bg-violet-950/50'
+                            ? 'border-[#ff5500] bg-[#2a1500]/50'
                             : file
                                 ? 'border-emerald-600 bg-emerald-950/30'
-                                : 'border-[#2a2a3d] hover:border-violet-500/60 hover:bg-[#1e1e2e]'
+                                : 'border-[#242424] hover:border-[#ff5500]/60 hover:bg-[#1a1a1a]'
                     }`}
                     onClick={() => document.getElementById('cert-upload').click()}
                 >
-                    <div className="w-12 h-12 bg-[#1e1e2e] rounded-xl flex items-center justify-center text-slate-400 mx-auto mb-3 group-hover:scale-110 transition-transform">
-                        <CloudUpload size={24} className="group-hover:text-violet-400 transition-colors" />
+                    <div className="w-12 h-12 bg-[#1a1a1a] rounded-xl flex items-center justify-center text-[#606060] mx-auto mb-3 group-hover:scale-110 transition-transform">
+                        <CloudUpload size={24} className="group-hover:text-[#ff5500] transition-colors" />
                     </div>
 
-                    <h3 className="text-lg font-bold text-slate-100 mb-1">Upload Certification</h3>
-                    <p className="text-xs text-slate-500 leading-relaxed">
+                    <h3 className="text-lg font-bold text-[#ffffff] mb-1">Upload Certification</h3>
+                    <p className="text-xs text-[#606060] leading-relaxed">
                         Drop your certificate here or click to browse. <br />
-                        <span className="font-bold text-slate-400 text-[9px] uppercase tracking-widest mt-2 block">Only PDF Supported</span>
+                        <span className="font-bold text-[#606060] text-[9px] uppercase tracking-widest mt-2 block">Only PDF Supported</span>
                     </p>
 
                     <input
@@ -118,14 +118,14 @@ function CertificateUpload({ onUploadSuccess }) {
                 </div>
 
                 <div className="w-full space-y-4">
-                    <div className={`px-4 py-2.5 bg-[#1e1e2e] border border-[#2a2a3d] rounded-xl text-xs font-medium text-slate-300 text-center truncate ${!file && 'invisible h-0 py-0 overflow-hidden'}`}>
+                    <div className={`px-4 py-2.5 bg-[#1a1a1a] border border-[#242424] rounded-xl text-xs font-medium text-[#a0a0a0] text-center truncate ${!file && 'invisible h-0 py-0 overflow-hidden'}`}>
                         {file?.name}
                     </div>
 
                     <button
                         onClick={handleUpload}
                         disabled={!file || isUploading}
-                        className="w-full py-3 bg-[#1e1e2e] text-violet-400 border border-[#2a2a3d] rounded-xl font-bold hover:bg-[#2a2a3d] disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 shadow-sm"
+                        className="w-full py-3 bg-[#ff5500] text-white border border-[#ff5500] rounded-xl font-bold hover:bg-[#e64d00] disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 shadow-sm"
                     >
                         {isUploading ? (
                             <>
@@ -161,15 +161,15 @@ function CertificateUpload({ onUploadSuccess }) {
                         </div>
 
                         {successData.promotedSkills && successData.promotedSkills.length > 0 && (
-                            <div className="bg-violet-950/20 border border-violet-500/20 rounded-xl p-4 text-left">
+                            <div className="bg-[#2a1500] border border-[#ff5500]/20 rounded-xl p-4 text-left">
                                 <div className="flex items-center gap-2 mb-3">
-                                    <Award className="w-4 h-4 text-violet-400" />
-                                    <h4 className="text-xs font-bold text-violet-300 uppercase tracking-wide">Skills Mark as Mastered:</h4>
+                                    <Award className="w-4 h-4 text-[#ff5500]" />
+                                    <h4 className="text-xs font-bold text-[#ff7733] uppercase tracking-wide">Skills Mark as Mastered:</h4>
                                 </div>
                                 <div className="space-y-2">
                                     {successData.promotedSkills.map((skill, idx) => (
-                                        <div key={idx} className="flex items-center gap-2 text-xs text-violet-300/90">
-                                            <div className="w-1 h-1 rounded-full bg-violet-500" />
+                                        <div key={idx} className="flex items-center gap-2 text-xs text-[#ff7733]">
+                                            <div className="w-1 h-1 rounded-full bg-[#ff5500]" />
                                             <span className="font-semibold">{skill}</span>
                                             <span className="text-[10px] text-emerald-400 bg-emerald-950/50 px-2 py-0.5 rounded border border-emerald-500/20">✓ Added to Profile</span>
                                         </div>
@@ -179,19 +179,19 @@ function CertificateUpload({ onUploadSuccess }) {
                         )}
 
                         {successData.certificate && (
-                            <div className="bg-[#1e1e2e] border border-[#2a2a3d] rounded-xl p-3 text-left">
-                                <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 px-1">Certificate Details</div>
-                                <div className="text-[11px] text-slate-300 space-y-1.5 px-1">
-                                    <div className="flex justify-between border-b border-[#2a2a3d] pb-1.5">
-                                        <span className="text-slate-500">Title</span>
+                            <div className="bg-[#1a1a1a] border border-[#242424] rounded-xl p-3 text-left">
+                                <div className="text-[10px] font-bold text-[#606060] uppercase tracking-widest mb-2 px-1">Certificate Details</div>
+                                <div className="text-[11px] text-[#a0a0a0] space-y-1.5 px-1">
+                                    <div className="flex justify-between border-b border-[#242424] pb-1.5">
+                                        <span className="text-[#606060]">Title</span>
                                         <span className="font-semibold text-right max-w-[180px] truncate">{successData.certificate.polishedTitle}</span>
                                     </div>
-                                    <div className="flex justify-between border-b border-[#2a2a3d] pb-1.5">
-                                        <span className="text-slate-500">Issuer</span>
+                                    <div className="flex justify-between border-b border-[#242424] pb-1.5">
+                                        <span className="text-[#606060]">Issuer</span>
                                         <span className="font-semibold">{successData.certificate.issuer}</span>
                                     </div>
                                     <div className="flex justify-between">
-                                        <span className="text-slate-500">Status</span>
+                                        <span className="text-[#606060]">Status</span>
                                         <span className="text-emerald-400 font-bold uppercase tracking-tighter">{successData.certificate.verificationStatus}</span>
                                     </div>
                                 </div>
