@@ -24,7 +24,7 @@ function Quiz() {
         const token = localStorage.getItem('token')
 
         try {
-            const res = await fetch(`http://localhost:5000/api/quiz/${encodeURIComponent(skill)}`, {
+            const res = await fetch(`https://careertracker-gtc7a3g9gvfrgsf4.centralindia-01.azurewebsites.net/api/quiz/${encodeURIComponent(skill)}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             })
 
@@ -97,7 +97,7 @@ function Quiz() {
     const markAsMastered = async (score) => {
         const token = localStorage.getItem('token')
         try {
-            await fetch('http://localhost:5000/api/profile/toggle-skill', {
+            await fetch('https://careertracker-gtc7a3g9gvfrgsf4.centralindia-01.azurewebsites.net/api/profile/toggle-skill', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

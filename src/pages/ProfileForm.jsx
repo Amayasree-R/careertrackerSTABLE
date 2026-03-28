@@ -41,7 +41,7 @@ function ProfileForm() {
     try {
       const token = localStorage.getItem('token')
 
-      const response = await fetch('http://localhost:5000/api/profile', {
+      const response = await fetch('https://careertracker-gtc7a3g9gvfrgsf4.centralindia-01.azurewebsites.net/api/profile', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

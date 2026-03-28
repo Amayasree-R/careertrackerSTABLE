@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Sparkles, Check, X, Wand2, RefreshCw, ArrowRight } from 'lucide-react'
 import axios from 'axios'
 
-const API_BASE_URL = 'http://localhost:5000/api'
+const API_BASE_URL = 'https://careertracker-gtc7a3g9gvfrgsf4.centralindia-01.azurewebsites.net0/api'
 
 export default function AIEnhancementModal({ type, text, onAccept, onClose }) {
     const [loading, setLoading] = useState(false)

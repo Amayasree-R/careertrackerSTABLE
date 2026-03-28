@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
-const API_BASE = 'http://localhost:5000'
+const API_BASE = 'https://careertracker-gtc7a3g9gvfrgsf4.centralindia-01.azurewebsites.net'
 
 function authHeaders() {
   const token = localStorage.getItem('token')

@@ -17,7 +17,7 @@ export default function Profile() {
                     return
                 }
 
-                const res = await fetch('http://localhost:5000/api/profile', {
+                const res = await fetch('https://careertracker-gtc7a3g9gvfrgsf4.centralindia-01.azurewebsites.net/api/profile', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 })
                 const data = await res.json()
