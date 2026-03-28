@@ -92,7 +92,7 @@ router.post('/signup', async (req, res) => {
 
 /* =========================
    LOGIN ROUTE
-   ========================= */
+   ========================= 
 router.post('/login', async (req, res) => {
   try {
     console.log('Login request body:', req.body) // 🔍 debug
@@ -136,6 +136,55 @@ router.post('/login', async (req, res) => {
     console.error('Login error:', error)
     res.status(500).json({ message: 'Internal server error' })
   }
-})
+})*/
+  router.post('/login', async (req, res) => {
+    try {
+      console.log("STEP 1 - BODY:", req.body)
+
+      const { username, password } = req.body
+
+      console.log("STEP 2 - username:", username)
+      console.log("STEP 2 - password:", password)
+
+      if (!username || !password) {
+        console.log("STEP 3 - Missing fields")
+        return res.status(400).json({ message: 'All fields are required' })
+      }
+
+      const user = await User.findOne({ username })
+      console.log("STEP 4 - user:", user)
+
+      if (!user) {
+        console.log("STEP 5 - user not found")
+        return res.status(400).json({ message: 'Invalid credentials' })
+      }
+
+      const isMatch = await bcrypt.compare(password, user.password)
+      console.log("STEP 6 - password match:", isMatch)
+
+      if (!isMatch) {
+        console.log("STEP 7 - wrong password")
+        return res.status(400).json({ message: 'Invalid credentials' })
+      }
+
+      console.log("STEP 8 - creating token")
+      const token = jwt.sign(
+        { userId: user._id },
+        process.env.JWT_SECRET,
+        { expiresIn: '7d' }
+      )
+
+      console.log("STEP 9 - success")
+
+      res.json({
+        message: 'Login successful',
+        token
+      })
+
+    } catch (error) {
+      console.error("🚨 LOGIN ERROR:", error)
+      res.status(500).json({ message: 'Internal server error' })
+    }
+  })
 
 export default router

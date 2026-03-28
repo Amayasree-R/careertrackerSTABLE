@@ -50,7 +50,7 @@ function Login() {
     setIsLoading(true)
 
     try {
-      const response = await fetch('http://127.0.0.1:5000/api/auth/login', {
+      const response = await fetch('https://careertracker-gtc7a3g9gvfrgsf4.centralindia-01.azurewebsites.net/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -60,15 +60,20 @@ function Login() {
       })
 
       const data = await response.json()
+      console.log(data)
 
       if (!response.ok) {
         throw new Error(data.message || 'Login failed')
       }
 
       // Store token
-      localStorage.setItem('token', data.token)
+      /*localStorage.setItem('token', data.token)
       localStorage.setItem('userId', data.userId)
-      localStorage.setItem('username', data.username)
+      localStorage.setItem('username', data.username)*/
+
+      localStorage.setItem('token', data.token)
+      //localStorage.setItem('userId', data.user.id)
+      //localStorage.setItem('username', data.user.username)
 
       navigate('/dashboard')
     } catch (error) {

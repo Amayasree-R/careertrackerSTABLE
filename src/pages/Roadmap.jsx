@@ -59,10 +59,10 @@ function Roadmap() {
 
         // Parallel fetching
         const [profRes, roadRes] = await Promise.all([
-          fetch('http://localhost:5000/api/profile', {
+          fetch('https://careertracker-gtc7a3g9gvfrgsf4.centralindia-01.azurewebsites.net/api/profile', {
             headers: { 'Authorization': `Bearer ${token}` }
           }),
-          fetch('http://localhost:5000/api/roadmap', {
+          fetch('https://careertracker-gtc7a3g9gvfrgsf4.centralindia-01.azurewebsites.net/api/roadmap', {
             headers: { 'Authorization': `Bearer ${token}` }
           })
         ])

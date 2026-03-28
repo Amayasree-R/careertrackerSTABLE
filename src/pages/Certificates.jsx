@@ -17,7 +17,7 @@ export default function Certificates() {
         }
 
         try {
-            const res = await fetch('http://localhost:5000/api/cert', {
+            const res = await fetch('https://careertracker-gtc7a3g9gvfrgsf4.centralindia-01.azurewebsites.net/api/cert', {
                 headers: { 'Authorization': `Bearer ${token}` }
             })
             const data = await res.json()
@@ -41,7 +41,7 @@ export default function Certificates() {
         if (!token) return
 
         try {
-            const res = await fetch('http://localhost:5000/api/profile', {
+            const res = await fetch('https://careertracker-gtc7a3g9gvfrgsf4.centralindia-01.azurewebsites.net/api/profile', {
                 headers: { 'Authorization': `Bearer ${token}` }
             })
             const data = await res.json()
@@ -56,7 +56,7 @@ export default function Certificates() {
     const handleToggleCert = async (certId) => {
         const token = localStorage.getItem('token')
         try {
-            const res = await fetch(`http://localhost:5000/api/cert/toggle-resume/${certId}`, {
+            const res = await fetch(`https://careertracker-gtc7a3g9gvfrgsf4.centralindia-01.azurewebsites.net/api/cert/toggle-resume/${certId}`, {
                 method: 'PATCH',
                 headers: { 'Authorization': `Bearer ${token}` }
             })
@@ -72,7 +72,7 @@ export default function Certificates() {
     const handleDeleteCert = async (certId) => {
         const token = localStorage.getItem('token')
         try {
-            const res = await fetch(`http://localhost:5000/api/cert/${certId}`, {
+            const res = await fetch(`https://careertracker-gtc7a3g9gvfrgsf4.centralindia-01.azurewebsites.net/api/cert/${certId}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             })

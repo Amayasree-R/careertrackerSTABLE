@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom'
+import ProtectedRoute from "./pages/ProtectedRoute";
 import Login from './pages/Login'
 import Signup from './pages/Signup'
 import Dashboard from './pages/Dashboard'
@@ -12,6 +13,7 @@ import Certificates from './pages/Certificates'
 import Projects from './pages/Projects'
 import JobMatches from './pages/JobMatches'
 import VisualRoadmap from './pages/VisualRoadmap'
+
 function App() {
   return (
     <BrowserRouter>
@@ -21,7 +23,14 @@ function App() {
         <Route path="/signup" element={<Signup />} />
 
         {/* Protected Dashboard Routes */}
-        <Route path="/dashboard" element={<DashboardLayout />}>
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <DashboardLayout />
+            </ProtectedRoute>
+          }
+        >
           <Route index element={<Dashboard />} />
           <Route path="profile" element={<Profile />} />
           <Route path="certificates" element={<Certificates />} />

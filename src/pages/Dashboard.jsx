@@ -135,13 +135,21 @@ function Dashboard() {
         setLoading(true)
 
         // Parallel fetching
-        const [profRes, roadRes] = await Promise.all([
+        /*const [profRes, roadRes] = await Promise.all([
           fetch('http://localhost:5000/api/profile', {
             headers: { 'Authorization': `Bearer ${token}` }
           }),
           fetch('http://localhost:5000/api/roadmap', {
             headers: { 'Authorization': `Bearer ${token}` }
           })
+        ])*/
+       const [profRes, roadRes] = await Promise.all([
+        fetch('https://careertracker-gtc7a3g9gvfrgsf4.centralindia-01.azurewebsites.net/api/profile', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        }),
+        fetch('https://careertracker-gtc7a3g9gvfrgsf4.centralindia-01.azurewebsites.net/api/roadmap', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
         ])
 
         const profData = await profRes.json()
@@ -170,7 +178,7 @@ function Dashboard() {
     setUpdatingSkill(skill)
     const token = localStorage.getItem('token')
     try {
-      const res = await fetch('http://localhost:5000/api/profile/toggle-skill', {
+      const res = await fetch('https://careertracker-gtc7a3g9gvfrgsf4.centralindia-01.azurewebsites.net/api/profile/toggle-skill', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -197,7 +205,7 @@ function Dashboard() {
   const toggleFocus = async (skill) => {
     const token = localStorage.getItem('token')
     try {
-      const res = await fetch('http://localhost:5000/api/profile/focus-skill', {
+      const res = await fetch('https://careertracker-gtc7a3g9gvfrgsf4.centralindia-01.azurewebsites.net/api/profile/focus-skill', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
