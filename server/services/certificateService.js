@@ -1,10 +1,8 @@
-
 import Groq from 'groq-sdk'
 
 const getGroqClient = () => {
   const apiKey = process.env.GROQ_API_KEY
-  
-  // Validate that API key exists
+
   if (!apiKey) {
     const errorMsg = 'GROQ_API_KEY environment variable is not set'
     console.error(`❌ ${errorMsg}`)
@@ -13,8 +11,7 @@ const getGroqClient = () => {
     err.code = 'MISSING_API_KEY'
     throw err
   }
-  
-  // Validate that API key has reasonable length (sk-... format)
+
   if (apiKey.length < 10) {
     const errorMsg = 'GROQ_API_KEY appears to be invalid (too short)'
     console.error(`❌ ${errorMsg}`)
@@ -22,12 +19,10 @@ const getGroqClient = () => {
     err.code = 'INVALID_API_KEY_FORMAT'
     throw err
   }
-  
-  // Log that key is loaded (show first 4 chars + dots for security)
+
   const keyPreview = apiKey.substring(0, 4) + '...' + apiKey.substring(apiKey.length - 4)
   console.log(`✅ Groq API key loaded: ${keyPreview}`)
-  
-  // Create and return Groq client
+
   try {
     return new Groq({ apiKey })
   } catch (initError) {
@@ -45,43 +40,58 @@ export const analyzeCertificate = async (certificateText, targetRole, roadmapSki
 
     const systemPrompt = `
 You are an expert Certificate Analyzer.
-You are a career-focused certificate analyst. Your goal is to parse raw text from a certificate PDF and extract professional metadata.
-You must return ONLY a raw JSON object. No markdown formatting, no backticks, no explanations.
+Your goal is to parse raw text extracted from a certificate PDF and return professional metadata.
+You must return ONLY a raw JSON object. No markdown, no backticks, no explanations.
+
+CRITICAL: PDF text is often extracted out of order due to layout parsing. Treat all text as an unordered bag of words — do not assume reading order is correct.
 
 INSTRUCTIONS:
-1. Analyze the certificate text to understand what was learned or achieved.
-2. Extract ONLY skills that are explicitly supported by the certificate content.
-3. Identify certificate metadata:
-   - title: The original title from the certificate text.
-   - issuer: Extract ONLY the organization name if it is EXPLICITLY written. If no organization name is found, return "Independent". NEVER guess or infer an issuer.
-   - issueYear: The 4-digit year the certificate was issued (e.g., 2024, 2023). If no date is found, use current year. MUST BE A NUMBER.
-   - issueDate: The full date in YYYY-MM-DD format if available; otherwise use January 1st of issueYear. MUST BE A VALID DATE.
-4. Generate a "polishedTitle":
-   - If issuer is known: Format as '[Issuer] [Topic] Certificate'.
-   - If issuer is "Independent": Format as '[Topic] Certificate of Completion'.
-   - Ensure it reads naturally on a professional resume.
-5. Determine whether the certificate issuer appears credible; if unclear, mark as unverified.
+
+1. Identify the certificate TITLE (in order of priority):
+   - Look for "Certificate of [X]" or "Certificate in [X]" → use as title
+   - Look for "completion of [X] Course" or "training in [X]" → derive title as "[X] Certificate"
+   - NEVER use boilerplate phrases like "THE FOLLOWING AWARD IS GIVEN TO" as the title
+   - NEVER return "Unknown Certificate" if ANY course or topic name is detectable
+
+2. Extract the SKILL/TOPIC from phrases like:
+   - "completion of [X] Course"
+   - "training in [X]"
+   - "certified in [X]"
+   - "course in [X]"
+
+3. Extract the ISSUER:
+   - Look for an organization name, institution, or platform name
+   - "Head of Event", "Mentor", "THE FOLLOWING AWARD IS GIVEN TO", "Certificate of Appreciation" are NOT issuers — they are roles or boilerplate
+   - Recipient names (the person the certificate is given to) are NOT issuers
+   - If no organization name is explicitly found, set issuer to "Independent"
+
+4. Extract dates:
+   - issueYear: 4-digit year (MUST BE A NUMBER). Look for year ranges like "2025-26" → use 2025. If not found, use 2026.
+   - issueDate: YYYY-MM-DD format. If only year found, use YYYY-01-01. MUST BE A VALID DATE STRING.
+
+5. Generate a "polishedTitle":
+   - If issuer is known: "[Issuer] [Topic] Certificate"
+   - If issuer is "Independent": "[Topic] Certificate of Completion"
+   - Example: "React Development Certificate of Completion"
+   - NEVER produce "Unknown Certificate" as polishedTitle
+
 6. Extract ALL skills mentioned in the certificate (technical, frameworks, tools, soft skills).
-7. Match extracted skills against roadmap skills:
+
+7. Match extracted skills against roadmapSkills:
    - Matched skills → "certified"
    - Unmatched but valid → "notMappedToRoadmap"
-8. Decide whether any certified skill can be upgraded to "Mastered" based on strength of evidence.
-9. Evaluate how the certification contributes to readiness for the user’s chosen career role.
-9. Generate structured outputs that can be directly used to:
-   - Show certificate proof in the UI
-   - Update skill badges and dashboard statistics
-   - Auto-populate resume sections in the future
 
-Rules:
-- Extract ALL skills from certificate (be inclusive, not overly strict).
-- Return both "certified" (matched) and "notMappedToRoadmap" (unmatched) skills.
-- If notMappedToRoadmap is empty it means all certificate skills matched the learning path.
-- Do not fabricate issuer names, dates, or platforms.
-- Always return valid JSON with proper data types.
-- issueYear MUST be a NUMBER (not a string). If unclear, use 2026.
-- issueDate MUST be a valid date string in YYYY-MM-DD format. If unclear, use 2026-01-01.
-- Do not return "Unknown", "N/A", "Not Found", null, or empty strings for issueYear.
-- Do not include explanations, markdown, or extra text outside JSON.
+8. Decide whether any certified skill can be upgraded to "Mastered" based on strength of evidence.
+
+9. Evaluate how the certification contributes to readiness for the user's target role.
+
+RULES:
+- Do not fabricate issuer names, dates, or platforms
+- Always return valid JSON with proper data types
+- issueYear MUST be a NUMBER not a string
+- issueDate MUST be a valid YYYY-MM-DD string
+- Do not return "Unknown", "N/A", "Not Found", null, or empty strings for required fields
+- No explanations, markdown, or extra text outside JSON
 
 Input:
 {
@@ -98,7 +108,7 @@ Output JSON Schema:
     "polishedTitle": "",
     "issuer": "",
     "issueYear": 2026,
-    "issueDate": "2026-03-03",
+    "issueDate": "2026-01-01",
     "verificationStatus": "Verified | Unverified"
   },
   "skillsExtracted": [
@@ -137,7 +147,7 @@ Output JSON Schema:
           content: systemPrompt,
         },
       ],
-      model: 'llama-3.1-8b-instant',
+      model: 'llama-3.3-70b-versatile',
       response_format: { type: 'json_object' },
     })
 
@@ -145,7 +155,6 @@ Output JSON Schema:
     return JSON.parse(responseContent)
 
   } catch (error) {
-    // Log full error for debugging
     console.error('❌ Certificate Analysis Failed:', {
       name: error.name,
       code: error.code || error.status,
@@ -153,11 +162,10 @@ Output JSON Schema:
       type: error.type
     })
 
-    // Handle 401 INVALID_API_KEY errors specifically
-    if (error.status === 401 || error.message.includes('401') || 
-        error.message.includes('INVALID_API_KEY') || 
-        error.message.includes('Invalid API key') ||
-        error.message.includes('Unauthorized')) {
+    if (error.status === 401 || error.message.includes('401') ||
+      error.message.includes('INVALID_API_KEY') ||
+      error.message.includes('Invalid API key') ||
+      error.message.includes('Unauthorized')) {
       console.error('❌ Groq API Authentication Failed - Invalid API Key')
       const apiErr = new Error('AI service configuration error. Please ensure GROQ_API_KEY is set correctly.')
       apiErr.code = 'GROQ_AUTH_FAILED'
@@ -165,7 +173,6 @@ Output JSON Schema:
       throw apiErr
     }
 
-    // Handle rate limiting errors
     if (error.status === 429 || error.code === '429' || error.message.includes('Rate limit')) {
       console.warn('⚠️  Groq API rate limit hit, using fallback analysis')
       return {
@@ -173,7 +180,8 @@ Output JSON Schema:
           title: "Certified Skill Achievement (Verified by System)",
           polishedTitle: "Professional Certification",
           issuer: "Independent",
-          issueYear: new Date().getFullYear().toString(),
+          issueYear: new Date().getFullYear(),
+          issueDate: `${new Date().getFullYear()}-01-01`,
           verificationStatus: "Verified"
         },
         skillsExtracted: [
@@ -191,7 +199,6 @@ Output JSON Schema:
       }
     }
 
-    // For any other error
     console.error('❌ Unexpected error during certificate analysis')
     const genErr = new Error('Failed to analyze certificate. Please try a different file or contact support.')
     genErr.code = 'ANALYSIS_FAILED'
@@ -199,4 +206,3 @@ Output JSON Schema:
     throw genErr
   }
 }
-

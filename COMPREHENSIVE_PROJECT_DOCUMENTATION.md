@@ -29,7 +29,7 @@
 
 **Project Name:** Skill Career Tracker (CareerPath)
 
-**Description:** A comprehensive MERN (MongoDB, Express, React, Node.js) stack web application designed to help users track their career progression, analyze skill gaps, generate personalized learning roadmaps, and certify their mastery through AI-powered quizzes.
+**Description:** A comprehensive MERN (MongoDB, Express, React, Node.js) stack web application designed to help users track their career progression, analyze skill gaps, generate personalized learning roadmaps, and certify their mastery through AI-powered quizzes. The application features a premium dark-themed UI with a signature orange accent.
 
 **Target Users:**
 - Students planning their career path
@@ -39,8 +39,8 @@
 
 **Core Objectives:**
 1. Identify skill gaps between current and target job requirements
-2. Provide personalized learning roadmaps using AI
-3. Generate skill assessments via AI-powered quizzes
+2. Provide personalized learning roadmaps using AI (Gemini 1.5-flash) with specialized caching for performance
+3. Generate skill assessments via AI-powered quizzes (Llama 3.1 8B via Groq)
 4. Track skill mastery with visual progress indicators
 5. Enable resume building with AI enhancement
 6. Manage certifications and portfolio
@@ -72,10 +72,11 @@
   - Image Processing: Sharp 0.32.6
   - Document Generation: docx 9.5.1
   - Screenshotting/PDF Export: Puppeteer 24.37.3
-- **AI Services:**
-  - Groq SDK 0.37.0 — Llama 3.3 70B (resume generation, quiz generation, certificate analysis, skill details, roadmap)
-  - Cerebras Cloud SDK 1.64.1 — llama3.1-8b (project README analysis)
-  - Google Generative AI 0.24.1 — Gemini 1.5-flash (Visual Roadmap tier organization)
+- **AI Services:** 
+    - Groq SDK 0.37.0 — Llama 3.3 70B (resume generation, certificate analysis, skill details), **Llama 3.1 8B** (quiz generation)
+    - Cerebras Cloud SDK 1.64.1 — llama3.1-8b (project README analysis)
+    - Google Generative AI 0.24.1 — **Gemini 1.5-flash** (Visual Roadmap tier organization & resources)
+- **UI Theme:** Custom Dark/Orange theme (`#111111` background, `#ff5500` primary accent)
 - **Job Matching:** Adzuna REST API (job board search + skill scoring)
 - **API Integration:**
   - GitHub API via @octokit/rest 22.0.1 (roadmap skill sourcing)
@@ -551,15 +552,15 @@ To Learn → Learning → Mastered → To Learn
 - Avatar with initials
 
 #### 5. **ProfileForm Page (ProfileForm.jsx)**
-- Edit/setup form for all profile fields
-- Sets `currentSkills`, `targetJob`, `experienceLevel`
+- **Simplified Edit Flow:** Updated to a dedicated "Edit Profile" experience
+- **Target Job Focus:** Allows users to set or update their target job role to drive roadmap generation
+- **Automatic Skill Mapping:** Manual skill entry has been removed; skills are now automatically derived from the target career path and certifications
 - Sends data to `POST /api/profile`
-- On save: server auto-adds `currentSkills` to `completedSkills` (if not already present)
-- Triggers `lastProfileUpdate` timestamp update → invalidates roadmap and visual roadmap caches
+- Triggers `lastProfileUpdate` timestamp update → invalidates roadmap cache (but Visual Roadmap uses a persistent cache-first update model)
 
 #### 6. **Resume Builder (ResumeBuilder.jsx)**
 - Multi-section AI-powered resume builder
-- Sidebar navigation for sections: Summary, Experience, Education, Skills, Projects, Certificates, Achievements, Interests, Languages
+- **Sidebar navigation:** Simplified to focus on core content: Experience, Education, Achievements, Projects, Interests, Languages
 - **Template selector:** Professional Classic, Modern Sidebar, Balanced Two-Column
 - **Theme color picker** for visual customization
 - **AI generation:** fetches aggregated data + calls `POST /api/resume/generate` (Groq Llama 3.3 70B)
@@ -637,12 +638,12 @@ To Learn → Learning → Mastered → To Learn
 - Parallel fetch: `GET /api/profile` + `GET /api/roadmap`
 - Back to Dashboard button in header
 
-#### 12. **Visual Roadmap Page (VisualRoadmap.jsx)** *(New)*
+#### 12. **Visual Roadmap Page (VisualRoadmap.jsx)**
 - Located at `/dashboard/visual-roadmap` (within `DashboardLayout`)
 - Tiered roadmap view with alternating left/right timeline layout
-- **Header card:** target job title, "Regenerate Path" button, overall mastery progress bar
+- **Performance Optimized (Cache-First):** The roadmap is generated once by Gemini and stored. Mastery status updates are computed instantly in-process rather than via AI regeneration.
 - **Progress calculation:** counts Mastered skills across all tiers → percentage
-- **Vertical timeline spine:** center line with gradient (`#6366f1` → `#8b5cf6`)
+- **Vertical timeline spine:** center line with gradient (`#ff5500` theme)
 - **Tiers displayed in sequence:**
   - Tier 0: "Mastered" (green badge)
   - Tier 1: "Start Here" (indigo badge)
@@ -851,7 +852,7 @@ GET    /                    — Get tiered visual roadmap (Gemini AI)
 
 ### Quiz Routes (`/api/quiz`)
 ```
-GET    /:skill              — Generate 25-question quiz for a skill (Groq llama-3.1-8b-instant)
+GET    /:skill              — Generate 25-question quiz for a skill (Groq Llama 3.1 8B)
                               Query: attempt (default 1 — different questions per retry)
 ```
 
@@ -933,7 +934,7 @@ GET    /matches             — Fetch + score job listings from Adzuna API
 
 **Key Function:** `generateRoadmap(profile)`
 1. Fetch skills from GitHub via `@octokit/rest` (primary source)
-2. Supplement with Stack Overflow trends (Axios)
+2. Supplement with industry technology trends
 3. Merge with predefined role mappings (`config/roleSkills.js`)
 4. Compute missing skills (required - mastered)
 5. Generate AI-enhanced learning path with resources + time estimates
@@ -1082,12 +1083,12 @@ GET    /matches             — Fetch + score job listings from Adzuna API
 **AI Model:** Google Gemini `gemini-1.5-flash`  
 **Purpose:** Organize the learning path into a tiered, visually-ordered roadmap
 
-**Key Function:** `generateVisualRoadmap(profile)`
-1. Calls `generateRoadmap(profile)` from `roadmapGenerator.js` to get raw `learningPath`
-2. Initializes Gemini with `GEMINI_API_KEY`
-3. Sends skill data + target job to Gemini with system prompt: *"organize into ordered TIERS, assign categories, provide 3 real course resources per skill"*
-4. Parses JSON response (strips markdown fences if present)
-5. Falls back to `generateFallbackRoadmap()` if Gemini unavailable or parse fails
+**Key Function:** `generateVisualRoadmap(profile, existingCache = null)`
+1. **Cache-First Strategy:** If an `existingCache` is provided, the service skips AI generation and only re-computes mastery statuses for existing skills.
+2. If no cache exists, it calls `generateRoadmap(profile)` from `roadmapGenerator.js` to get raw `learningPath`.
+3. Initializes Gemini with `GEMINI_API_KEY`.
+4. Sends skill data + target job to Gemini with system prompt.
+5. Parses JSON response and saves to `user.careerInfo.visualRoadmap` in MongoDB.
 
 **`generateFallbackRoadmap(learningPath)`:**
 - Tier 0: Mastered
@@ -1124,7 +1125,7 @@ Predefined skill sets for common roles with three tiers per role:
 | `data_scientist` | python, pandas, numpy, scikit-learn, sql | tensorflow, pytorch, jupyter, matplotlib | spark, hadoop, aws |
 | `cloud_engineer` | aws, linux, docker, kubernetes, networking | terraform, ci-cd, git, monitoring | azure, gcp, ansible |
 
-Used by `roadmapGenerator.js` as a fallback/supplement when GitHub/Stack Overflow data is unavailable.
+Used by `roadmapGenerator.js` as a fallback/supplement when GitHub data is unavailable.
 
 ---
 
@@ -1134,7 +1135,7 @@ Used by `roadmapGenerator.js` as a fallback/supplement when GitHub/Stack Overflo
 
 **Workflow:**
 1. User sets `currentSkills` and `targetJob` in profile
-2. Roadmap generator fetches job requirements (GitHub + Stack Overflow + roleSkills config)
+2. Roadmap generator fetches job requirements (GitHub + roleSkills config)
 3. Compares mastered skills against requirements to find gaps
 4. Dashboard visualizes with Radar chart + three skill columns
 5. Skills can be toggled between: To Learn → Learning → Mastered
@@ -1284,7 +1285,7 @@ User can toggle resume inclusion or delete
 
 **Generation:**
 - GitHub API: search job-relevant repos for skill signals
-- Stack Overflow API: technology trends
+- Industry technology trends and role mappings
 - `config/roleSkills.js`: predefined skill sets per role
 - Groq AI: generate descriptions, resources (courses, docs, books), priority, time estimates
 - Cache invalidated when `profile.lastProfileUpdate` > `roadmapCache.generatedAt`
@@ -1643,16 +1644,16 @@ GET /api/visual-roadmap
     ↓
 Check user.careerInfo.visualRoadmap (cache)
     ↓ Cache hit → return cached data immediately
-    ↓ Cache miss or refresh=true:
-        1. generateRoadmap(profile)  [Groq + GitHub + Stack Overflow]
+    ↓ (System automatically re-computes mastery status in-process)
+    ↓ Cache miss:
+        1. generateRoadmap(profile)  [Groq + GitHub + Industry Trends]
         2. Gemini 1.5-flash organizes into tiers + categories + resources
-        3. Save to user.careerInfo.visualRoadmap
-        4. Return tiers + targetJob
+        3. Save initial roadmap to user.careerInfo.visualRoadmap
     ↓
 Frontend renders tiered timeline
     ↓
 User can click any skill card → view course resources
-User can click "Regenerate Path" → refresh=true → forces new generation
+(Roadmap auto-updates when skills are mastered)
 ```
 
 ---
@@ -2008,6 +2009,6 @@ All major features are implemented. The modular architecture makes it straightfo
 
 ---
 
-**Last Updated:** March 10, 2026
-**Version:** 1.0.0
+**Last Updated:** March 26, 2026
+**Version:** 1.2.0
 **Status:** Production Ready

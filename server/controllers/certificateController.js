@@ -1,4 +1,3 @@
-
 import path from 'path'
 import fs from 'fs/promises'
 import { fileURLToPath } from 'url'
@@ -49,19 +48,16 @@ export const uploadCertificate = async (req, res) => {
             extractedText = await resumeParserService.extractTextFromPdf(filePath);
         } catch (pdfError) {
             console.error("PDF Parsing failed:", pdfError.message);
-            // Delete file if parsing failed completely
             await fs.unlink(filePath).catch(() => { });
-            
-            // Return detailed error message from extraction diagnostics
             const errorMessage = pdfError.message || "Could not read PDF content";
-            return res.status(422).json({ 
+            return res.status(422).json({
                 error: errorMessage,
                 code: 'PDF_EXTRACTION_FAILED',
                 suggestion: 'Please ensure the PDF contains selectable text (not just images or scans)'
             });
         }
 
-        // Analyze with Groq
+        // Get user profile
         const userProfile = await User.findById(userId);
         const targetRole = userProfile.profile?.targetJob || 'General';
 
@@ -70,55 +66,113 @@ export const uploadCertificate = async (req, res) => {
             learning: userProfile.profile?.learningSkills || []
         };
 
+        // Build roadmap skills pool BEFORE AI call so AI knows what to match against
+        const roadmapSkillsPool = new Set();
+
+        // Source 1: Current Skills
+        (userProfile.profile?.currentSkills || []).forEach(s => {
+            const name = typeof s === 'string' ? s : (s.name || s.skill);
+            if (name) roadmapSkillsPool.add(name);
+        });
+
+        // Source 2: Learning Skills
+        (userProfile.profile?.learningSkills || []).forEach(s => {
+            if (s) roadmapSkillsPool.add(s);
+        });
+
+        // Source 3: Suggested Skills
+        (userProfile.skillAnalysis?.suggestedSkills || []).forEach(s => {
+            if (s) roadmapSkillsPool.add(s);
+        });
+
+        // Source 4: Missing Skills
+        (userProfile.skillAnalysis?.missingSkills || []).forEach(s => {
+            if (s) roadmapSkillsPool.add(s);
+        });
+
+        // Source 5: Primary Tech Stack
+        (userProfile.careerInfo?.primaryTechStack || []).forEach(s => {
+            if (s) roadmapSkillsPool.add(s);
+        });
+
+        // Source 6: Roadmap Cache
+        if (userProfile.profile?.roadmapCache) {
+            try {
+                const cache = typeof userProfile.profile.roadmapCache === 'string'
+                    ? JSON.parse(userProfile.profile.roadmapCache)
+                    : userProfile.profile.roadmapCache;
+
+                if (cache.roadmap && typeof cache.roadmap === 'object') {
+                    Object.entries(cache.roadmap).forEach(([phase, items]) => {
+                        if (Array.isArray(items)) {
+                            items.forEach(item => { if (item?.skill) roadmapSkillsPool.add(item.skill); });
+                        }
+                    });
+                }
+                if (Array.isArray(cache.learningPath)) {
+                    cache.learningPath.forEach(item => { if (item?.skill) roadmapSkillsPool.add(item.skill); });
+                }
+                if (Array.isArray(cache.skills)) {
+                    cache.skills.forEach(item => {
+                        const skillName = typeof item === 'string' ? item : item?.skill;
+                        if (skillName) roadmapSkillsPool.add(skillName);
+                    });
+                }
+            } catch (e) {
+                console.warn("[Certificate Upload] Failed to parse roadmapCache:", e.message);
+            }
+        }
+
+        const roadmapSkillNames = Array.from(roadmapSkillsPool).filter(Boolean);
+        console.log('[Certificate Upload] Roadmap skills pool built:', roadmapSkillNames.length, 'skills');
+
+        // Analyze with Groq — pass real roadmap skills so AI can pre-match
         let analysis;
         try {
             analysis = await analyzeCertificate(
                 extractedText,
                 targetRole,
-                [],
+                roadmapSkillNames,
                 currentSkillState
             );
         } catch (groqError) {
-            // Delete uploaded file before returning error
             await fs.unlink(filePath).catch(() => { });
-            
-            // Handle specific Groq API errors
+
             if (groqError.code === 'GROQ_AUTH_FAILED' || groqError.status === 401) {
                 console.error('Groq API authentication failed');
-                return res.status(503).json({ 
+                return res.status(503).json({
                     error: 'AI service configuration error. Please contact the administrator to verify the Groq API key is set correctly.',
                     code: 'AI_CONFIG_ERROR'
                 });
             }
-            
+
             if (groqError.code === 'MISSING_API_KEY') {
                 console.error('Groq API key is missing');
-                return res.status(503).json({ 
+                return res.status(503).json({
                     error: 'AI service is not configured. Please contact the administrator.',
                     code: 'AI_NOT_CONFIGURED'
                 });
             }
-            
+
             if (groqError.code === 'INVALID_API_KEY_FORMAT') {
                 console.error('Groq API key has invalid format');
-                return res.status(503).json({ 
+                return res.status(503).json({
                     error: 'AI service configuration error. Invalid API key format.',
                     code: 'AI_CONFIG_ERROR'
                 });
             }
-            
-            // Generic AI analysis failure
+
             console.error('Certificate analysis error:', groqError.message);
-            return res.status(503).json({ 
+            return res.status(503).json({
                 error: groqError.message || 'Failed to analyze certificate. Please try again later.',
                 code: 'ANALYSIS_FAILED'
             });
         }
 
-        // Validate and safely extract analysis data
+        // Validate AI response
         if (!analysis || typeof analysis !== 'object') {
             console.error('[Certificate Upload] AI returned invalid analysis response:', analysis);
-            await fs.unlink(filePath).catch(() => {});
+            await fs.unlink(filePath).catch(() => { });
             return res.status(503).json({
                 error: 'AI service returned invalid response. Please try again.',
                 code: 'INVALID_AI_RESPONSE'
@@ -127,12 +181,11 @@ export const uploadCertificate = async (req, res) => {
 
         console.log('[Certificate Upload] Full AI analysis response received:', JSON.stringify(analysis, null, 2).substring(0, 500));
 
-        // Map fields exactly as requested
-        // Combine both certified (roadmap-matched) and notMappedToRoadmap (new) skills
+        // Combine certified and notMappedToRoadmap skills
         const certifiedSkills = (analysis.skillAchievement?.certified || []).map(s => typeof s === 'string' ? s : s.skill);
         const notMappedSkills = (analysis.skillAchievement?.notMappedToRoadmap || []).map(s => typeof s === 'string' ? s : s.skill);
         const skillsExtracted = [...certifiedSkills, ...notMappedSkills].filter(Boolean);
-        
+
         console.log('[Certificate Upload] 📝 AI Analysis Summary:');
         console.log(`  Certificate Title: ${analysis.certificate?.polishedTitle || 'Unknown'}`);
         console.log(`  Issuer: ${analysis.certificate?.issuer || 'Unknown'}`);
@@ -142,120 +195,18 @@ export const uploadCertificate = async (req, res) => {
         console.log(`    - Not mapped to roadmap: ${notMappedSkills.length} → ${notMappedSkills.join(', ') || 'None'}`);
         console.log(`  Career Relevance: ${analysis.careerAlignment?.relevanceLevel || 'Unknown'}`);
 
-        // --- Roadmap Skill Integration (ENHANCED PIPELINE) ---
+        // --- Roadmap Skill Matching & Mastery Pipeline ---
         const newlyMasteredSkills = [];
-        const roadmapSkillsPool = new Set();
+        const allRoadmapSkills = roadmapSkillNames; // already built above
 
-        console.log('[Certificate Upload] Building roadmap skills pool from multiple sources...');
-
-        // 1. Gather all potential roadmap skills from all sources
-        
-        // Source 1: Current Skills
-        if (userProfile.profile?.currentSkills && Array.isArray(userProfile.profile.currentSkills)) {
-            console.log('[Certificate Upload] Source 1 - currentSkills:', userProfile.profile.currentSkills);
-            userProfile.profile.currentSkills.forEach(s => {
-                const skillName = typeof s === 'string' ? s : (s.name || s.skill);
-                if (skillName) roadmapSkillsPool.add(skillName);
-            });
-        }
-
-        // Source 2: Learning Skills
-        if (userProfile.profile?.learningSkills && Array.isArray(userProfile.profile.learningSkills)) {
-            console.log('[Certificate Upload] Source 2 - learningSkills:', userProfile.profile.learningSkills);
-            userProfile.profile.learningSkills.forEach(s => {
-                if (s) roadmapSkillsPool.add(s);
-            });
-        }
-
-        // Source 3: Suggested Skills (from skill analysis)
-        if (userProfile.skillAnalysis?.suggestedSkills && Array.isArray(userProfile.skillAnalysis.suggestedSkills)) {
-            console.log('[Certificate Upload] Source 3 - suggestedSkills:', userProfile.skillAnalysis.suggestedSkills);
-            userProfile.skillAnalysis.suggestedSkills.forEach(s => {
-                if (s) roadmapSkillsPool.add(s);
-            });
-        }
-
-        // Source 4: Missing Skills (from skill analysis)
-        if (userProfile.skillAnalysis?.missingSkills && Array.isArray(userProfile.skillAnalysis.missingSkills)) {
-            console.log('[Certificate Upload] Source 4 - missingSkills:', userProfile.skillAnalysis.missingSkills);
-            userProfile.skillAnalysis.missingSkills.forEach(s => {
-                if (s) roadmapSkillsPool.add(s);
-            });
-        }
-
-        // Source 5: Primary Tech Stack
-        if (userProfile.careerInfo?.primaryTechStack && Array.isArray(userProfile.careerInfo.primaryTechStack)) {
-            console.log('[Certificate Upload] Source 5 - primaryTechStack:', userProfile.careerInfo.primaryTechStack);
-            userProfile.careerInfo.primaryTechStack.forEach(s => {
-                if (s) roadmapSkillsPool.add(s);
-            });
-        }
-
-        // Source 6: Roadmap Cache (most comprehensive)
-        if (userProfile.profile?.roadmapCache) {
-            try {
-                const cache = typeof userProfile.profile.roadmapCache === 'string'
-                    ? JSON.parse(userProfile.profile.roadmapCache)
-                    : userProfile.profile.roadmapCache;
-
-                console.log('[Certificate Upload] Source 6 - roadmapCache structure:', {
-                    hasRoadmap: !!cache.roadmap,
-                    hasLearningPath: !!cache.learningPath,
-                    hasSkills: !!cache.skills
-                });
-
-                // Extract from roadmap object (phases)
-                if (cache.roadmap && typeof cache.roadmap === 'object') {
-                    Object.entries(cache.roadmap).forEach(([phase, items]) => {
-                        if (Array.isArray(items)) {
-                            items.forEach(item => {
-                                if (item?.skill) {
-                                    console.log(`  [Roadmap] Phase "${phase}": ${item.skill}`);
-                                    roadmapSkillsPool.add(item.skill);
-                                }
-                            });
-                        }
-                    });
-                }
-
-                // Extract from learningPath array
-                if (Array.isArray(cache.learningPath)) {
-                    cache.learningPath.forEach(item => {
-                        if (item?.skill) {
-                            console.log(`  [LearningPath]: ${item.skill}`);
-                            roadmapSkillsPool.add(item.skill);
-                        }
-                    });
-                }
-
-                // Extract from skills array
-                if (Array.isArray(cache.skills)) {
-                    cache.skills.forEach(item => {
-                        const skillName = typeof item === 'string' ? item : item?.skill;
-                        if (skillName) {
-                            console.log(`  [Skills]: ${skillName}`);
-                            roadmapSkillsPool.add(skillName);
-                        }
-                    });
-                }
-            } catch (e) {
-                console.warn("[Certificate Upload] Failed to parse roadmapCache:", e.message);
-            }
-        }
-
-        const allRoadmapSkills = Array.from(roadmapSkillsPool).filter(Boolean);
-        console.log('[Certificate Upload] ✅ Final roadmap skills pool:', allRoadmapSkills);
-        console.log('[Certificate Upload] 📊 Total skills to match against:', allRoadmapSkills.length);
-
-        // 2. Process each extracted skill
-        console.log(`[Certificate Upload] 🔍 Attempting to match ${skillsExtracted.length} extracted skill(s)...`);
+        console.log(`[Certificate Upload] 🔍 Matching ${skillsExtracted.length} extracted skill(s) against ${allRoadmapSkills.length} roadmap skills...`);
         console.log(`[Certificate Upload] Extracted skills:`, skillsExtracted);
 
         const matchDetails = [];
 
         for (const certSkill of skillsExtracted) {
             let hasMatch = false;
-            
+
             for (const roadmapSkillName of allRoadmapSkills) {
                 const matchResult = await matchSkillStrictly(certSkill, [roadmapSkillName]);
 
@@ -293,21 +244,17 @@ export const uploadCertificate = async (req, res) => {
                     } else {
                         console.log(`[Certificate Upload] ℹ️  "${roadmapSkillName}" already in completedSkills, not adding again`);
                     }
-                    break; // Move to next extracted skill after finding a match
+                    break;
                 }
             }
 
             if (!hasMatch) {
-                console.warn(`[Certificate Upload] ⚠️  No match found for extracted skill: "${certSkill}"`);
-                console.warn(`[Certificate Upload] Searched against ${allRoadmapSkills.length} roadmap skills`);
-                console.warn(`[Certificate Upload] Adding as new mastered skill anyway (not in roadmap but certified from course)`);
-                
-                // Even if skill is not in the user's current roadmap, 
-                // add it as mastered since it's proven by certificate
+                console.warn(`[Certificate Upload] ⚠️  No roadmap match for: "${certSkill}" — adding as mastered anyway`);
+
                 const alreadyCompleted = userProfile.profile.completedSkills.some(s =>
                     s.skill.toLowerCase() === certSkill.toLowerCase()
                 );
-                
+
                 if (!alreadyCompleted) {
                     userProfile.profile.completedSkills.push({
                         skill: certSkill,
@@ -319,7 +266,7 @@ export const uploadCertificate = async (req, res) => {
                     newlyMasteredSkills.push(certSkill);
                     console.log(`[Certificate Upload] ✅ Added unmatched skill as mastered: "${certSkill}"`);
                 }
-                
+
                 matchDetails.push({ extracted: certSkill, matched: null, addedAsNew: true });
             }
         }
@@ -328,51 +275,39 @@ export const uploadCertificate = async (req, res) => {
         console.log('[Certificate Upload] ✨ Skills promoted to mastered:', newlyMasteredSkills);
         const roadmapUpdated = newlyMasteredSkills.length > 0;
 
-        // Validate and sanitize certificate data from AI response
+        // Validate and sanitize certificate date data
         const validateAndSanitizeCertData = (analysis) => {
             const cert = analysis.certificate || {};
-            
-            // Log raw certificate data for debugging
+
             console.log('[Certificate Upload] Raw AI response certificateData:', JSON.stringify(cert, null, 2));
-            
-            // Process issueYear - ensure it's a valid 4-digit number
+
             let issueYear = new Date().getFullYear();
             if (cert.issueYear !== undefined && cert.issueYear !== null && cert.issueYear !== '') {
                 const parsedYear = Number(cert.issueYear);
-                // Check if it's a valid year (4-digit number between 1900 and current+1)
                 if (!isNaN(parsedYear) && parsedYear >= 1900 && parsedYear <= new Date().getFullYear() + 1) {
                     issueYear = parsedYear;
                     console.log(`[Certificate Upload] Parsed issueYear: ${issueYear}`);
                 } else {
-                    console.warn(`[Certificate Upload] Invalid issueYear "${cert.issueYear}" (parsed as ${parsedYear}), using current year ${new Date().getFullYear()} instead`);
+                    console.warn(`[Certificate Upload] Invalid issueYear "${cert.issueYear}", using current year`);
                 }
-            } else {
-                console.log(`[Certificate Upload] No issueYear provided, using current year ${new Date().getFullYear()}`);
             }
-            
-            // Process issueDate - ensure it's a valid date
+
             let issueDate = new Date();
             if (cert.issueDate) {
                 try {
                     const parsedDate = new Date(cert.issueDate);
-                    // Check if date is valid and not in the future
                     if (!isNaN(parsedDate.getTime()) && parsedDate <= new Date()) {
                         issueDate = parsedDate;
                         console.log(`[Certificate Upload] Parsed issueDate: ${issueDate.toISOString()}`);
                     } else {
-                        console.warn(`[Certificate Upload] Invalid issueDate "${cert.issueDate}" (future or invalid), using current date instead`);
+                        console.warn(`[Certificate Upload] Invalid issueDate "${cert.issueDate}", using current date`);
                     }
                 } catch (e) {
                     console.warn(`[Certificate Upload] Could not parse issueDate "${cert.issueDate}":`, e.message);
                 }
-            } else {
-                console.log('[Certificate Upload] No issueDate provided, using current date');
             }
-            
-            return {
-                issueYear,
-                issueDate
-            };
+
+            return { issueYear, issueDate };
         };
 
         const dateValidation = validateAndSanitizeCertData(analysis);
@@ -392,7 +327,6 @@ export const uploadCertificate = async (req, res) => {
             uploadedAt: new Date()
         };
 
-        // Validate certificate object before saving
         console.log('[Certificate Upload] Certificate object to be saved:', {
             title: newCert.title,
             issuer: newCert.issuer,
@@ -402,7 +336,6 @@ export const uploadCertificate = async (req, res) => {
             masteredSkillsCount: newCert.masteredSkills.length
         });
 
-        // Verify issueYear is actually a number and not NaN
         if (typeof newCert.issueYear !== 'number' || isNaN(newCert.issueYear)) {
             console.error('[Certificate Upload] CRITICAL: issueYear is not a valid number:', newCert.issueYear);
             throw new Error(`Invalid issueYear value: ${newCert.issueYear} (type: ${typeof newCert.issueYear})`);
@@ -419,13 +352,11 @@ export const uploadCertificate = async (req, res) => {
             userProfile.profile.roadmapCache = null;
         }
 
-        // Validate the entire user record before saving
         console.log('[Certificate Upload] Validating user profile before saving...');
         await userProfile.validate();
-        console.log('[Certificate Upload] User profile validation passed, saving...');
+        console.log('[Certificate Upload] Validation passed, saving...');
         await userProfile.save();
 
-        // Log the completedSkills for verification
         console.log('[Certificate Upload] Newly mastered skills saved to completedSkills:');
         newlyMasteredSkills.forEach(skill => {
             const skillRecord = userProfile.profile.completedSkills.find(s => s.skill.toLowerCase() === skill.toLowerCase());
@@ -434,7 +365,6 @@ export const uploadCertificate = async (req, res) => {
             }
         });
 
-        // Get updated resume data with newly mastered skills
         const resumeGeneratorService = await import('../services/resumeGeneratorService.js').then(m => m.default || m);
         let resumeData = null;
         try {
@@ -462,39 +392,33 @@ export const uploadCertificate = async (req, res) => {
             name: error.name
         });
 
-        // Handle MongoDB validation errors (e.g., invalid issueYear)
         if (error.name === 'ValidationError') {
             const validationErrors = Object.entries(error.errors)
                 .map(([path, err]) => `${path}: ${err.message}`)
                 .join('; ');
-            
             console.error('[Certificate Upload] MongoDB Validation Error:', validationErrors);
-            
             return res.status(422).json({
                 error: 'Certificate data validation failed. Some certificate fields are invalid.',
                 details: validationErrors,
                 code: 'VALIDATION_ERROR'
             });
         }
-        
-        // Handle Groq API authentication errors
+
         if (error.status === 401 || error.code === 'GROQ_AUTH_FAILED') {
-            return res.status(503).json({ 
+            return res.status(503).json({
                 error: 'AI service authentication failed. Please contact support.',
                 code: 'AI_AUTH_ERROR'
             });
         }
-        
-        // Handle file system errors (PDF not saved/readable)
+
         if (error.code === 'ENOENT' || error.code === 'EACCES') {
             return res.status(500).json({
                 error: 'Failed to save certificate file. Please try uploading again.',
                 code: 'FILE_ERROR'
             });
         }
-        
-        // Default error response
-        res.status(500).json({ 
+
+        res.status(500).json({
             error: error.message || 'An error occurred during certificate upload',
             code: 'UNKNOWN_ERROR'
         });
@@ -536,14 +460,12 @@ export const deleteCertificate = async (req, res) => {
 
         const cert = user.certifications[certIndex];
 
-        // Delete physical file
         if (cert.fileUrl) {
             const filename = cert.fileUrl.split('/').pop();
             const filePath = path.join(UPLOAD_DIR, filename);
             await fs.unlink(filePath).catch(err => console.warn('Could not delete file:', err.message));
         }
 
-        // Remove from array
         user.certifications.splice(certIndex, 1);
         await user.save();
 

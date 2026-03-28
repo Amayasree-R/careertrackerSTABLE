@@ -17,9 +17,11 @@ function CertificateCard({ cert, onToggle, onDelete }) {
     }
 
     // Format date for display
-    const formattedDate = cert.issueDate
-        ? new Date(cert.issueDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
-        : cert.issueYear || 'No Date'
+    const formattedDate = cert.issueYear
+        ? cert.issueYear.toString()
+        : cert.issueDate
+            ? new Date(cert.issueDate).getFullYear().toString()
+            : 'No Date'
 
     return (
         <div className="bg-[#111111] border border-[#242424] rounded-3xl p-6 hover:border-[#ff5500] hover:shadow-none transition-all duration-300 flex flex-col h-full relative group">

@@ -128,4 +128,5 @@ async function getMatchedJobs({ targetJob, resultsPerPage = 50, userSkills = [] 
   return scoredJobs;
 }
 
-export { getMatchedJobs };
+export { getMatchedJobs, extractSkills, getMatchLabel };
+
