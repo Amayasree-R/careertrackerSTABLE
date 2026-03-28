@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState } from 'react'
 import axios from 'axios'
 
-const API_BASE_URL = 'http://localhost:5000/api'
+const API_BASE_URL = 'https://careertracker-gtc7a3g9gvfrgsf4.centralindia-01.azurewebsites.net/api'
 
 /**
  * Custom hook for enhancing description text with AI

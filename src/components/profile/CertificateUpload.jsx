@@ -56,7 +56,7 @@ function CertificateUpload({ onUploadSuccess }) {
 
         try {
             const token = localStorage.getItem('token')
-            const response = await fetch('http://localhost:5000/api/cert/upload', {
+            const response = await fetch('https://careertracker-gtc7a3g9gvfrgsf4.centralindia-01.azurewebsites.net/api/cert/upload', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`

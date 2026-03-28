@@ -12,7 +12,7 @@ export default function SkillTooltip({ skill, targetJob, anchorRef, onClose }) {
         const fetchDetail = async () => {
             try {
                 const token = localStorage.getItem('token')
-                const response = await fetch('http://localhost:5000/api/skill-detail', {
+                const response = await fetch('https://careertracker-gtc7a3g9gvfrgsf4.centralindia-01.azurewebsites.net/api/skill-detail', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
