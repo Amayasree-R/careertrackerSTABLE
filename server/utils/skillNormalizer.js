@@ -172,14 +172,41 @@ function escapeRegex(str) {
 
 /**
  * Normalize a skill name to standard form
- * @param {string} skill - Raw skill name from resume
+ * Strips common suffixes like "Development", "Programming", etc.
+ * @param {string} skill - Raw skill name
  * @returns {string} - Normalized skill name
  */
 export function normalizeSkill(skill) {
   if (!skill) return ''
 
-  const normalized = skill.toLowerCase().trim()
-  return skillNormalizationMap[normalized] || skill
+  let normalized = skill.toLowerCase().trim()
+  
+  // Blacklist of generic words that should never be skills
+  const blacklist = [
+    'development', 'completion', 'training', 'course', 
+    'program', 'fundamentals', 'basics', 'advanced', 
+    'independent', 'certification', 'award', 'achievement', 
+    'studies', 'learning', 'education', 'professional',
+    'certificate', 'certified', 'training', 'specialization'
+  ]
+  
+  if (blacklist.includes(normalized)) return ''
+  
+  // Remove common suffixes
+  const suffixes = [
+    ' development', ' programming', ' fundamentals', 
+    ' course', ' training', ' basics', ' essentials',
+    ' bootcamp', ' masterclass', ' certification',
+    ' developer', ' engineer'
+  ]
+  
+  for (const suffix of suffixes) {
+    if (normalized.endsWith(suffix)) {
+      normalized = normalized.slice(0, -suffix.length).trim()
+    }
+  }
+
+  return skillNormalizationMap[normalized] || normalized.charAt(0).toUpperCase() + normalized.slice(1)
 }
 
 /**

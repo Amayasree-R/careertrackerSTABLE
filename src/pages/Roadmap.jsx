@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
+import axios from 'axios'
+import API_BASE_URL from '../config/api.js'
 import { CheckCircle, Award, Target, ChevronRight } from 'lucide-react'
 import SkillTooltip from '../components/common/SkillTooltip'
 
@@ -59,27 +61,25 @@ function Roadmap() {
 
         // Parallel fetching
         const [profRes, roadRes] = await Promise.all([
-          fetch('https://careertracker-gtc7a3g9gvfrgsf4.centralindia-01.azurewebsites.net/api/profile', {
+          axios.get(`${API_BASE_URL}/profile`, {
             headers: { 'Authorization': `Bearer ${token}` }
           }),
-          fetch('https://careertracker-gtc7a3g9gvfrgsf4.centralindia-01.azurewebsites.net/api/roadmap', {
+          axios.get(`${API_BASE_URL}/roadmap`, {
             headers: { 'Authorization': `Bearer ${token}` }
           })
         ])
 
-        const profData = await profRes.json()
-        const roadData = await roadRes.json()
+        const profData = profRes.data
+        const roadData = roadRes.data
 
-        if (profRes.ok && profData.user) {
+        if (profData.user) {
           setProfile(profData.user.profile)
           localStorage.setItem('userProfile', JSON.stringify(profData.user.profile))
         }
 
-        if (roadRes.ok) {
+        if (roadData) {
           setRoadmapData(roadData)
           localStorage.setItem('userRoadmap', JSON.stringify(roadData))
-        } else {
-          throw new Error(roadData.message)
         }
       } catch (error) {
         console.error('Error fetching roadmap:', error)

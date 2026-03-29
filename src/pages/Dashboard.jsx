@@ -1,6 +1,8 @@
 
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import axios from 'axios'
+import API_BASE_URL from '../config/api.js'
 import {
   Radar, RadarChart, PolarGrid, PolarAngleAxis,
   PolarRadiusAxis, ResponsiveContainer
@@ -8,6 +10,7 @@ import {
 import SkillTooltip from '../components/common/SkillTooltip'
 import { StatsCardSkeleton, SkillCardSkeleton } from '../components/common/Skeleton'
 import { Rocket, BookOpen, FileText, Star, Search, Activity, Briefcase } from 'lucide-react'
+import { normalizeSkill } from '../utils/skillNormalizer'
 
 function SkillRadar({ roadmap, profile }) {
   const chartData = useMemo(() => {
@@ -15,8 +18,11 @@ function SkillRadar({ roadmap, profile }) {
 
     // Map all available skills for the radar shape
     return roadmap.learningPath.map(item => {
-      const isMastered = profile?.completedSkills?.some(s => (typeof s === 'object' ? s.skill === item.skill : s === item.skill))
-      const isLearning = profile?.learningSkills?.includes(item.skill)
+      const isMastered = profile?.completedSkills?.some(s => {
+        const masteredSkillName = typeof s === 'object' ? s.skill : s;
+        return normalizeSkill(masteredSkillName) === normalizeSkill(item.skill);
+      })
+      const isLearning = profile?.learningSkills?.some(s => normalizeSkill(s) === normalizeSkill(item.skill))
 
       let value = 20 // Base value
       if (isMastered) value = 100
@@ -78,9 +84,19 @@ function SkillRadar({ roadmap, profile }) {
 
 function Dashboard() {
   const navigate = useNavigate()
-  const [profile, setProfile] = useState(null)
+  const [profile, setProfile] = useState(() => {
+    try {
+      const cached = localStorage.getItem('userProfile')
+      if (cached) {
+        const parsed = JSON.parse(cached)
+        return parsed.profile || parsed
+      }
+    } catch (e) {}
+    return null
+  })
   const [roadmap, setRoadmap] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [isRegenerating, setIsRegenerating] = useState(false)
   const [updatingSkill, setUpdatingSkill] = useState(null)
   const [activeSkillDetails, setActiveSkillDetails] = useState(null)
   const skillRefs = useRef({})
@@ -134,35 +150,38 @@ function Dashboard() {
       try {
         setLoading(true)
 
-        // Parallel fetching
-        /*const [profRes, roadRes] = await Promise.all([
-          fetch('http://localhost:5000/api/profile', {
-            headers: { 'Authorization': `Bearer ${token}` }
-          }),
-          fetch('http://localhost:5000/api/roadmap', {
-            headers: { 'Authorization': `Bearer ${token}` }
-          })
-        ])*/
-       const [profRes, roadRes] = await Promise.all([
-        fetch('https://careertracker-gtc7a3g9gvfrgsf4.centralindia-01.azurewebsites.net/api/profile', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        }),
-        fetch('https://careertracker-gtc7a3g9gvfrgsf4.centralindia-01.azurewebsites.net/api/roadmap', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        })
-        ])
+        const cachedRoadmap = localStorage.getItem('userRoadmap')
+        const cachedProfile = localStorage.getItem('userProfile')
 
-        const profData = await profRes.json()
-        const roadData = await roadRes.json()
-
-        if (profRes.ok && profData.user) {
-          setProfile(profData.user.profile)
-          localStorage.setItem('userProfile', JSON.stringify(profData.user.profile))
+        if (cachedProfile && cachedRoadmap) {
+          const parsedProfile = JSON.parse(cachedProfile)
+          const parsedRoadmap = JSON.parse(cachedRoadmap)
+          
+          if (parsedProfile?.targetJob !== parsedRoadmap?.targetJob) {
+            setIsRegenerating(true)
+            localStorage.removeItem('userRoadmap')
+          }
         }
 
-        if (roadRes.ok) {
-          setRoadmap(roadData)
-          localStorage.setItem('userRoadmap', JSON.stringify(roadData))
+        // Parallel fetching
+        const [profRes, roadRes] = await Promise.all([
+          axios.get(`${API_BASE_URL}/profile`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          }),
+          axios.get(`${API_BASE_URL}/roadmap`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          })
+        ])
+
+        if (profRes.data && profRes.data.user) {
+          setProfile(profRes.data.user.profile)
+          localStorage.setItem('userProfile', JSON.stringify(profRes.data.user.profile))
+        }
+
+        if (roadRes.data) {
+          setRoadmap(roadRes.data)
+          localStorage.setItem('userRoadmap', JSON.stringify(roadRes.data))
+          setIsRegenerating(false)
         }
       } catch (err) {
         console.error('Fetch dashboard data error:', err)
@@ -178,23 +197,19 @@ function Dashboard() {
     setUpdatingSkill(skill)
     const token = localStorage.getItem('token')
     try {
-      const res = await fetch('https://careertracker-gtc7a3g9gvfrgsf4.centralindia-01.azurewebsites.net/api/profile/toggle-skill', {
-        method: 'POST',
+      const res = await axios.post(`${API_BASE_URL}/profile/toggle-skill`, { skill }, {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ skill })
+        }
       })
 
-      if (res.ok) {
-        const data = await res.json()
-        setProfile(prev => ({
-          ...prev,
-          completedSkills: data.completedSkills,
-          learningSkills: data.learningSkills || []
-        }))
-      }
+      const data = res.data
+      setProfile(prev => ({
+        ...prev,
+        completedSkills: data.completedSkills,
+        learningSkills: data.learningSkills || []
+      }))
     } catch (err) {
       console.error('Toggle skill error:', err)
     } finally {
@@ -205,19 +220,15 @@ function Dashboard() {
   const toggleFocus = async (skill) => {
     const token = localStorage.getItem('token')
     try {
-      const res = await fetch('https://careertracker-gtc7a3g9gvfrgsf4.centralindia-01.azurewebsites.net/api/profile/focus-skill', {
-        method: 'POST',
+      const res = await axios.post(`${API_BASE_URL}/profile/focus-skill`, { skill }, {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ skill })
+        }
       })
 
-      if (res.ok) {
-        const data = await res.json()
-        setProfile(prev => ({ ...prev, focusSkill: data.focusSkill }))
-      }
+      const data = res.data
+      setProfile(prev => ({ ...prev, focusSkill: data.focusSkill }))
     } catch (err) {
       console.error('Toggle focus error:', err)
     }
@@ -234,8 +245,11 @@ function Dashboard() {
       const matchesSearch = item.skill.toLowerCase().includes(searchTerm.toLowerCase())
       const matchesPriority = filterPriority === 'All' || item.priority === filterPriority
 
-      const isMastered = profile?.completedSkills?.some(s => (typeof s === 'object' ? s.skill === item.skill : s === item.skill))
-      const isLearning = profile?.learningSkills?.includes(item.skill)
+      const isMastered = profile?.completedSkills?.some(s => {
+        const masteredSkillName = typeof s === 'object' ? s.skill : s;
+        return normalizeSkill(masteredSkillName) === normalizeSkill(item.skill);
+      })
+      const isLearning = profile?.learningSkills?.some(s => normalizeSkill(s) === normalizeSkill(item.skill))
       const status = isMastered ? 'Mastered' : isLearning ? 'Learning' : 'To Learn'
 
       const matchesStatus = filterStatus === 'All' || status === filterStatus
@@ -251,7 +265,15 @@ function Dashboard() {
   }, [roadmap, searchTerm, filterPriority, filterStatus, hideMastered, profile])
 
   const isProfileComplete = profile && profile.targetJob
-  const masteredCount = profile?.completedSkills?.length || 0
+  const masteredCount = useMemo(() => {
+    if (!roadmap?.learningPath || !profile?.completedSkills) return 0
+    return roadmap.learningPath.filter(item =>
+      profile.completedSkills.some(s => {
+        const masteredName = typeof s === 'object' ? s.skill : s
+        return normalizeSkill(masteredName) === normalizeSkill(item.skill)
+      })
+    ).length
+  }, [roadmap, profile])
   const learningCount = profile?.learningSkills?.length || 0
   const requiredCount = roadmap?.skillGap?.required || 0
 
@@ -262,7 +284,16 @@ function Dashboard() {
   return (
     <div className="space-y-4">
       {/* Target Job Header */}
-      {!isProfileComplete ? (
+      {loading && !profile ? (
+        <div className="bg-[#111111] rounded-2xl border border-[#242424] p-8 animate-pulse">
+          <div className="flex flex-col items-center justify-center py-16 space-y-4">
+            <div className="w-12 h-12 border-4 border-[#ff5500] border-t-transparent rounded-full animate-spin" />
+            <p className="text-[#a0a0a0] font-semibold text-sm uppercase tracking-widest">
+              Loading your dashboard...
+            </p>
+          </div>
+        </div>
+      ) : !isProfileComplete ? (
         <div className="bg-[#111111] rounded-2xl border border-[#242424] hover:border-[#ff5500]/30 shadow-sm hover:shadow-lg transition-all duration-300 ease-out p-8 text-center space-y-6">
           <div className="w-20 h-20 bg-[#1a1a1a] rounded-2xl flex items-center justify-center mx-auto mb-4">
             <Rocket size={40} className="text-[#ff5500]" />
@@ -310,22 +341,25 @@ function Dashboard() {
             {/* Mastered Card */}
             <div className="bg-[#111111] border border-[#242424] rounded-2xl p-4 hover:border-[#ff5500]/30 transition h-[110px] flex flex-col justify-between">
               <p className="text-xs font-semibold text-[#a0a0a0] uppercase tracking-widest">Mastered</p>
-              <p className="text-3xl font-black text-[#ffffff]">{masteredCount} <span className="text-sm font-bold text-[#606060]">/ {requiredCount}</span></p>
+              <p className="text-3xl font-black text-[#ffffff]">
+                {isRegenerating ? '—' : masteredCount}
+                <span className="text-sm font-bold text-[#606060]"> / {isRegenerating ? '—' : requiredCount}</span>
+              </p>
             </div>
 
             {/* Learning Card */}
             <div className="bg-[#111111] border border-[#242424] rounded-2xl p-4 hover:border-[#ff5500]/30 transition h-[110px] flex flex-col justify-between">
               <p className="text-xs font-semibold text-[#a0a0a0] uppercase tracking-widest">Learning</p>
-              <p className="text-3xl font-black text-[#ff5500]">{learningCount}</p>
+              <p className="text-3xl font-black text-[#ff5500]">{isRegenerating ? '—' : learningCount}</p>
             </div>
 
             {/* Overall Match Card */}
             <div className="bg-[#111111] border border-[#242424] rounded-2xl p-4 hover:border-[#ff5500]/30 transition h-[110px] flex flex-col justify-between">
               <p className="text-xs font-semibold text-[#a0a0a0] uppercase tracking-widest">Overall Match</p>
               <div className="space-y-2">
-                <span className="text-3xl font-black text-[#ff5500]">{progressPercentage}%</span>
+                <span className="text-3xl font-black text-[#ff5500]">{isRegenerating ? '—' : `${progressPercentage}%`}</span>
                 <div className="w-full h-1.5 bg-[#242424] rounded-full overflow-hidden">
-                  <div className="h-full bg-[#ff5500] transition-all duration-700 ease-out rounded-full" style={{ width: `${progressPercentage}%` }} />
+                  <div className="h-full bg-[#ff5500] transition-all duration-700 ease-out rounded-full" style={{ width: `${isRegenerating ? 0 : progressPercentage}%` }} />
                 </div>
               </div>
             </div>
@@ -413,9 +447,15 @@ function Dashboard() {
                 </div>
               )}
 
-              {(!roadmap && loading) ? (
-                <div className="grid grid-cols-2 gap-3">
-                  {[1, 2, 3, 4].map(i => <SkillCardSkeleton key={i} />)}
+              {isRegenerating || (!roadmap && loading) ? (
+                <div className="flex flex-col items-center justify-center py-16 space-y-4">
+                  <div className="w-12 h-12 border-4 border-[#ff5500] border-t-transparent rounded-full animate-spin" />
+                  <p className="text-[#a0a0a0] font-semibold text-sm uppercase tracking-widest">
+                    Generating your new roadmap...
+                  </p>
+                  <p className="text-[#606060] text-xs">
+                    This may take a few seconds
+                  </p>
                 </div>
               ) : filteredPath.length === 0 ? (
                 <div className="py-10 text-center space-y-2">
@@ -425,8 +465,11 @@ function Dashboard() {
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {filteredPath.map((item) => {
-                    const isMastered = profile?.completedSkills?.some(s => (typeof s === 'object' ? s.skill === item.skill : s === item.skill))
-                    const isLearning = profile?.learningSkills?.includes(item.skill)
+                    const isMastered = profile?.completedSkills?.some(s => {
+                      const masteredSkillName = typeof s === 'object' ? s.skill : s;
+                      return normalizeSkill(masteredSkillName) === normalizeSkill(item.skill);
+                    })
+                    const isLearning = profile?.learningSkills?.some(s => normalizeSkill(s) === normalizeSkill(item.skill))
                     const isUpdating = updatingSkill === item.skill
                     const isFocused = profile?.focusSkill === item.skill
 

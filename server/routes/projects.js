@@ -95,7 +95,7 @@ router.post('/save', authMiddleware, async (req, res) => {
         } = analysis
 
         // 1. Push the project entry
-        user.projects.push({
+        const newProject = {
             projectName,
             summary,
             techStack: Array.isArray(techStack) ? techStack : [],
@@ -103,17 +103,22 @@ router.post('/save', authMiddleware, async (req, res) => {
             skillsExtracted: Array.isArray(skillsExtracted) ? skillsExtracted : [],
             readmeRaw: readmeRaw || '',
             createdAt: new Date()
-        })
+        }
+        user.projects.push(newProject)
 
         // 2. Smart Skill Integration
-        // Instead of promoting all skills, we only promote those relevant to the user's roadmap
+        // This service may call user.save() internally if skills are promoted
         const integrationResult = await processProjectSkills(user, analysis.skillsExtracted || [])
 
-        // Re-fetch user or check updated status to ensure we return correct stats if needed
-        // but the service handles user.save()
+        // 3. Final save to ensure project itself is persisted even if no skills were promoted
+        await user.save()
+
+        // Get the saved project (with _id)
+        const savedProject = user.projects[user.projects.length - 1]
 
         return res.status(200).json({
             success: true,
+            project: savedProject,
             updatedSkills: integrationResult.promoted,
             integrationSummary: integrationResult
         })
@@ -159,18 +164,62 @@ router.delete('/:projectId', authMiddleware, async (req, res) => {
             return res.status(404).json({ error: 'User not found' })
         }
 
-        const originalLength = user.projects.length
-        user.projects = user.projects.filter(
-            p => p._id.toString() !== projectId
+        const projectIndex = user.projects.findIndex(
+            p => p._id.toString() === projectId
         )
 
-        if (user.projects.length === originalLength) {
+        if (projectIndex === -1) {
             return res.status(404).json({ error: 'Project not found' })
         }
 
+        const projectToDelete = user.projects[projectIndex]
+        const skillsToRemove = projectToDelete.skillsExtracted || []
+
+        // Import normalization utility
+        const { normalizeSkill } = await import('../utils/skillNormalizer.js')
+
+        // Identify skills still covered by OTHER projects
+        const otherProjects = user.projects.filter((_, idx) => idx !== projectIndex)
+        const stillInProjects = new Set()
+        otherProjects.forEach(p => {
+            (p.skillsExtracted || []).forEach(s => stillInProjects.add(normalizeSkill(s)))
+        })
+
+        // Identify skills covered by ALL certificates
+        const stillInCerts = new Set()
+        user.certifications.forEach(c => {
+            (c.skills || []).forEach(s => stillInCerts.add(normalizeSkill(s)));
+            (c.masteredSkills || []).forEach(s => stillInCerts.add(normalizeSkill(s)));
+        });
+
+        // Determine which skills were ONLY in this project
+        const skillsToActuallyRemove = skillsToRemove.filter(skill => {
+            const norm = normalizeSkill(skill)
+            return !stillInProjects.has(norm) && !stillInCerts.has(norm)
+        })
+
+        console.log(`[Project Delete] Skills to remove from profile:`, skillsToActuallyRemove)
+
+        // Remove from user's completedSkills
+        if (skillsToActuallyRemove.length > 0) {
+            const initialCount = user.profile.completedSkills.length;
+            user.profile.completedSkills = user.profile.completedSkills.filter(s => 
+                !skillsToActuallyRemove.some(r => normalizeSkill(r) === normalizeSkill(s.skill))
+            );
+            user.profile.roadmapCache = null; // Clear cache to reflect change
+            console.log(`[Project Delete] Removed ${initialCount - user.profile.completedSkills.length} skills from completedSkills`);
+        }
+
+        // Delete project
+        user.projects.splice(projectIndex, 1)
+
         await user.save()
 
-        return res.status(200).json({ success: true })
+        return res.status(200).json({ 
+            success: true,
+            message: 'Project deleted',
+            removedSkills: skillsToActuallyRemove
+        })
     } catch (error) {
         console.error('DELETE /api/projects/:projectId error:', error.message)
         return res.status(500).json({ error: error.message || 'Failed to delete project' })

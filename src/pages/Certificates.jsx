@@ -1,6 +1,8 @@
 
 import { useState, useEffect, useCallback } from 'react'
+import axios from 'axios'
 import { Briefcase, Award, Plus, FolderOpen, Loader2 } from 'lucide-react'
+import API_BASE_URL from '../config/api.js'
 import CertificateUpload from '../components/profile/CertificateUpload'
 import CertificateCard from '../components/profile/CertificateCard'
 
@@ -17,13 +19,10 @@ export default function Certificates() {
         }
 
         try {
-            const res = await fetch('https://careertracker-gtc7a3g9gvfrgsf4.centralindia-01.azurewebsites.net/api/cert', {
+            const res = await axios.get(`${API_BASE_URL}/cert`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             })
-            const data = await res.json()
-            if (res.ok) {
-                setCertificates(data || [])
-            }
+            setCertificates(res.data || [])
         } catch (err) {
             console.error('Fetch certificates error:', err)
         } finally {
@@ -41,12 +40,11 @@ export default function Certificates() {
         if (!token) return
 
         try {
-            const res = await fetch('https://careertracker-gtc7a3g9gvfrgsf4.centralindia-01.azurewebsites.net/api/profile', {
+            const res = await axios.get(`${API_BASE_URL}/profile`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             })
-            const data = await res.json()
-            if (res.ok && data.user) {
-                localStorage.setItem('userProfile', JSON.stringify(data.user.profile))
+            if (res.data && res.data.user) {
+                localStorage.setItem('userProfile', JSON.stringify(res.data.user.profile))
             }
         } catch (err) {
             console.error('Refresh profile error:', err)
@@ -56,14 +54,11 @@ export default function Certificates() {
     const handleToggleCert = async (certId) => {
         const token = localStorage.getItem('token')
         try {
-            const res = await fetch(`https://careertracker-gtc7a3g9gvfrgsf4.centralindia-01.azurewebsites.net/api/cert/toggle-resume/${certId}`, {
-                method: 'PATCH',
+            const res = await axios.patch(`${API_BASE_URL}/cert/toggle-resume/${certId}`, {}, {
                 headers: { 'Authorization': `Bearer ${token}` }
             })
-            if (res.ok) {
-                fetchCertificates()
-                refreshProfile() // Ensure dashboard/roadmap are in sync
-            }
+            fetchCertificates()
+            refreshProfile() // Ensure dashboard/roadmap are in sync
         } catch (err) {
             console.error('Toggle error:', err)
         }
@@ -72,14 +67,14 @@ export default function Certificates() {
     const handleDeleteCert = async (certId) => {
         const token = localStorage.getItem('token')
         try {
-            const res = await fetch(`https://careertracker-gtc7a3g9gvfrgsf4.centralindia-01.azurewebsites.net/api/cert/${certId}`, {
-                method: 'DELETE',
+            const res = await axios.delete(`${API_BASE_URL}/cert/${certId}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             })
-            if (res.ok) {
-                fetchCertificates()
-                refreshProfile() // Ensure dashboard/roadmap are in sync
+            if (res.data.removedSkills?.length > 0) {
+                console.log('Skills removed from profile due to cert deletion:', res.data.removedSkills)
             }
+            fetchCertificates()
+            refreshProfile() // Ensure dashboard/roadmap are in sync
         } catch (err) {
             console.error('Delete error:', err)
         }

@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import axios from 'axios'
+import API_BASE_URL from '../config/api.js'
 
 function Login() {
   const [formData, setFormData] = useState({
@@ -50,19 +52,15 @@ function Login() {
     setIsLoading(true)
 
     try {
-      const response = await fetch('https://careertracker-gtc7a3g9gvfrgsf4.centralindia-01.azurewebsites.net/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          username: formData.username,
-          password: formData.password
-        })
+      const response = await axios.post(`${API_BASE_URL}/auth/login`, {
+        username: formData.username,
+        password: formData.password
       })
 
-      const data = await response.json()
+      const data = response.data
       console.log(data)
 
-      if (!response.ok) {
+      if (!response.status === 200 && !response.status === 201) {
         throw new Error(data.message || 'Login failed')
       }
 

@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import axios from 'axios'
+import API_BASE_URL from '../config/api.js'
 import Avatar from '../components/common/Avatar'
 
 export default function Profile() {
@@ -17,19 +19,15 @@ export default function Profile() {
                     return
                 }
 
-                const res = await fetch('https://careertracker-gtc7a3g9gvfrgsf4.centralindia-01.azurewebsites.net/api/profile', {
+                const res = await axios.get(`${API_BASE_URL}/profile`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 })
-                const data = await res.json()
+                const data = res.data
 
-                if (res.ok) {
-                    if (data.user) {
-                        setUser(data.user)
-                    } else {
-                        setError('User data not found in response')
-                    }
+                if (data.user) {
+                    setUser(data.user)
                 } else {
-                    throw new Error(data.message || 'Failed to fetch profile')
+                    setError('User data not found in response')
                 }
             } catch (err) {
                 setError(err.message)

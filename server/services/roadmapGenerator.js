@@ -80,7 +80,16 @@ export async function generateRoadmap(profile) {
       }))
 
     // Combine both for the full roadmap visualization
-    const fullLearningPath = [...masteredSkillsObjects, ...learningPath]
+    const rawLearningPath = [...masteredSkillsObjects, ...learningPath]
+
+    // Deduplicate learningPath by normalized skill name
+    const seen = new Set()
+    const fullLearningPath = rawLearningPath.filter(item => {
+      const normalized = item.skill?.toLowerCase().replace(/[^a-z0-9]/g, '')
+      if (seen.has(normalized)) return false
+      seen.add(normalized)
+      return true
+    })
 
     return {
       skillGap: calculateSkillGap(

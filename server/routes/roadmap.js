@@ -32,7 +32,20 @@ router.get('/', authMiddleware, async (req, res) => {
       return res.status(400).json({ message: 'Profile not complete' })
     }
 
-    const { roadmapCache, lastProfileUpdate } = user.profile
+    let { roadmapCache, lastProfileUpdate } = user.profile
+
+    const hasDuplicates = (() => {
+      const names = (roadmapCache?.data?.learningPath || [])
+        .map(s => s.skill?.toLowerCase().replace(/[^a-z0-9]/g, ''))
+      return names.length !== new Set(names).size
+    })()
+
+    if (hasDuplicates) {
+      console.log('⚡ Invalidating roadmap cache due to duplicates...');
+      roadmapCache = undefined;
+      user.profile.roadmapCache = undefined;
+      await user.save();
+    }
 
     // Check if valid cache exists
     if (roadmapCache && roadmapCache.data && roadmapCache.generatedAt) {
@@ -41,6 +54,15 @@ router.get('/', authMiddleware, async (req, res) => {
 
       if (cacheTime > updateTime) {
         console.log('✓ Returning cached roadmap')
+        if (roadmapCache.data.learningPath) {
+          const seen = new Set()
+          roadmapCache.data.learningPath = roadmapCache.data.learningPath.filter(item => {
+            const key = item.skill?.toLowerCase().replace(/[^a-z0-9]/g, '')
+            if (seen.has(key)) return false
+            seen.add(key)
+            return true
+          })
+        }
         return res.json(roadmapCache.data)
       }
     }

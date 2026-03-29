@@ -1,8 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
-
-// ─── Helpers ────────────────────────────────────────────────────────────────
-
-const API_BASE = 'https://careertracker-gtc7a3g9gvfrgsf4.centralindia-01.azurewebsites.net'
+import axios from 'axios'
+import API_BASE_URL from '../config/api.js'
 
 function authHeaders() {
   const token = localStorage.getItem('token')
@@ -135,10 +133,9 @@ export default function JobMatches() {
     setLoading(true)
     setError(null)
     try {
-      const url = `${API_BASE}/api/jobs/matches${refresh ? '?refresh=true' : ''}`
-      const res = await fetch(url, { headers: authHeaders() })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Failed to load job matches.')
+      const url = `${API_BASE_URL}/jobs/matches${refresh ? '?refresh=true' : ''}`
+      const res = await axios.get(url, { headers: authHeaders() })
+      const data = res.data
       setJobs(data.results || [])
       setGeneratedAt(data.generatedAt ? new Date(data.generatedAt) : null)
     } catch (err) {

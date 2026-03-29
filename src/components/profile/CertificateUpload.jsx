@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { CloudUpload, ShieldCheck, AlertCircle, Loader2, Award } from 'lucide-react'
+import axios from 'axios'
+import API_BASE_URL from '../../config/api.js'
 
 function CertificateUpload({ onUploadSuccess }) {
     const [file, setFile] = useState(null)
@@ -56,27 +58,25 @@ function CertificateUpload({ onUploadSuccess }) {
 
         try {
             const token = localStorage.getItem('token')
-            const response = await fetch('https://careertracker-gtc7a3g9gvfrgsf4.centralindia-01.azurewebsites.net/api/cert/upload', {
-                method: 'POST',
+            const response = await axios.post(`${API_BASE_URL}/cert/upload`, formData, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 },
-                body: formData
+                timeout: 60000 // 60 seconds for AI processing
             })
 
-            const data = await response.json()
+            console.log('Upload response:', response)
+            console.log('Upload response.data:', response.data)
 
-            if (!response.ok) {
-                throw new Error(data.error || 'Upload failed')
-            }
+            const data = response.data
 
             setSuccess(true)
             setSuccessData(data)
             setFile(null)
-            if (onUploadSuccess) onUploadSuccess()
+            if (onUploadSuccess) onUploadSuccess(data)
         } catch (err) {
-            console.error(err)
-            setError(err.message || 'Failed to upload certificate')
+            console.error('Upload error:', err)
+            setError(err.response?.data?.error || err.message || 'Failed to upload certificate')
         } finally {
             setIsUploading(false)
         }

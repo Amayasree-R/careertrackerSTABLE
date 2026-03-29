@@ -45,21 +45,41 @@ export const updateProfile = async (userId, data) => {
   const user = await User.findById(userId);
   if (!user) throw new Error('User not found');
 
-  const { currentSkills, targetJob, experienceLevel } = data;
+  const { currentSkills, targetJob, experienceLevel, masteredSkills } = data;
 
   // Track if roadmap-critical fields changed
   const importantFieldsChanged =
     (currentSkills && JSON.stringify(currentSkills) !== JSON.stringify(user.profile.currentSkills)) ||
     (targetJob && targetJob !== user.profile.targetJob) ||
-    (experienceLevel && experienceLevel !== user.profile.experienceLevel);
+    (experienceLevel && experienceLevel !== user.profile.experienceLevel) ||
+    (masteredSkills && masteredSkills.length > 0);
 
   if (importantFieldsChanged) {
     user.profile.lastProfileUpdate = new Date();
   }
 
   if (currentSkills) user.profile.currentSkills = currentSkills;
-  if (targetJob) user.profile.targetJob = targetJob;
+  if (targetJob) {
+    user.profile.targetJob = targetJob;
+    if (user.careerInfo) {
+      user.careerInfo.targetJobRole = targetJob;
+      user.careerInfo.roadmapCache = undefined;
+      user.careerInfo.visualRoadmap = undefined;
+    }
+  }
   if (experienceLevel) user.profile.experienceLevel = experienceLevel;
+
+  // 0. Process explicit masteredSkills strictly
+  if (masteredSkills && Array.isArray(masteredSkills)) {
+    if (!user.profile.completedSkills) user.profile.completedSkills = [];
+    const existingCompleted = new Set(user.profile.completedSkills.map(s => s.skill));
+    masteredSkills.forEach(skill => {
+      if (!existingCompleted.has(skill)) {
+        user.profile.completedSkills.push({ skill, score: 90, masteredAt: new Date() });
+        existingCompleted.add(skill);
+      }
+    });
+  }
 
   // 1. Robust normalization of completedSkills
   if (user.profile.completedSkills) {

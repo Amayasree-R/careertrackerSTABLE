@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import API_BASE_URL from '../config/api.js';
 import { 
   CheckCircle2, 
   ChevronRight, 
@@ -15,8 +16,6 @@ import {
   ArrowRight
 } from 'lucide-react';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://careertracker-gtc7a3g9gvfrgsf4.centralindia-01.azurewebsites.net/api';
-
 const getAuthHeaders = () => {
   const token = localStorage.getItem('token');
   return { Authorization: `Bearer ${token}` };
@@ -30,6 +29,8 @@ const VisualRoadmap = () => {
   const [selectedSkill, setSelectedSkill] = useState(null);
 
 
+  const [dashboardProgress, setDashboardProgress] = useState(0);
+
   const fetchRoadmap = async () => {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -42,6 +43,12 @@ const VisualRoadmap = () => {
         headers: getAuthHeaders()
       });
       setData(response.data);
+      
+      const profileRes = await axios.get(`${API_BASE_URL}/profile`, { headers: getAuthHeaders() });
+      const masteredCount = profileRes.data.masteredSkills?.length || profileRes.data.user?.profile?.completedSkills?.length || 0;
+      const totalSkills = response.data.tiers?.reduce((sum, t) => sum + (t.skills?.length || 0), 0) || 0;
+      setDashboardProgress(totalSkills > 0 ? Math.round((masteredCount / totalSkills) * 100) : 0);
+      
       setError(null);
     } catch (err) {
       console.error('Error fetching roadmap:', err);
@@ -54,19 +61,6 @@ const VisualRoadmap = () => {
   useEffect(() => {
     fetchRoadmap();
   }, []);
-
-  const progress = useMemo(() => {
-    if (!data) return 0;
-    let total = 0;
-    let mastered = 0;
-    data.tiers.forEach(tier => {
-      tier.skills.forEach(skill => {
-        total++;
-        if (skill.status === 'Mastered') mastered++;
-      });
-    });
-    return total > 0 ? Math.round((mastered / total) * 100) : 0;
-  }, [data]);
 
   if (loading) {
     return (
@@ -132,12 +126,12 @@ const VisualRoadmap = () => {
           <div className="space-y-3">
             <div className="flex justify-between items-end">
               <span className="text-sm font-bold text-[#a0a0a0]">Overall Mastery Progress</span>
-              <span className="text-lg font-black text-[#ff5500]">{progress}%</span>
+              <span className="text-lg font-black text-[#ff5500]">{dashboardProgress}%</span>
             </div>
             <div className="w-full h-2.5 bg-[#242424] rounded-full overflow-hidden">
               <div 
                 className="h-full bg-[#ff5500] transition-all duration-1000 ease-out rounded-full"
-                style={{ width: `${progress}%` }}
+                style={{ width: `${dashboardProgress}%` }}
               />
             </div>
           </div>
@@ -159,12 +153,11 @@ const VisualRoadmap = () => {
               <div className="flex items-center gap-4 py-4 relative z-10">
                 <div className="flex-1 h-px bg-[#242424]"></div>
                 <div className={`px-5 py-1.5 border rounded-full text-[10px] font-black uppercase tracking-[0.2em] shadow-sm
-                  ${tierIdx === 0 ? 'bg-[#1a2a1a] text-[#22c55e] border-[#22c55e]/50' : 
-                    tierIdx === 1 ? 'bg-[#2a1500] text-[#ff5500] border-[#ff5500]/50' : 
-                    tierIdx === 2 ? 'bg-[#1a1a1a] text-[#a0a0a0] border-[#242424]' : 
+                  ${tierIdx === 0 ? 'bg-[#2a1500] text-[#ff5500] border-[#ff5500]/50' : 
+                    tierIdx === 1 ? 'bg-[#1a1a1a] text-[#a0a0a0] border-[#242424]' : 
                     'bg-[#111111] text-[#606060] border-[#242424]'}`}
                 >
-                  {tierIdx === 0 ? 'Mastered' : tierIdx === 1 ? 'Start Here' : tierIdx === 2 ? 'Next Steps' : 'Advanced'}
+                  {tier.label || (tierIdx === 0 ? 'Start Here' : tierIdx === 1 ? 'Next Steps' : 'Advanced')}
                 </div>
                 <div className="flex-1 h-px bg-[#242424]"></div>
               </div>

@@ -15,7 +15,7 @@ import LanguagesForm from '../components/resume/forms/LanguagesForm'
 import TemplateSelector from '../components/resume/TemplateSelector'
 import ThemeColorPicker from '../components/resume/ThemeColorPicker'
 
-const API_BASE_URL = 'https://careertracker-gtc7a3g9gvfrgsf4.centralindia-01.azurewebsites.net/api'
+import API_BASE_URL from '../config/api.js'
 
 // Data sanitization helpers
 const safe = (val, fallback) => val !== undefined && val !== null ? val : fallback

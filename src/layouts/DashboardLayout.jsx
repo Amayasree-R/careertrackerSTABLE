@@ -1,5 +1,7 @@
 import { useNavigate, Link, Outlet } from 'react-router-dom'
 import { useState, useEffect } from 'react'
+import axios from 'axios'
+import API_BASE_URL from '../config/api.js'
 import Sidebar from '../components/common/Sidebar'
 import Avatar from '../components/common/Avatar'
 
@@ -16,11 +18,11 @@ export default function DashboardLayout() {
             }
 
             try {
-                const res = await fetch('https://careertracker-gtc7a3g9gvfrgsf4.centralindia-01.azurewebsites.net/api/profile', {
+                const res = await axios.get(`${API_BASE_URL}/profile`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 })
-                const data = await res.json()
-                if (res.ok && data.user) {
+                const data = res.data
+                if (data.user) {
                     setProfile(data.user)
                 }
             } catch (err) {

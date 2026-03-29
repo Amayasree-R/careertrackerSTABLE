@@ -1,11 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
 import axios from 'axios'
+import API_BASE_URL from '../config/api.js'
 import {
     FolderGit2, Wand2, Upload, FileText, Trash2, CheckCircle,
     ChevronRight, Loader2, X, Save, AlertCircle
 } from 'lucide-react'
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://careertracker-gtc7a3g9gvfrgsf4.centralindia-01.azurewebsites.net/api'
 
 const getAuthHeaders = () => {
     const token = localStorage.getItem('token')
@@ -234,17 +233,29 @@ export default function Projects() {
                 { analysis: currentAnalysis, readmeRaw },
                 { headers: getAuthHeaders() }
             )
-            const saved = {
+            console.log('Save response:', res.data)
+
+            const saved = res.data.project || {
                 ...currentAnalysis,
                 readmeRaw,
                 createdAt: new Date().toISOString(),
-                _id: Date.now().toString() // temp id until next fetch
+                _id: res.data._id || Date.now().toString()
             }
+            
             setProjects(prev => [saved, ...prev])
             setCurrentAnalysis(null)
             setReadmeRaw('')
             setReadmeFile(null)
             setReadmeText('')
+
+            // Fresh fetch to confirm persistence and ensure data consistency
+            try {
+                const refreshRes = await axios.get(`${API_BASE_URL}/projects`, { headers: getAuthHeaders() })
+                setProjects(refreshRes.data.projects || [])
+            } catch (fetchErr) {
+                console.warn('Post-save refresh failed:', fetchErr.message)
+            }
+
             const skillCount = res.data.updatedSkills?.length || 0
             setSuccessMsg(`Project saved! ${skillCount} skill${skillCount !== 1 ? 's' : ''} marked as Mastered.`)
             setTimeout(() => setSuccessMsg(''), 5000)
@@ -262,8 +273,16 @@ export default function Projects() {
     // ── Delete saved project
     const handleDelete = async (projectId) => {
         try {
-            await axios.delete(`${API_BASE_URL}/projects/${projectId}`, { headers: getAuthHeaders() })
+            const res = await axios.delete(`${API_BASE_URL}/projects/${projectId}`, { headers: getAuthHeaders() })
             setProjects(prev => prev.filter(p => p._id?.toString() !== projectId?.toString()))
+            
+            if (res.data.removedSkills?.length > 0) {
+                setSuccessMsg(`Project deleted. ${res.data.removedSkills.length} skill(s) removed from your mastered list.`)
+                setTimeout(() => setSuccessMsg(''), 5000)
+            } else {
+                setSuccessMsg('Project deleted successfully.')
+                setTimeout(() => setSuccessMsg(''), 3000)
+            }
         } catch (err) {
             setError(err.response?.data?.error || 'Failed to delete project.')
         }

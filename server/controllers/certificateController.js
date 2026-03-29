@@ -5,6 +5,7 @@ import User from '../models/User.js'
 import resumeParserService from '../services/resumeParserService.js'
 import { analyzeCertificate } from '../services/certificateService.js'
 import { matchSkillStrictly } from '../services/skillMatchingService.js'
+import { normalizeSkill } from '../utils/skillNormalizer.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -60,6 +61,41 @@ export const uploadCertificate = async (req, res) => {
         // Get user profile
         const userProfile = await User.findById(userId);
         const targetRole = userProfile.profile?.targetJob || 'General';
+
+        // --- NEW: Text Preprocessing for Certificate Titles ---
+        const preprocessCertificateText = (text) => {
+            if (!text) return "";
+            const lines = text.split('\n');
+            const genericHeadings = [
+                'CERTIFICATE OF APPRECIATION',
+                'CERTIFICATE OF COMPLETION',
+                'CERTIFICATE OF ACHIEVEMENT',
+                'THE FOLLOWING AWARD IS GIVEN TO',
+                'THIS IS TO CERTIFY THAT',
+                'AWARDED TO'
+            ];
+            const courseKeywords = ['COURSE', 'DEVELOPMENT', 'TRAINING', 'PROGRAM', 'CERTIFICATION', 'SPECIALIZATION'];
+            
+            const prioritizedLines = [];
+            const otherLines = [];
+
+            lines.forEach(line => {
+                const upperLine = line.toUpperCase().trim();
+                // Skip or deprioritize generic headings
+                if (genericHeadings.some(h => upperLine.includes(h))) return;
+                
+                if (courseKeywords.some(k => upperLine.includes(k))) {
+                    prioritizedLines.push(line);
+                } else {
+                    otherLines.push(line);
+                }
+            });
+
+            return [...prioritizedLines, ...otherLines].join('\n');
+        };
+
+        const preprocessedText = preprocessCertificateText(extractedText);
+        // --------------------------------------------------------
 
         const currentSkillState = {
             mastered: userProfile.profile?.completedSkills || [],
@@ -126,11 +162,11 @@ export const uploadCertificate = async (req, res) => {
         const roadmapSkillNames = Array.from(roadmapSkillsPool).filter(Boolean);
         console.log('[Certificate Upload] Roadmap skills pool built:', roadmapSkillNames.length, 'skills');
 
-        // Analyze with Groq — pass real roadmap skills so AI can pre-match
+        // Analyze with Groq — pass preprocessed text
         let analysis;
         try {
             analysis = await analyzeCertificate(
-                extractedText,
+                preprocessedText,
                 targetRole,
                 roadmapSkillNames,
                 currentSkillState
@@ -182,17 +218,21 @@ export const uploadCertificate = async (req, res) => {
         console.log('[Certificate Upload] Full AI analysis response received:', JSON.stringify(analysis, null, 2).substring(0, 500));
 
         // Combine certified and notMappedToRoadmap skills
-        const certifiedSkills = (analysis.skillAchievement?.certified || []).map(s => typeof s === 'string' ? s : s.skill);
-        const notMappedSkills = (analysis.skillAchievement?.notMappedToRoadmap || []).map(s => typeof s === 'string' ? s : s.skill);
-        const skillsExtracted = [...certifiedSkills, ...notMappedSkills].filter(Boolean);
+        const rawCertifiedSkills = (analysis.skillAchievement?.certified || []).map(s => typeof s === 'string' ? s : s.skill);
+        const rawNotMappedSkills = (analysis.skillAchievement?.notMappedToRoadmap || []).map(s => typeof s === 'string' ? s : s.skill);
+        
+        // Normalize all extracted skills
+        const skillsExtracted = [...new Set([...rawCertifiedSkills, ...rawNotMappedSkills])]
+            .filter(Boolean)
+            .map(s => normalizeSkill(s));
 
         console.log('[Certificate Upload] 📝 AI Analysis Summary:');
         console.log(`  Certificate Title: ${analysis.certificate?.polishedTitle || 'Unknown'}`);
         console.log(`  Issuer: ${analysis.certificate?.issuer || 'Unknown'}`);
         console.log(`  Issue Date: ${analysis.certificate?.issueDate || 'Unknown'}`);
         console.log(`  Total Skills Extracted: ${skillsExtracted.length}`);
-        console.log(`    - Certified (roadmap-matched): ${certifiedSkills.length} → ${certifiedSkills.join(', ') || 'None'}`);
-        console.log(`    - Not mapped to roadmap: ${notMappedSkills.length} → ${notMappedSkills.join(', ') || 'None'}`);
+        console.log(`    - Certified (roadmap-matched): ${rawCertifiedSkills.length} → ${rawCertifiedSkills.join(', ') || 'None'}`);
+        console.log(`    - Not mapped to roadmap: ${rawNotMappedSkills.length} → ${rawNotMappedSkills.join(', ') || 'None'}`);
         console.log(`  Career Relevance: ${analysis.careerAlignment?.relevanceLevel || 'Unknown'}`);
 
         // --- Roadmap Skill Matching & Mastery Pipeline ---
@@ -216,12 +256,12 @@ export const uploadCertificate = async (req, res) => {
                     matchDetails.push({ extracted: certSkill, matched: roadmapSkillName });
 
                     const alreadyCompleted = userProfile.profile.completedSkills.some(s =>
-                        s.skill.toLowerCase() === roadmapSkillName.toLowerCase()
+                        normalizeSkill(s.skill) === normalizeSkill(roadmapSkillName)
                     );
 
                     if (!alreadyCompleted) {
                         userProfile.profile.completedSkills.push({
-                            skill: roadmapSkillName,
+                            skill: normalizeSkill(roadmapSkillName),
                             score: 100,
                             masteredAt: new Date(),
                             source: 'certificate'
@@ -229,18 +269,19 @@ export const uploadCertificate = async (req, res) => {
 
                         if (userProfile.profile.learningSkills) {
                             userProfile.profile.learningSkills = userProfile.profile.learningSkills.filter(s =>
-                                s.toLowerCase() !== roadmapSkillName.toLowerCase()
+                                normalizeSkill(s) !== normalizeSkill(roadmapSkillName)
                             );
                         }
 
                         if (userProfile.profile.currentSkills) {
                             userProfile.profile.currentSkills = userProfile.profile.currentSkills.filter(s => {
                                 const name = typeof s === 'string' ? s : (s.name || s.skill);
-                                return name.toLowerCase() !== roadmapSkillName.toLowerCase();
+                                return normalizeSkill(name) !== normalizeSkill(roadmapSkillName);
                             });
                         }
 
-                        newlyMasteredSkills.push(roadmapSkillName);
+                        const normalizedRoadmapSkill = normalizeSkill(roadmapSkillName);
+                        newlyMasteredSkills.push(normalizedRoadmapSkill);
                     } else {
                         console.log(`[Certificate Upload] ℹ️  "${roadmapSkillName}" already in completedSkills, not adding again`);
                     }
@@ -252,19 +293,20 @@ export const uploadCertificate = async (req, res) => {
                 console.warn(`[Certificate Upload] ⚠️  No roadmap match for: "${certSkill}" — adding as mastered anyway`);
 
                 const alreadyCompleted = userProfile.profile.completedSkills.some(s =>
-                    s.skill.toLowerCase() === certSkill.toLowerCase()
+                    normalizeSkill(s.skill) === normalizeSkill(certSkill)
                 );
 
                 if (!alreadyCompleted) {
+                    const normalizedCertSkill = normalizeSkill(certSkill);
                     userProfile.profile.completedSkills.push({
-                        skill: certSkill,
+                        skill: normalizedCertSkill,
                         score: 100,
                         masteredAt: new Date(),
                         source: 'certificate',
                         note: 'Added from certificate (not in original roadmap)'
                     });
-                    newlyMasteredSkills.push(certSkill);
-                    console.log(`[Certificate Upload] ✅ Added unmatched skill as mastered: "${certSkill}"`);
+                    newlyMasteredSkills.push(normalizedCertSkill);
+                    console.log(`[Certificate Upload] ✅ Added unmatched skill as mastered: "${normalizedCertSkill}"`);
                 }
 
                 matchDetails.push({ extracted: certSkill, matched: null, addedAsNew: true });
@@ -378,6 +420,7 @@ export const uploadCertificate = async (req, res) => {
         res.json({
             success: true,
             certificate: newCert,
+            certifiedSkills: skillsExtracted,
             promotedSkills: newlyMasteredSkills,
             masteredSkillsCount: userProfile.profile.completedSkills.length,
             resumeUpdated: resumeData ? true : false,
@@ -459,6 +502,31 @@ export const deleteCertificate = async (req, res) => {
         }
 
         const cert = user.certifications[certIndex];
+        const skillsToRemove = cert.skills || cert.masteredSkills || [];
+
+        // Identify skills certified by OTHER certificates
+        const otherCerts = user.certifications.filter((_, idx) => idx !== certIndex);
+        const stillCertifiedSkills = new Set();
+        otherCerts.forEach(c => {
+            (c.skills || []).forEach(s => stillCertifiedSkills.add(normalizeSkill(s)));
+            (c.masteredSkills || []).forEach(s => stillCertifiedSkills.add(normalizeSkill(s)));
+        });
+
+        // Determine which skills were ONLY certified by this certificate
+        const skillsToActuallyRemove = skillsToRemove.filter(skill => 
+            !stillCertifiedSkills.has(normalizeSkill(skill))
+        );
+
+        console.log(`[Certificate Delete] Skills only in this cert:`, skillsToActuallyRemove);
+
+        // Remove from user's completedSkills
+        if (skillsToActuallyRemove.length > 0) {
+            const initialCount = user.profile.completedSkills.length;
+            user.profile.completedSkills = user.profile.completedSkills.filter(s => 
+                !skillsToActuallyRemove.some(r => normalizeSkill(r) === normalizeSkill(s.skill))
+            );
+            console.log(`[Certificate Delete] Removed ${initialCount - user.profile.completedSkills.length} skills from completedSkills`);
+        }
 
         if (cert.fileUrl) {
             const filename = cert.fileUrl.split('/').pop();
@@ -467,9 +535,19 @@ export const deleteCertificate = async (req, res) => {
         }
 
         user.certifications.splice(certIndex, 1);
+        
+        // If skills were removed, clear roadmap cache to force recalculation
+        if (skillsToActuallyRemove.length > 0) {
+            user.profile.roadmapCache = null;
+        }
+
         await user.save();
 
-        res.json({ message: 'Certificate deleted successfully' });
+        res.json({ 
+            success: true,
+            message: 'Certificate deleted successfully',
+            removedSkills: skillsToActuallyRemove 
+        });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

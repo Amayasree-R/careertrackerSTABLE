@@ -43,49 +43,28 @@ export async function generateVisualRoadmap(profile, existingCache = null) {
   try {
     // If a cached roadmap exists, only update mastery statuses — never regenerate
     if (existingCache && existingCache.tiers && existingCache.tiers.length > 0) {
-      const masteredSkills = (Array.isArray(profile.completedSkills)
-        ? profile.completedSkills.map(s => typeof s === 'object' ? s.skill?.toLowerCase() : s?.toLowerCase())
+      const masteredSkills = (Array.isArray(profile.masteredSkills)
+        ? profile.masteredSkills.map(s => (typeof s === 'object' ? s.skill : s)?.toLowerCase())
         : []
       ).filter(Boolean);
 
-      const updatedTiers = existingCache.tiers.map(tier => ({
-        ...tier,
-        skills: tier.skills.map(skill => {
-          const isMastered = masteredSkills.includes(skill.skill?.toLowerCase());
-          return {
+      // Update status in-place — never move skills between tiers
+      const updatedTiers = existingCache.tiers
+        .filter(tier => tier.label?.toLowerCase() !== 'mastered' && tier.tier !== 0)
+        .map(tier => ({
+          ...tier,
+          skills: tier.skills.map(skill => ({
             ...skill,
-            status: isMastered ? 'Mastered' : 'To Learn',
-            resources: isMastered ? [] : (
-              skill.resources && skill.resources.length > 0
-                ? skill.resources
-                : buildResources(skill.skill)
-            )
-          };
-        })
-      }));
-
-      // Re-sort: move newly mastered skills to tier 0
-      const tier0 = updatedTiers.find(t => t.tier === 0) || { tier: 0, label: 'Mastered', skills: [] };
-      const otherTiers = updatedTiers.filter(t => t.tier !== 0);
-
-      // Pull newly mastered skills from other tiers into tier 0
-      const newlyMastered = [];
-      const remainingTiers = otherTiers.map(tier => ({
-        ...tier,
-        skills: tier.skills.filter(skill => {
-          if (skill.status === 'Mastered') {
-            newlyMastered.push({ ...skill, estimatedTime: 'Completed', resources: [] });
-            return false;
-          }
-          return true;
-        })
-      }));
-
-      tier0.skills = [...tier0.skills, ...newlyMastered];
+            status: masteredSkills.includes(skill.skill?.toLowerCase()) ? 'Mastered' : 'To Learn',
+            resources: masteredSkills.includes(skill.skill?.toLowerCase())
+              ? []
+              : (skill.resources?.length > 0 ? skill.resources : buildResources(skill.skill))
+          }))
+        }));
 
       return {
         ...existingCache,
-        tiers: [tier0, ...remainingTiers].filter(t => t.skills.length > 0)
+        tiers: updatedTiers
       };
     }
 
@@ -142,7 +121,9 @@ export async function generateVisualRoadmap(profile, existingCache = null) {
 
     try {
       const tieredRoadmap = JSON.parse(jsonString);
-      tieredRoadmap.tiers = enrichTiers(tieredRoadmap.tiers);
+      tieredRoadmap.tiers = enrichTiers(
+        tieredRoadmap.tiers.filter(t => t.label?.toLowerCase() !== 'mastered' && t.tier !== 0)
+      );
       return tieredRoadmap;
     } catch (parseError) {
       console.error('Failed to parse Gemini JSON response:', parseError);
@@ -163,7 +144,6 @@ export async function generateVisualRoadmap(profile, existingCache = null) {
 
 function generateFallbackRoadmap(learningPath) {
   const tiers = [
-    { tier: 0, label: "Mastered", skills: [] },
     { tier: 1, label: "Start Here", skills: [] },
     { tier: 2, label: "Next Steps", skills: [] },
     { tier: 3, label: "Advanced/Optional", skills: [] }
@@ -175,19 +155,17 @@ function generateFallbackRoadmap(learningPath) {
       skill: item.skill,
       status: isMastered ? 'Mastered' : (item.status || 'To Learn'),
       category: 'General',
-      estimatedTime: item.estimatedTime || 'TBD',
+      estimatedTime: isMastered ? 'Completed' : (item.estimatedTime || 'TBD'),
       dependencies: [],
       resources: isMastered ? [] : buildResources(item.skill)
     };
 
-    if (isMastered) {
-      tiers[0].skills.push({ ...skillData, estimatedTime: 'Completed' });
-    } else if (item.priority === 'High') {
-      tiers[1].skills.push({ ...skillData, priority: 'High' });
+    if (item.priority === 'High' || (!item.priority && isMastered)) {
+      tiers[0].skills.push({ ...skillData, priority: 'High' });
     } else if (item.priority === 'Medium') {
-      tiers[2].skills.push({ ...skillData, priority: 'Medium' });
+      tiers[1].skills.push({ ...skillData, priority: 'Medium' });
     } else {
-      tiers[3].skills.push({ ...skillData, priority: 'Low' });
+      tiers[2].skills.push({ ...skillData, priority: 'Low' });
     }
   });
 

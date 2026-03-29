@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
+import axios from 'axios'
+import API_BASE_URL from '../../config/api.js'
 
 export default function SkillTooltip({ skill, targetJob, anchorRef, onClose }) {
     const [detail, setDetail] = useState(null)
@@ -12,16 +14,13 @@ export default function SkillTooltip({ skill, targetJob, anchorRef, onClose }) {
         const fetchDetail = async () => {
             try {
                 const token = localStorage.getItem('token')
-                const response = await fetch('https://careertracker-gtc7a3g9gvfrgsf4.centralindia-01.azurewebsites.net/api/skill-detail', {
-                    method: 'POST',
+                const response = await axios.post(`${API_BASE_URL}/skill-detail`, { skill, targetJob }, {
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ skill, targetJob })
+                    }
                 })
-                const data = await response.json()
-                if (!response.ok) throw new Error(data.message || 'Failed to fetch skill detail')
+                const data = response.data
                 if (!cancelled) {
                     setDetail(data)
                     setLoading(false)

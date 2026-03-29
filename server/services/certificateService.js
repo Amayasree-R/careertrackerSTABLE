@@ -47,11 +47,12 @@ CRITICAL: PDF text is often extracted out of order due to layout parsing. Treat 
 
 INSTRUCTIONS:
 
-1. Identify the certificate TITLE (in order of priority):
-   - Look for "Certificate of [X]" or "Certificate in [X]" → use as title
-   - Look for "completion of [X] Course" or "training in [X]" → derive title as "[X] Certificate"
-   - NEVER use boilerplate phrases like "THE FOLLOWING AWARD IS GIVEN TO" as the title
-   - NEVER return "Unknown Certificate" if ANY course or topic name is detectable
+1. Identify the certificate TITLE (CRITICAL):
+   - The certificate title should reflect the course or skill being certified.
+   - NOT generic headings like "Certificate of Appreciation", "Certificate of Completion", "Award", or "Achievement".
+   - If the text contains both a generic heading AND a specific course name, ALWAYS use the specific course name.
+   - The title must be concise (2 to 6 words) describing what was learned or achieved.
+   - Example: "React Development Course" or "Machine Learning Specialization".
 
 2. Extract the SKILL/TOPIC from phrases like:
    - "completion of [X] Course"
@@ -75,7 +76,10 @@ INSTRUCTIONS:
    - Example: "React Development Certificate of Completion"
    - NEVER produce "Unknown Certificate" as polishedTitle
 
-6. Extract ALL skills mentioned in the certificate (technical, frameworks, tools, soft skills).
+6. Extract ONLY specific technical, framework, tool, or domain skills mentioned in the certificate.
+   - DO NOT extract generic words such as: Development, Completion, Training, Course, Program, Fundamentals, Basics, Advanced, Independent, Certification, Award, Achievement, Studies, Learning, Education, Professional.
+   - ONLY extract real skill names like: React, Python, JavaScript, AWS, Docker, Machine Learning, SQL, Node.js, CSS, TypeScript, etc.
+   - If no specific technologies or skills are found, return an empty skills array.
 
 7. Match extracted skills against roadmapSkills:
    - Matched skills → "certified"

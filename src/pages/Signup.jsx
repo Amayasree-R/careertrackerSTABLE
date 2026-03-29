@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import axios from 'axios'
+import API_BASE_URL from '../config/api.js'
 
 function Signup() {
   const [formData, setFormData] = useState({
@@ -172,17 +174,11 @@ function Signup() {
         }] : []
       }
 
-      const response = await fetch('https://careertracker-gtc7a3g9gvfrgsf4.centralindia-01.azurewebsites.net/api/auth/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+      const response = await axios.post(`${API_BASE_URL}/auth/signup`, payload, {
+        headers: { 'Content-Type': 'application/json' }
       })
 
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Signup failed')
-      }
+      const data = response.data
 
       localStorage.setItem('token', data.token)
       localStorage.setItem('userId', data.user.id)

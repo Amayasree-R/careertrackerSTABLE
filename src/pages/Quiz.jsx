@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-// import confetti from 'canvas-confetti'
+import axios from 'axios'
+import API_BASE_URL from '../config/api.js'
+import confetti from 'canvas-confetti'
 
 function Quiz() {
     const { skill } = useParams()
@@ -24,13 +26,11 @@ function Quiz() {
         const token = localStorage.getItem('token')
 
         try {
-            const res = await fetch(`https://careertracker-gtc7a3g9gvfrgsf4.centralindia-01.azurewebsites.net/api/quiz/${encodeURIComponent(skill)}`, {
+            const res = await axios.get(`${API_BASE_URL}/quiz/${encodeURIComponent(skill)}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             })
 
-            const data = await res.json()
-
-            if (!res.ok) throw new Error(data.message || 'Failed to fetch quiz')
+            const data = res.data
 
             // Ensure we have questions with IDs
             const questionsWithIds = data.questions.map((q, idx) => ({
@@ -97,13 +97,11 @@ function Quiz() {
     const markAsMastered = async (score) => {
         const token = localStorage.getItem('token')
         try {
-            await fetch('https://careertracker-gtc7a3g9gvfrgsf4.centralindia-01.azurewebsites.net/api/profile/toggle-skill', {
-                method: 'POST',
+            await axios.post(`${API_BASE_URL}/profile/toggle-skill`, { skill, score, forceMaster: true }, {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({ skill, score, forceMaster: true })
+                }
             })
         } catch (err) {
             console.error('Failed to mark skill as mastered:', err)
